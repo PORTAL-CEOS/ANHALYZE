@@ -47,6 +47,9 @@ def get_lat_lon(data, x_range, y_range):
 def get_mask(x_range, y_range, depth):
     """  Getting Mask given Latitude and Longitude """
 
+    # Get paths
+    data_path, mask_path = get_paths()
+
     # Reading ANHA4 mask data
     mask = nc.Dataset(mask_path + "ANHA4_mask.nc")
 
