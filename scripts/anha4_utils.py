@@ -61,12 +61,18 @@ def get_mask(x_range, y_range, depth):
 
     return surf_mask
 
-def get_data(filename, row_range, col_range, depth=0, var='votemper'):
+def get_data(filename, lat_range, lon_range, depth=0, var='votemper', cardinal=True):
     """  Getting Data Latitude and Longitude """
 
     # Get data
     data = nc.Dataset(filename)
     temp = data[var][:]
+
+    # Given data selection range in lat-lon or row-col
+    if cardinal:
+        row_range, col_range = get_row_col_range(data, lat_range, lon_range)
+    else:
+        row_range, col_range = lat_range, lon_range
 
     # Extracting data given lat-lon selection and depth
     temp = temp[0, depth, row_range[0]:row_range[1], col_range[0]:col_range[1]]
