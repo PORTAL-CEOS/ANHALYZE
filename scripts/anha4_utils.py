@@ -1,21 +1,13 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# Data related libraries
+# Data-related libraries
 import numpy as np
 import netCDF4 as nc
-import glob
-import os
 
-# Plotting related libraries
-import matplotlib.pyplot as plt
-import seaborn as sns
-sns.set()
-from mpl_toolkits.axes_grid1 import make_axes_locatable
-import cartopy.crs as ccrs
-from cartopy.mpl.ticker import LongitudeFormatter, LatitudeFormatter
+# Plotting-related libraries
 
-# Machine specific libraries
+# OS-specific libraries
 from sys import platform
 
 
@@ -27,24 +19,35 @@ def get_paths():
         # setup paths
         mask_path = '/mnt/storage0/jmarson/ANALYSES/MASKS/'
         data_path = '/mnt/storage0/jmarson/NEMO/ANHA4/ANHA4-EPM111-S/'
-
     elif platform == "darwin":
         # OS X
         # setup paths
         data_path = '/Users/jeenriquez/Documents/CEOS/ANHA4/Test_Data/'
         mask_path = '/Users/jeenriquez/Documents/CEOS/ANHA4/Test_Data/'
+    else:
+        data_path = ''
+        mask_path = ''
+        # raise ValueError("Platform not recognized.")
 
-    return data_path,mask_path
+    return data_path, mask_path
 
-def get_lat_lon(data, x_range, y_range):
+
+def get_lat_lon(data, lat_range, lon_range, cardinal=True):
     """  Getting Latitude and Longitude """
 
-    lat = data['nav_lat_grid_T'][x_range[0]:x_range[1], y_range[0]:y_range[1]]
-    lon = data['nav_lon_grid_T'][x_range[0]:x_range[1], y_range[0]:y_range[1]]
+    # Given data selection range in lat-lon or row-col
+    if cardinal:
+        row_range, col_range = get_row_col_range(data, lat_range, lon_range)
+    else:
+        row_range, col_range = lat_range, lon_range
+
+    lat = data['nav_lat_grid_T'][row_range[0]:row_range[1], col_range[0]:col_range[1]]
+    lon = data['nav_lon_grid_T'][row_range[0]:row_range[1], col_range[0]:col_range[1]]
 
     return lat, lon
 
-def get_mask(x_range, y_range, depth):
+
+def get_mask(data, lat_range, lon_range, depth=0, cardinal=True):
     """  Getting Mask given Latitude and Longitude """
 
     # Get paths
@@ -56,17 +59,23 @@ def get_mask(x_range, y_range, depth):
     # Extracting mask data for given depth
     tmask = mask['tmask'][0][depth]
 
+    # Given data selection range in lat-lon or row-col
+    if cardinal:
+        row_range, col_range = get_row_col_range(data, lat_range, lon_range)
+    else:
+        row_range, col_range = lat_range, lon_range
+
     # Extracting mask data for given range
-    surf_mask = tmask[x_range[0]:x_range[1], y_range[0]:y_range[1]]
+    surf_mask = tmask[row_range[0]:row_range[1], col_range[0]:col_range[1]]
 
     return surf_mask
 
-def get_data(filename, lat_range, lon_range, depth=0, var='votemper', cardinal=True):
+
+def get_var_data(data, lat_range, lon_range, depth=0, var='votemper', cardinal=True):
     """  Getting Data Latitude and Longitude """
 
-    # Get data
-    data = nc.Dataset(filename)
-    temp = data[var][:]
+    # Get var data
+    var_data = data[var][:]
 
     # Given data selection range in lat-lon or row-col
     if cardinal:
@@ -75,9 +84,10 @@ def get_data(filename, lat_range, lon_range, depth=0, var='votemper', cardinal=T
         row_range, col_range = lat_range, lon_range
 
     # Extracting data given lat-lon selection and depth
-    temp = temp[0, depth, row_range[0]:row_range[1], col_range[0]:col_range[1]]
+    var_data = var_data[0, depth, row_range[0]:row_range[1], col_range[0]:col_range[1]]
 
-    return temp
+    return var_data
+
 
 def get_row_col_range(data, lat_range, lon_range):
     """ Get the row col range given lat lon range.  """
