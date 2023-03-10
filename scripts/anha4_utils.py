@@ -9,8 +9,7 @@ import netCDF4 as nc
 import matplotlib
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
-import cartopy
-import cartopy.crs as ccrs
+from cartopy import crs as ccrs, feature as cfeature
 
 # OS-specific libraries
 from sys import platform
@@ -120,6 +119,26 @@ def get_row_col_range(data, lat_range, lon_range):
     return row_range, col_range
 
 
+def get_feature_mask(feature='land', resolution='50m'):
+    """   """
+
+    # Select facecolor
+    if 'land' in feature:
+        facecolor = matplotlib.colors.to_hex('wheat')
+    elif 'ocean' in feature:
+        facecolor = '#000066'
+    else:
+        facecolor = matplotlib.colors.to_hex('gray')
+
+        # Construct feature mask
+    feature_mask = cfeature.NaturalEarthFeature('physical', feature,
+                                                scale=resolution,
+                                                edgecolor='face',
+                                                facecolor=facecolor)
+
+    return feature_mask
+
+
 def plot_var_data(data, lat_range, lon_range, depth=0, var='votemper'):
     """  """
 
@@ -143,9 +162,7 @@ def plot_var_data(data, lat_range, lon_range, depth=0, var='votemper'):
     standard_parallels = (55, 60)
     central_longitude = -80
     cmap = 'coolwarm'
-    ocean_color = '#000066'
-    land_color = matplotlib.colors.to_hex('wheat')
-    
+
     # Set up plot
     fig = plt.figure()
     ax = fig.add_subplot(1, 1, 1,
@@ -154,12 +171,12 @@ def plot_var_data(data, lat_range, lon_range, depth=0, var='votemper'):
     ax.set_extent([lon_range[0], lon_range[1], lat_range[0], lat_range[1]])
 
     # Adding ocean and land features
-    ax.add_feature(cartopy.feature.OCEAN, facecolor=ocean_color)
-    ax.add_feature(cartopy.feature.LAND, facecolor=land_color)
+    ax.add_feature(get_feature_mask())
+    ax.add_feature(get_feature_mask(feature='ocean'))
 
     # Plotting var data as filled countour regions
     im = ax.contourf(lon, lat, var_data, levels=levels, cmap=cmap,
-                     vmin=vmin, vmax=vmax, transform=ccrs.PlateCarree())
+                     vmin=vmin, vmax=vmax, transform=ccrs.PlateCarree(), zorder=2)
 
     # Create grid-line labels
     gl = ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=True, x_inline=False,
@@ -170,4 +187,3 @@ def plot_var_data(data, lat_range, lon_range, depth=0, var='votemper'):
     axins = inset_axes(ax, width="5%", height="100%", loc='right', borderpad=-1)
     label = data.variables[var].long_name + ' [' + data.variables[var].units + ']'
     fig.colorbar(im, cax=axins, orientation="vertical", label=label, format='%.1f')
-
