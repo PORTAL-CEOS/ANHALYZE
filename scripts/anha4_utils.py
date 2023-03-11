@@ -5,6 +5,7 @@
 import numpy as np
 import netCDF4 as nc
 
+
 # Plotting-related libraries
 import matplotlib
 import matplotlib.pyplot as plt
@@ -13,6 +14,7 @@ from cartopy import crs as ccrs, feature as cfeature
 
 # OS-specific libraries
 from sys import platform
+import os
 
 
 def get_paths():
@@ -34,6 +36,43 @@ def get_paths():
         # raise ValueError("Platform not recognized.")
 
     return data_path, mask_path
+
+
+def get_file_list(years=['1998'], grid='T', one_per_month=False, month_list=[]):
+    """  Returns file list given a list of years, a grid type,
+         and ether all the days in a month, or the first one.
+    """
+
+    # Get paths
+    data_path, mask_path = get_paths()
+
+    # Get complete file list from path
+    file_list = os.listdir(data_path)
+
+    selected_file_list = []
+
+    # Selecting list of files given params
+    for year in years:
+        selected_file_list += (sorted([f for f in file_list if 'y'+year in f and 'grid'+grid in f]))
+
+    # Selecting first day on given month.
+    if one_per_month:
+        if not month_list:
+            month_list = [filename.split('/')[-1].split('_')[1][6:8] for filename in selected_file_list]
+
+        monthly_file_list = []
+
+        for month in month_list:
+            file_name_stump = 'y{}m{}'.format(years[0], month)
+            file_month_name = [f for f in selected_file_list if file_name_stump in f][0]
+            monthly_file_list.append(file_month_name)
+
+        selected_file_list = monthly_file_list
+
+    # Adding full path to filenames
+    selected_file_list = [data_path+filename for filename in selected_file_list]
+
+    return selected_file_list
 
 
 def get_lat_lon(data, lat_range, lon_range, cardinal=True):
@@ -143,7 +182,7 @@ def plot_var_data(data, lat_range, lon_range, depth=0, var='votemper'):
     """  """
 
     # Get var data
-    var_data = get_var_data(data, lat_range, lon_range, depth=depth)
+    var_data = get_var_data(data, lat_range, lon_range, depth=depth, var=var)
 
     # Get mask
     surf_mask = get_mask(data, lat_range, lon_range, depth=depth)
@@ -187,3 +226,29 @@ def plot_var_data(data, lat_range, lon_range, depth=0, var='votemper'):
     axins = inset_axes(ax, width="5%", height="100%", loc='right', borderpad=-1)
     label = data.variables[var].long_name + ' [' + data.variables[var].units + ']'
     fig.colorbar(im, cax=axins, orientation="vertical", label=label, format='%.1f')
+
+
+def calc_stats_var_data(data, lat_range, lon_range, depth=0, mean_only=True, var='votemper'):
+    """  """
+
+    # Get var data
+    var_data = get_var_data(data, lat_range, lon_range, depth=depth, var=var)
+
+    # Get mask
+    surf_mask = get_mask(data, lat_range, lon_range, depth=depth)
+
+    # Mask data
+    var_data.data[~np.ma.filled((1 == surf_mask.data))] = np.nan
+    surf_mask.data[np.ma.filled((1 == surf_mask.data))] = np.nan
+
+    # Calculating stats
+    var_mean = np.nanmean(var_data)
+
+    if mean_only:
+        return var_mean
+    else:
+        var_std = np.nanstd(var_data)
+        var_min = np.nanmin(var_data)
+        var_max = np.nanmax(var_data)
+
+        return var_mean, var_std, var_min, var_max
