@@ -179,7 +179,7 @@ def get_feature_mask(feature='land', resolution='50m'):
     return feature_mask
 
 
-def plot_var_data(data, lat_range, lon_range, depth=0, var='votemper'):
+def show_map_var_data(data, lat_range, lon_range, depth=0, var='votemper'):
     """  """
 
     # Get var data
