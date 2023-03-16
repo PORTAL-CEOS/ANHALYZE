@@ -4,7 +4,8 @@
 # Data-related libraries
 import numpy as np
 import netCDF4 as nc
-
+import datetime
+import pandas as pd
 
 # Plotting-related libraries
 import matplotlib
@@ -224,11 +225,11 @@ def plot_var_data(data, lat_range, lon_range, depth=0, var='votemper'):
 
     # Set Color-bar
     axins = inset_axes(ax, width="5%", height="100%", loc='right', borderpad=-1)
-    label = data.variables[var].long_name + ' [' + data.variables[var].units + ']'
+    label = '%s [%s]' % (data.variables[var].long_name.title(), data.variables[var].units.title())
     fig.colorbar(im, cax=axins, orientation="vertical", label=label, format='%.1f')
 
 
-def calc_stats_var_data(data, lat_range, lon_range, depth=0, mean_only=True, var='votemper'):
+def calc_stats_var_data(data, lat_range, lon_range, depth=0, no_min_max=True, var='votemper'):
     """  """
 
     # Get var data
@@ -243,12 +244,43 @@ def calc_stats_var_data(data, lat_range, lon_range, depth=0, mean_only=True, var
 
     # Calculating stats
     var_mean = np.nanmean(var_data)
+    var_std = np.nanstd(var_data)
 
-    if mean_only:
-        return var_mean
+    if no_min_max:
+        return var_mean, var_std
+
     else:
-        var_std = np.nanstd(var_data)
         var_min = np.nanmin(var_data)
         var_max = np.nanmax(var_data)
 
         return var_mean, var_std, var_min, var_max
+
+
+def get_timeseries(file_list, lat_range, lon_range, depth=0, var='votemper'):
+    """    """
+
+    var_means = []
+    var_stds = []
+    dates = []
+
+    # Get datapoints by looping over files
+    for filename in file_list:
+        # Get Anha4 data
+        data = nc.Dataset(filename)
+
+        # Calculate var_data mean
+        var_mean, var_std = calc_stats_var_data(data, lat_range, lon_range, depth=depth, var=var)
+
+        # Save date from filename/time step
+        date = filename.split('/')[-1].split('_')[1]
+        date = datetime.date(int(date[1:5]), int(date[6:8]), int(date[9:11]))
+
+        data = nc.Dataset(filename)  # Append data to timeseries
+        var_means.append(var_mean)
+        var_stds.append(var_std)
+        dates.append(date)
+
+    # Create timeseries df
+    timeseries_var = pd.DataFrame({'date': dates, 'var_mean': var_means, 'var_std': var_stds})
+
+    return timeseries_var
