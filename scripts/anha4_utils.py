@@ -59,7 +59,7 @@ def get_file_list(years=['1998'], grid='T', one_per_month=False, month_list=[]):
     # Selecting first day on given month.
     if one_per_month:
         if not month_list:
-            month_list = [filename.split('/')[-1].split('_')[1][6:8] for filename in selected_file_list]
+            month_list = [get_date(filename, how='m') for filename in selected_file_list]
 
         monthly_file_list = []
 
@@ -115,8 +115,12 @@ def get_mask(data, lat_range, lon_range, depth=0, cardinal=True):
     return surf_mask
 
 
-def get_var_data(data, lat_range, lon_range, depth=0, var='votemper', cardinal=True):
-    """  Getting Data Latitude and Longitude """
+def get_var_data(data, lat_range, lon_range, depth=0, var='votemper', masked=True, cardinal=True):
+    """  Getting Data Latitude and Longitude
+
+    depth : z axis location from 50 unit "depth"
+
+    """
 
     # Get var data
     var_data = data[var][:]
@@ -129,6 +133,13 @@ def get_var_data(data, lat_range, lon_range, depth=0, var='votemper', cardinal=T
 
     # Extracting data given lat-lon selection and depth
     var_data = var_data[0, depth, row_range[0]:row_range[1], col_range[0]:col_range[1]]
+
+    if masked:
+        # Get mask
+        surf_mask = get_mask(data, lat_range, lon_range, depth=depth)
+
+        # Mask data
+        var_data.data[~np.ma.filled((1 == surf_mask.data))] = np.nan
 
     return var_data
 
@@ -179,22 +190,18 @@ def get_feature_mask(feature='land', resolution='50m'):
     return feature_mask
 
 
-def show_map_var_data(data, lat_range, lon_range, depth=0, var='votemper'):
-    """  """
+def show_var_data_map(data, lat_range, lon_range, depth=0, var='votemper'):
+    """ Displays map of given var in lat-lon range and depth.
+        Note: depth has not been tested.
+    """
 
     # Get var data
     var_data = get_var_data(data, lat_range, lon_range, depth=depth, var=var)
 
-    # Get mask
-    surf_mask = get_mask(data, lat_range, lon_range, depth=depth)
-
-    # Mask data
-    var_data.data[~np.ma.filled((1 == surf_mask.data))] = np.nan
-    surf_mask.data[np.ma.filled((1 == surf_mask.data))] = np.nan
-
     # getting lat and lon
     lat, lon = get_lat_lon(data, lat_range, lon_range)
 
+    # EE: should move this elsewhere
     # Setting plotting vars.
     levels = 42
     vmax = 20.
@@ -214,9 +221,12 @@ def show_map_var_data(data, lat_range, lon_range, depth=0, var='votemper'):
     ax.add_feature(get_feature_mask())
     ax.add_feature(get_feature_mask(feature='ocean'))
 
-    # Plotting var data as filled countour regions
+    # Plotting var data as filled contour regions
     im = ax.contourf(lon, lat, var_data, levels=levels, cmap=cmap,
                      vmin=vmin, vmax=vmax, transform=ccrs.PlateCarree(), zorder=2)
+
+    # Plotting data contour lines
+    ax.contour(lon, lat, var_data, levels=levels, cmap='Greys', linewidths=.2, transform=ccrs.PlateCarree())
 
     # Create grid-line labels
     gl = ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=True, x_inline=False,
@@ -235,13 +245,6 @@ def calc_stats_var_data(data, lat_range, lon_range, depth=0, no_min_max=True, va
     # Get var data
     var_data = get_var_data(data, lat_range, lon_range, depth=depth, var=var)
 
-    # Get mask
-    surf_mask = get_mask(data, lat_range, lon_range, depth=depth)
-
-    # Mask data
-    var_data.data[~np.ma.filled((1 == surf_mask.data))] = np.nan
-    surf_mask.data[np.ma.filled((1 == surf_mask.data))] = np.nan
-
     # Calculating stats
     var_mean = np.nanmean(var_data)
     var_std = np.nanstd(var_data)
@@ -254,6 +257,21 @@ def calc_stats_var_data(data, lat_range, lon_range, depth=0, no_min_max=True, va
         var_max = np.nanmax(var_data)
 
         return var_mean, var_std, var_min, var_max
+
+
+def get_date(filename, how=''):
+    """  Get date from filename. Multiple formats possible.  """
+
+    date = filename.split('_')[-2]
+
+    if how == 'ymd':
+        return int(date[1:5]), int(date[6:8]), int(date[9:11])
+    elif how == 'y':
+        return int(date[1:5])
+    elif how == 'm':
+        return int(date[6:8])
+    else:
+        return date
 
 
 def get_timeseries(file_list, lat_range, lon_range, depth=0, var='votemper'):
@@ -272,8 +290,7 @@ def get_timeseries(file_list, lat_range, lon_range, depth=0, var='votemper'):
         var_mean, var_std = calc_stats_var_data(data, lat_range, lon_range, depth=depth, var=var)
 
         # Save date from filename/time step
-        date = filename.split('/')[-1].split('_')[1]
-        date = datetime.date(int(date[1:5]), int(date[6:8]), int(date[9:11]))
+        date = datetime.date(get_date(filename, how='ymd'))
 
         data = nc.Dataset(filename)  # Append data to timeseries
         var_means.append(var_mean)
