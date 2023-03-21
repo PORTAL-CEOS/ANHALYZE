@@ -399,9 +399,10 @@ def get_timeseries(file_list, lat_range, lon_range, depth=0, var='votemper'):
         var_mean, var_std = calc_stats_var_data(data, lat_range, lon_range, depth=depth, var=var)
 
         # Save date from filename/time step
-        date = datetime.date(get_date(filename, how='ymd'))
+        y, m, d = get_date(filename, how='ymd')
+        date = datetime.date(y, m, d)
 
-        data = nc.Dataset(filename)  # Append data to timeseries
+        # Append data to timeseries
         var_means.append(var_mean)
         var_stds.append(var_std)
         dates.append(date)
