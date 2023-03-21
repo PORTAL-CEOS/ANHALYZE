@@ -204,6 +204,7 @@ def show_var_data_map(data, lat_range, lon_range, depth=0, var='votemper'):
     # EE: should move this elsewhere
     # Setting plotting vars.
     levels = 42
+    line_levels = 11
     vmax = 20.
     vmin = -20.
     standard_parallels = (55, 60)
@@ -226,7 +227,7 @@ def show_var_data_map(data, lat_range, lon_range, depth=0, var='votemper'):
                      vmin=vmin, vmax=vmax, transform=ccrs.PlateCarree(), zorder=2)
 
     # Plotting data contour lines
-    ax.contour(lon, lat, var_data, levels=levels, cmap='Greys', linewidths=.2, transform=ccrs.PlateCarree())
+    ax.contour(lon, lat, var_data, levels=line_levels, cmap='Greys', linewidths=.2, transform=ccrs.PlateCarree())
 
     # Create grid-line labels
     gl = ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=True, x_inline=False,
@@ -263,6 +264,7 @@ def show_var_data_maps(file_list, lat_range, lon_range, depth=0, var='votemper')
 
     # Setting plotting vars.
     levels = 42
+    line_levels = 11
     vmax = 20.
     vmin = -20.
     standard_parallels = (52.5, 62.5)
@@ -313,7 +315,7 @@ def show_var_data_maps(file_list, lat_range, lon_range, depth=0, var='votemper')
                          vmin=vmin, vmax=vmax, transform=ccrs.PlateCarree(), zorder=2)
 
         # Plotting data contour lines
-        xx.contour(lon, lat, var_data, levels=levels, cmap='Greys', linewidths=.2, transform=ccrs.PlateCarree())
+        xx.contour(lon, lat, var_data, levels=line_levels, cmap='Greys', linewidths=.2, transform=ccrs.PlateCarree())
 
         # Create grid-line labels
         gl = xx.gridlines(crs=ccrs.PlateCarree(), draw_labels=True, x_inline=False,
