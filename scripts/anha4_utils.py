@@ -12,6 +12,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 from cartopy import crs as ccrs, feature as cfeature
+import seaborn as sns
 
 # OS-specific libraries
 from sys import platform
@@ -411,3 +412,25 @@ def get_timeseries(file_list, lat_range, lon_range, depth=0, var='votemper'):
     timeseries_var = pd.DataFrame({'date': dates, 'var_mean': var_means, 'var_std': var_stds})
 
     return timeseries_var
+
+
+def plot_timeseries(timeseries_var, data_variables, lat_range, lon_range, var='votemper'):
+    """    """
+
+    # Setting up seaborn defaults
+    sns.set()
+
+    # Setting up timeseries plot
+    fig, ax = plt.subplots(ncols=1, nrows=1, figsize=(9, 5))
+
+    # Plotting data with error bars
+    ax.errorbar(timeseries_var['date'], timeseries_var['var_mean'], yerr=timeseries_var['var_std'], fmt='o')
+
+    # Labels and axis
+    ax.set_ylabel('%s [%s]'%(data_variables[var].long_name.title(), data_variables[var].units))
+    ax.set_xlabel('Time')
+    ax.set_title('Mean values taken from region: Lat %s , Lon %s' % (str(lat_range), str(lon_range)))
+    ax.xaxis.set_tick_params(rotation=30, labelsize=10)
+
+    # Returning to matplotlib defaults
+    sns.reset_orig()
