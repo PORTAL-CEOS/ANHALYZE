@@ -393,12 +393,14 @@ def get_date(filename, how=''):
         return date
 
 
-def get_timeseries(file_list, lat_range, lon_range, depth=0, var='votemper'):
+def get_timeseries(file_list, lat_range, lon_range, depth=0, no_min_max=True, var='votemper'):
     """    """
 
+    dates = []
     var_means = []
     var_stds = []
-    dates = []
+    var_mins = []
+    var_maxs = []
 
     # Get datapoints by looping over files
     for filename in file_list:
@@ -406,7 +408,10 @@ def get_timeseries(file_list, lat_range, lon_range, depth=0, var='votemper'):
         data = nc.Dataset(filename)
 
         # Calculate var_data mean
-        var_mean, var_std = calc_stats_var_data(data, lat_range, lon_range, depth=depth, var=var)
+        if no_min_max:
+            var_mean, var_std = calc_stats_var_data(data, lat_range, lon_range, depth=depth, no_min_max=no_min_max, var=var)
+        else:
+            var_mean, var_std, var_min, var_max = calc_stats_var_data(data, lat_range, lon_range, depth=depth, no_min_max=no_min_max, var=var)
 
         # Save date from filename/time step
         y, m, d = get_date(filename, how='ymd')
@@ -416,9 +421,15 @@ def get_timeseries(file_list, lat_range, lon_range, depth=0, var='votemper'):
         var_means.append(var_mean)
         var_stds.append(var_std)
         dates.append(date)
+        if not no_min_max:
+            var_mins.append(var_min)
+            var_maxs.append(var_max)
 
     # Create timeseries df
-    timeseries_var = pd.DataFrame({'date': dates, 'var_mean': var_means, 'var_std': var_stds})
+    if no_min_max:
+        timeseries_var = pd.DataFrame({'date': dates, 'var_mean': var_means, 'var_std': var_stds})
+    else:
+        timeseries_var = pd.DataFrame({'date': dates, 'var_mean': var_means, 'var_std': var_stds, 'var_min': var_mins, 'var_max': var_maxs})
 
     return timeseries_var
 
