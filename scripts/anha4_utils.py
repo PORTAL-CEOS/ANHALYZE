@@ -324,9 +324,12 @@ def show_var_data_maps(file_list, lat_range, lon_range, depth=0, var='votemper')
         gl.right_labels = gl.top_labels = False
 
         # Set axis labels
-        xx.text(0.5, -0.2, 'Longitude', va='bottom', ha='center',
+        # To show x label only at the bottom most row
+        if i > ncols*(nrows-1)-1:
+            xx.text(0.5, -0.22, 'Longitude', va='bottom', ha='center',
                 rotation='horizontal', rotation_mode='anchor',
                 transform=xx.transAxes)
+        # To show y label only at left most column
         if i % ncols == 0:
             xx.text(-0.25, 0.55, 'Latitude', va='bottom', ha='center',
                     rotation='vertical', rotation_mode='anchor',
@@ -340,8 +343,14 @@ def show_var_data_maps(file_list, lat_range, lon_range, depth=0, var='votemper')
         label = '%s [%s]' % (data.variables[var].long_name.title(), data.variables[var].units.title())
         fig.colorbar(im, cax=axins, orientation="vertical", label=label, format='%.1f')
 
+    # Temp fix to plot position given number of plots.
+    if len(fig.axes) == 18:
+        hspace = .27
+    else:
+        hspace = .1
+
     fig.suptitle(data.variables[var].standard_name.replace('_', ' '), fontsize=16)
-    fig.subplots_adjust(bottom=0.1, top=0.9, left=0.07, right=.92, wspace=.65, hspace=.1)
+    fig.subplots_adjust(bottom=0.1, top=0.9, left=0.07, right=.92, wspace=.65, hspace=hspace)
 
     # Save figure to file.
     if platform == "linux" or platform == "linux2":
