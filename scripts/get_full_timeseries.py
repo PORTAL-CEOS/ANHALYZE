@@ -26,12 +26,14 @@ if Hudson_bay:
     hudson_west = -95
     hudson_north = 65
     hudson_south = 50
+    loc = 'hudson_bay'
 
 else:
     hudson_east = -78.5
     hudson_west = -82.5
     hudson_north = 54.7
     hudson_south = 51
+    loc = 'james_bay'
 
 lat_range  = (hudson_south,hudson_north)
 lon_range = (hudson_west,hudson_east)
@@ -47,4 +49,4 @@ file_list = au.get_file_list(years=year_list)
 timeseries_var = au.get_timeseries(file_list,lat_range,lon_range, no_min_max=False)
 
 # Save data
-timeseries_var.to_csv('james_bay_timeseries_data.csv')
+timeseries_var.to_csv(loc+'_timeseries_data.csv')
