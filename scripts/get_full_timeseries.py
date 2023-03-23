@@ -40,7 +40,7 @@ lon_range = (hudson_west,hudson_east)
     
 
 # Making year list
-year_list = [str(y) for y in np.arange(1995,1998,1)]
+year_list = [str(y) for y in np.arange(1958,2010,1)]
     
 # Make file list from year list    
 file_list = au.get_file_list(years=year_list)
