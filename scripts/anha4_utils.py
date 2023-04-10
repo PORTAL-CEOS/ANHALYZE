@@ -40,32 +40,52 @@ def get_paths():
     return data_path, mask_path
 
 
+def get_date(filename, how=''):
+    """  Get date from filename.
+         Assuming filename format: */*/ANHA4-EPM111_y1998m04d05_gridB.nc
+         Multiple output formats possible.
+    """
+
+    date = filename.split('_')[-2]
+
+    if how == 'ymd':
+        return int(date[1:5]), int(date[6:8]), int(date[9:11])
+    elif how == 'y':
+        return int(date[1:5])
+    elif how == 'm':
+        return int(date[6:8])
+    else:
+        return date
+
+
 class ANHAlyze:
     """ This class does analysis of ANHA4 data.
     """
 
-    def __init__(self, grid=None, years=None, month_list=None):
+    def __init__(self, grid=None, years=None, month_list=None, one_per_month=False, verbose=True):
 
         # -------
         # The global wild west
         if years is None:
             self.years = ['1998']
-        if month_list is None:
-            self.month_list = []
         if grid is None:
             self.grid = 'T'
 
-        self.one_per_month = False
+        self.file_list = self.get_file_list(one_per_month=one_per_month, month_list=month_list)
 
-        self.file_list = self.get_file_list(one_per_month=self.one_per_month)
+        if verbose:
+            print(self.file_list)
 
-    def get_file_list(self, one_per_month=False):
+    def get_file_list(self, month_list=None, one_per_month=False):
         """  Returns file list given a list of years, a grid type,
              and ether all the days in a month, or the first one.
         """
 
         # Setup
         selected_file_list = []
+        monthly_file_list = []
+        if month_list is None:
+            month_list = []
 
         # Get paths
         data_path, mask_path = get_paths()
@@ -79,17 +99,26 @@ class ANHAlyze:
             selected_file_list += (sorted([f for f in file_list if '_y'+year in f and '_grid'+self.grid in f]))
 
         # Selecting first day on given month.
-        if self.one_per_month:
-            if not self.month_list:
+        if one_per_month:
+            if not month_list:
                 month_list = [get_date(filename, how='m') for filename in selected_file_list]
 
-            monthly_file_list = []
+            for year in self.years:
+                for month in month_list:
+                    file_name_stump = 'y{}m{}'.format(year, month)
+                    file_month_name = [f for f in selected_file_list if file_name_stump in f][0]
+                    monthly_file_list.append(file_month_name)
 
-            for month in month_list:
-                file_name_stump = 'y{}m{}'.format(self.years[0], month)
-                file_month_name = [f for f in selected_file_list if file_name_stump in f][0]
-                monthly_file_list.append(file_month_name)
+        else:
+            # Make month selection
+            if month_list:
+                for year in self.years:
+                    for month in month_list:
+                        file_name_stump = 'y{}m{}'.format(year, month)
+                        file_month_names = [f for f in selected_file_list if file_name_stump in f]
+                        monthly_file_list += file_month_names
 
+        if monthly_file_list:
             selected_file_list = monthly_file_list
 
         # Adding full path to filenames
@@ -263,21 +292,6 @@ def calc_stats_var_data(data, lat_range, lon_range, depth=0, no_min_max=True, va
         var_max = np.nanmax(var_data)
 
         return var_mean, var_std, var_min, var_max
-
-
-def get_date(filename, how=''):
-    """  Get date from filename. Multiple formats possible.  """
-
-    date = filename.split('_')[-2]
-
-    if how == 'ymd':
-        return int(date[1:5]), int(date[6:8]), int(date[9:11])
-    elif how == 'y':
-        return int(date[1:5])
-    elif how == 'm':
-        return int(date[6:8])
-    else:
-        return date
 
 
 def get_timeseries(file_list, lat_range, lon_range, depth=0, no_min_max=True, var='votemper'):
