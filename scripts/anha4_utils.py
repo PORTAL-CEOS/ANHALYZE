@@ -40,10 +40,16 @@ def get_paths():
     return data_path, mask_path
 
 
-def get_file_list(years=['1998'], grid='T', one_per_month=False, month_list=[]):
+def get_file_list(years=None, grid='T', one_per_month=False, month_list=None):
     """  Returns file list given a list of years, a grid type,
          and ether all the days in a month, or the first one.
     """
+
+    # Setup
+    if years is None:
+        years = ['1998']
+    if month_list is None:
+        month_list = []
 
     # Get paths
     data_path, mask_path = get_paths()
@@ -262,11 +268,11 @@ def get_date(filename, how=''):
 def get_timeseries(file_list, lat_range, lon_range, depth=0, no_min_max=True, var='votemper'):
     """    """
 
+    # Setting up
     dates = []
-    var_means = []
-    var_stds = []
-    var_mins = []
-    var_maxs = []
+    var_means = var_stds = []
+    var_mins = var_maxs = []
+    var_min = var_max = None
 
     # Get datapoints by looping over files
     for filename in file_list:
@@ -308,11 +314,13 @@ def get_timeseries(file_list, lat_range, lon_range, depth=0, no_min_max=True, va
     return timeseries_var
 
 
-def calc_timeseries(timeseries, action='g_mean', n_year=''):
+def calc_timeseries(timeseries, action='g_mean', n_year=None):
     """   """
 
+    # Making timeseries copy
     timeseries = timeseries.copy()
 
+    # Calculating full period climatology stats
     if 'g_' in action:
 
         # Grouping timeseries
@@ -329,25 +337,23 @@ def calc_timeseries(timeseries, action='g_mean', n_year=''):
         else:
             action_timeseries = None
 
+    # Adding climatology and MHW references to timeseries dataframe for easy comparison.
     elif 'add_' in action:
-        #
 
+        # Adding climatology stats to timeseries dataframe for easy comparison.
         if 'long' in action:
-        #
             action_timeseries = np.array(timeseries['var_mean'].to_list() * n_year)
 
+        # Adding MHW categories to timeseries dataframe for easy comparison.
         else:
             delta_t = timeseries['var_mean_quantile'] - timeseries['var_mean_mean']
 
             if '2T' in action:
                 action_timeseries = timeseries['var_mean_mean'] + 2*delta_t
-    #            action_timeseries = add_gg(timeseries, factor=2)
             elif '3T' in action:
                 action_timeseries = timeseries['var_mean_mean'] + 3*delta_t
-                # action_timeseries = add_gg(timeseries, factor=3)
             elif '4T' in action:
                 action_timeseries = timeseries['var_mean_mean'] + 4*delta_t
-                # action_timeseries = add_gg(timeseries, factor=4)
             else:
                 action_timeseries = None
     else:
@@ -392,12 +398,16 @@ def anhalize_timeseries(raw_timeseries):
     # Folding data yearly to get day stats.
     timeseries_year_mean = calc_timeseries(anhalyzed_timeseries, action='g_mean')
     timeseries_year_quantile = calc_timeseries(anhalyzed_timeseries, action='g_quantile')
-    timeseries_year_max = calc_timeseries(anhalyzed_timeseries, action='g_max')
-    timeseries_year_median = calc_timeseries(anhalyzed_timeseries, action='g_median')
+    # timeseries_year_max = calc_timeseries(anhalyzed_timeseries, action='g_max')
+    # timeseries_year_median = calc_timeseries(anhalyzed_timeseries, action='g_median')
 
     # Calculating timeseries mean/quantile values and adding them to timeseries
-    anhalyzed_timeseries['var_mean_mean'] = calc_timeseries(timeseries_year_mean, action='add_long', n_year=n_year)
-    anhalyzed_timeseries['var_mean_quantile'] = calc_timeseries(timeseries_year_quantile, action='add_long', n_year=n_year)
+    anhalyzed_timeseries['var_mean_mean'] = calc_timeseries(timeseries_year_mean,
+                                                            action='add_long',
+                                                            n_year=n_year)
+    anhalyzed_timeseries['var_mean_quantile'] = calc_timeseries(timeseries_year_quantile,
+                                                                action='add_long',
+                                                                n_year=n_year)
 
     # Calculating timeseries MHW categories and adding them to timeseries
     anhalyzed_timeseries['var_mean_2T'] = calc_timeseries(anhalyzed_timeseries, action='add_2T')
@@ -411,4 +421,3 @@ def plot_timeseries(timeseries_var, data_variables, lat_range, lon_range, var='v
     """    """
 
     apu.plot_timeseries(timeseries_var, data_variables, lat_range, lon_range, var=var)
-
