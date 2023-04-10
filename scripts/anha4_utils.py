@@ -19,7 +19,6 @@ import os
 import anha4_plot_utils as apu
 
 
-
 def get_paths():
     """ Get paths to data and mask standard locations."""
 
@@ -271,14 +270,16 @@ def get_timeseries(file_list, lat_range, lon_range, depth=0, no_min_max=True, va
 
     # Get datapoints by looping over files
     for filename in file_list:
-        # Get Anha4 data
+        # Get ANHA4 data
         data = nc.Dataset(filename)
 
         # Calculate var_data mean
         if no_min_max:
-            var_mean, var_std = calc_stats_var_data(data, lat_range, lon_range, depth=depth, no_min_max=no_min_max, var=var)
+            var_mean, var_std = calc_stats_var_data(data, lat_range, lon_range, depth=depth,
+                                                    no_min_max=no_min_max, var=var)
         else:
-            var_mean, var_std, var_min, var_max = calc_stats_var_data(data, lat_range, lon_range, depth=depth, no_min_max=no_min_max, var=var)
+            var_mean, var_std, var_min, var_max = calc_stats_var_data(data, lat_range, lon_range, depth=depth,
+                                                                      no_min_max=no_min_max, var=var)
 
         # Save date from filename/time step
         y, m, d = get_date(filename, how='ymd')
@@ -294,11 +295,116 @@ def get_timeseries(file_list, lat_range, lon_range, depth=0, no_min_max=True, va
 
     # Create timeseries df
     if no_min_max:
-        timeseries_var = pd.DataFrame({'date': dates, 'var_mean': var_means, 'var_std': var_stds})
+        timeseries_var = pd.DataFrame({'date': dates,
+                                       'var_mean': var_means,
+                                       'var_std': var_stds})
     else:
-        timeseries_var = pd.DataFrame({'date': dates, 'var_mean': var_means, 'var_std': var_stds, 'var_min': var_mins, 'var_max': var_maxs})
+        timeseries_var = pd.DataFrame({'date': dates,
+                                       'var_mean': var_means,
+                                       'var_std': var_stds,
+                                       'var_min': var_mins,
+                                       'var_max': var_maxs})
 
     return timeseries_var
+
+
+def calc_timeseries(timeseries, action='g_mean', n_year=''):
+    """   """
+
+    timeseries = timeseries.copy()
+
+    if 'g_' in action:
+
+        # Grouping timeseries
+        grouped_timeseries = timeseries.groupby('wrap_day')[['var_mean', 'var_std']]
+
+        if 'mean' in action:
+            action_timeseries = grouped_timeseries.mean().reset_index()
+        elif 'quantile' in action:
+            action_timeseries = grouped_timeseries.quantile(.9).reset_index()
+        elif 'median' in action:
+            action_timeseries = grouped_timeseries.median().reset_index()
+        elif 'max' in action:
+            action_timeseries = grouped_timeseries.max().reset_index()
+        else:
+            action_timeseries = None
+
+    elif 'add_' in action:
+        #
+
+        if 'long' in action:
+        #
+            action_timeseries = np.array(timeseries['var_mean'].to_list() * n_year)
+
+        else:
+            delta_t = timeseries['var_mean_quantile'] - timeseries['var_mean_mean']
+
+            if '2T' in action:
+                action_timeseries = timeseries['var_mean_mean'] + 2*delta_t
+    #            action_timeseries = add_gg(timeseries, factor=2)
+            elif '3T' in action:
+                action_timeseries = timeseries['var_mean_mean'] + 3*delta_t
+                # action_timeseries = add_gg(timeseries, factor=3)
+            elif '4T' in action:
+                action_timeseries = timeseries['var_mean_mean'] + 4*delta_t
+                # action_timeseries = add_gg(timeseries, factor=4)
+            else:
+                action_timeseries = None
+    else:
+        action_timeseries = None
+
+    return action_timeseries
+
+
+def anhalize_timeseries(raw_timeseries):
+    """  """
+
+    # Set year vars
+    year_standard = 2000
+    year_min = 1958
+    year_max = 2009
+    n_year = year_max - year_min + 1
+
+    # Make copy of raw data
+    anhalyzed_timeseries = raw_timeseries.copy()
+
+    # Change date formatting
+    anhalyzed_timeseries['date'] = pd.to_datetime(anhalyzed_timeseries['date'], format='%Y-%m-%d')
+
+    # Add Year column
+    anhalyzed_timeseries['year'] = anhalyzed_timeseries.date.dt.year
+
+    # Add Month column
+    anhalyzed_timeseries['month'] = anhalyzed_timeseries.date.dt.month
+
+    # Add day column
+    anhalyzed_timeseries['day'] = anhalyzed_timeseries.date.dt.day
+
+    # Change date formatting
+    anhalyzed_timeseries['date2'] = anhalyzed_timeseries['date'].dt.date
+    anhalyzed_timeseries.drop('date', axis=1, inplace=True)
+    anhalyzed_timeseries.rename(columns={'date2': 'date'}, inplace=True)
+
+    # Add wrap-day column
+    anhalyzed_timeseries['wrap_day'] = anhalyzed_timeseries.apply(
+        lambda row: datetime.date(year_standard, row.month, row.day), axis=1)
+
+    # Folding data yearly to get day stats.
+    timeseries_year_mean = calc_timeseries(anhalyzed_timeseries, action='g_mean')
+    timeseries_year_quantile = calc_timeseries(anhalyzed_timeseries, action='g_quantile')
+    timeseries_year_max = calc_timeseries(anhalyzed_timeseries, action='g_max')
+    timeseries_year_median = calc_timeseries(anhalyzed_timeseries, action='g_median')
+
+    # Calculating timeseries mean/quantile values and adding them to timeseries
+    anhalyzed_timeseries['var_mean_mean'] = calc_timeseries(timeseries_year_mean, action='add_long', n_year=n_year)
+    anhalyzed_timeseries['var_mean_quantile'] = calc_timeseries(timeseries_year_quantile, action='add_long', n_year=n_year)
+
+    # Calculating timeseries MHW categories and adding them to timeseries
+    anhalyzed_timeseries['var_mean_2T'] = calc_timeseries(anhalyzed_timeseries, action='add_2T')
+    anhalyzed_timeseries['var_mean_3T'] = calc_timeseries(anhalyzed_timeseries, action='add_3T')
+    anhalyzed_timeseries['var_mean_4T'] = calc_timeseries(anhalyzed_timeseries, action='add_4T')
+
+    return anhalyzed_timeseries
 
 
 def plot_timeseries(timeseries_var, data_variables, lat_range, lon_range, var='votemper'):
