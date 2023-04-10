@@ -74,6 +74,9 @@ def show_var_data_maps(file_list, lat_range, lon_range, depth=0, var='votemper')
     """
 
     # Setting plotting vars.
+    lat = None
+    lon = None
+    data = None
     levels = 42
     line_levels = 11
     vmax = 20.
@@ -195,6 +198,9 @@ def plot_mhw(anhalyzed_timeseries, year=1998, remove_mean=True, show_cat4=False,
         Plot time series data for given year, along with MHW curve categories.
     """
 
+    # Setting up seaborn defaults
+    sns.set()
+
     # Selecting year from timeseries
     anhalyzed_timeseries_year = anhalyzed_timeseries[anhalyzed_timeseries['year'] == year].copy()
 
@@ -203,6 +209,7 @@ def plot_mhw(anhalyzed_timeseries, year=1998, remove_mean=True, show_cat4=False,
 
         # Get freezing line
         freezing_line = anhalyzed_timeseries_year['var_mean_mean'] * -1
+
         # Removing the yealy average T$_{c}$
         anhalyzed_timeseries_year['var_mean'] = anhalyzed_timeseries_year.apply(
             lambda row: row.var_mean - row.var_mean_mean, axis=1)
@@ -283,3 +290,7 @@ def plot_mhw(anhalyzed_timeseries, year=1998, remove_mean=True, show_cat4=False,
 
     plt.tight_layout()
     plt.show()
+
+    # Returning to matplotlib defaults
+    sns.reset_orig()
+
