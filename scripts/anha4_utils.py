@@ -15,7 +15,7 @@ from cartopy import feature as cfeature
 from sys import platform
 import os
 
-# Project custom made libaries
+# Project custom made libraries
 import anha4_plot_utils as apu
 
 
@@ -40,47 +40,62 @@ def get_paths():
     return data_path, mask_path
 
 
-def get_file_list(years=None, grid='T', one_per_month=False, month_list=None):
-    """  Returns file list given a list of years, a grid type,
-         and ether all the days in a month, or the first one.
+class ANHAlyze:
+    """ This class does analysis of ANHA4 data.
     """
 
-    # Setup
-    if years is None:
-        years = ['1998']
-    if month_list is None:
-        month_list = []
+    def __init__(self, grid=None, years=None, month_list=None):
 
-    # Get paths
-    data_path, mask_path = get_paths()
+        # -------
+        # The global wild west
+        if years is None:
+            self.years = ['1998']
+        if month_list is None:
+            self.month_list = []
+        if grid is None:
+            self.grid = 'T'
 
-    # Get complete file list from path
-    file_list = os.listdir(data_path)
+        self.one_per_month = False
 
-    selected_file_list = []
+        self.file_list = self.get_file_list(one_per_month=self.one_per_month)
 
-    # Selecting list of files given params
-    for year in years:
-        selected_file_list += (sorted([f for f in file_list if 'y'+year in f and 'grid'+grid in f]))
+    def get_file_list(self, one_per_month=False):
+        """  Returns file list given a list of years, a grid type,
+             and ether all the days in a month, or the first one.
+        """
 
-    # Selecting first day on given month.
-    if one_per_month:
-        if not month_list:
-            month_list = [get_date(filename, how='m') for filename in selected_file_list]
+        # Setup
+        selected_file_list = []
 
-        monthly_file_list = []
+        # Get paths
+        data_path, mask_path = get_paths()
 
-        for month in month_list:
-            file_name_stump = 'y{}m{}'.format(years[0], month)
-            file_month_name = [f for f in selected_file_list if file_name_stump in f][0]
-            monthly_file_list.append(file_month_name)
+        # Get complete file list from path
+        #EE update look at ltp_water project to be more specific using format: ANHA4-EPM111_y1998m04d05_gridB.nc
+        file_list = os.listdir(data_path)
 
-        selected_file_list = monthly_file_list
+        # Selecting list of files given params
+        for year in self.years:
+            selected_file_list += (sorted([f for f in file_list if '_y'+year in f and '_grid'+self.grid in f]))
 
-    # Adding full path to filenames
-    selected_file_list = [data_path+filename for filename in selected_file_list]
+        # Selecting first day on given month.
+        if self.one_per_month:
+            if not self.month_list:
+                month_list = [get_date(filename, how='m') for filename in selected_file_list]
 
-    return selected_file_list
+            monthly_file_list = []
+
+            for month in month_list:
+                file_name_stump = 'y{}m{}'.format(self.years[0], month)
+                file_month_name = [f for f in selected_file_list if file_name_stump in f][0]
+                monthly_file_list.append(file_month_name)
+
+            selected_file_list = monthly_file_list
+
+        # Adding full path to filenames
+        selected_file_list = [data_path+filename for filename in selected_file_list]
+
+        return selected_file_list
 
 
 def get_lat_lon(data, lat_range, lon_range, cardinal=True):
