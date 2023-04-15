@@ -149,6 +149,7 @@ def show_var_data_maps(file_list, lat_range, lon_range, depth=0, var='votemper')
                     transform=xx.transAxes)
 
         # Set title
+        # EE: change to anha.file_date
         xx.set_title(file_list[i].split('/')[-1].split('_')[1])
 
         # Set Color-bar
@@ -193,9 +194,13 @@ def plot_timeseries(timeseries_var, data_variables, lat_range, lon_range, var='v
     sns.reset_orig()
 
 
-def plot_mhw(anhalyzed_timeseries, year=1998, remove_mean=True, show_cat4=False, region="James Bay"):
+def plot_mhw(anhalyzed_timeseries, year=1998, remove_mean=True, show_cat4=False, region="James Bay", mhw=True):
     """
         Plot time series data for given year, along with MHW curve categories.
+
+        remove_mean: remove overall mean from data
+        show_cat4: show category 4 curve
+
     """
 
     # Setting up seaborn defaults
@@ -224,15 +229,29 @@ def plot_mhw(anhalyzed_timeseries, year=1998, remove_mean=True, show_cat4=False,
 
     else:
         labels = ['SST', 'T$_{90}$', r'T$_{c}$+2$\Delta$T', r'T$_{c}$+3$\Delta$T', r'T$_{c}$+4$\Delta$T']
+        freezing_line = anhalyzed_timeseries_year['var_mean_mean'] * 0. - 2.
+
+    # Setting up MHW/MCS related variables.
+    if mhw:
+        colors = ['gold', 'orange', 'red', 'maroon']
+        alphas = [0.2, 0.3, 0.1]
+        mhw_title = 'MHW'
+    else:
+        colors = ['DeepSkyBlue', 'dodgerblue', 'blue', 'navy']
+        alphas = [0.1, 0.5, 0.1]
+        mhw_title = 'MCS'
 
     # Setting up figure
     plt.figure(figsize=(9, 5))
 
     # Plotting all data
-
     if not remove_mean:
         plt.plot(anhalyzed_timeseries['date'],
                  anhalyzed_timeseries.var_mean_mean,
+                 c='gray', alpha=.5, label='T$_{c}$')
+    else:
+        plt.plot(anhalyzed_timeseries['date'],
+                 anhalyzed_timeseries.var_mean_mean*0,
                  c='gray', alpha=.5, label='T$_{c}$')
 
     plt.scatter(anhalyzed_timeseries_year['date'],
@@ -241,51 +260,56 @@ def plot_mhw(anhalyzed_timeseries, year=1998, remove_mean=True, show_cat4=False,
 
     plt.plot(anhalyzed_timeseries_year['date'],
              anhalyzed_timeseries_year.var_mean_quantile,
-             c='gold', alpha=.3, label=labels[1])
+             c=colors[0], alpha=alphas[1], label=labels[1])
     plt.plot(anhalyzed_timeseries_year['date'],
              anhalyzed_timeseries_year.var_mean_2T,
-             c='orange', alpha=.3, label=labels[2])
+             c=colors[1], alpha=alphas[1], label=labels[2])
     plt.plot(anhalyzed_timeseries_year['date'],
              anhalyzed_timeseries_year.var_mean_3T,
-             c='red', alpha=.3, label=labels[3])
+             c=colors[2], alpha=alphas[1], label=labels[3])
     if show_cat4:
         plt.plot(anhalyzed_timeseries_year['date'],
                  anhalyzed_timeseries_year.var_mean_4T,
-                 c='maroon', alpha=.3, label=labels[4])
+                 c=colors[3], alpha=alphas[1], label=labels[4])
 
     # Fill in categories colors
     plt.fill_between(anhalyzed_timeseries_year['date'],
                      anhalyzed_timeseries_year.var_mean_quantile,
                      y2=anhalyzed_timeseries_year.var_mean_2T,
-                     alpha=.1, facecolor='gold')
+                     alpha=alphas[2], facecolor=colors[0])
 
     plt.fill_between(anhalyzed_timeseries_year['date'],
                      anhalyzed_timeseries_year.var_mean_2T,
                      y2=anhalyzed_timeseries_year.var_mean_3T,
-                     alpha=.1, facecolor='orange')
+                     alpha=alphas[2], facecolor=colors[1])
 
     if show_cat4:
         plt.fill_between(anhalyzed_timeseries_year['date'],
                          anhalyzed_timeseries_year.var_mean_3T,
                          y2=anhalyzed_timeseries_year.var_mean_4T,
-                         alpha=.1, facecolor='red')
+                         alpha=.1, facecolor=colors[2])
 
     if remove_mean:
-        plt.fill_between(anhalyzed_timeseries_year['date'], freezing_line, alpha=.3, label='SST$_{0}$ mark')
-
+        plt.fill_between(anhalyzed_timeseries_year['date'], freezing_line, alpha=alphas[0],
+                         y2=freezing_line-20,
+                         label='Freezing Zone', hatch='/', edgecolor='navy')
     else:
-        plt.fill_between(anhalyzed_timeseries_year['date'], anhalyzed_timeseries_year['var_mean'] * 0. - 2.,
-                         alpha=.3, label='Freezing line')
+        plt.fill_between(anhalyzed_timeseries_year['date'], freezing_line, alpha=alphas[0],
+                         label='Freezing Zone', hatch='/', edgecolor='navy')
 
     # Set axis limits and labels
     if remove_mean:
-        plt.ylim(bottom=0)
+        if mhw:
+            plt.ylim(bottom=0)
+        else:
+            plt.ylim(top=2, bottom=-12)
     else:
         plt.ylim(bottom=-2)
+
     plt.xlim([anhalyzed_timeseries_year['date'].iloc[0], anhalyzed_timeseries_year['date'].iloc[-1]])
     plt.ylabel(' Residual\n Temperature [\N{DEGREE SIGN}C]', fontsize=12)
     plt.xlabel('Year', fontsize=12)
-    plt.title('%s %i MHW' % (region, year), fontsize=16)
+    plt.title('%s %i %s' % (region, year, mhw_title), fontsize=16)
     plt.legend()
 
     plt.tight_layout()
@@ -293,4 +317,3 @@ def plot_mhw(anhalyzed_timeseries, year=1998, remove_mean=True, show_cat4=False,
 
     # Returning to matplotlib defaults
     sns.reset_orig()
-
