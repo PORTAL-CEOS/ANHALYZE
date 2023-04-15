@@ -85,7 +85,8 @@ def show_var_data_maps(file_list, lat_range, lon_range, depth=0, var='votemper')
     central_longitude = -80
     cmap = 'coolwarm'
 
-    region, proj_size = au.init_location()
+    # region, proj_size = au.init_location()
+    location_info = au.init_location()
 
     # Get
     date_start = au.get_date(file_list[0])
@@ -168,7 +169,7 @@ def show_var_data_maps(file_list, lat_range, lon_range, depth=0, var='votemper')
 
     # Save figure to file.
     if platform == "linux" or platform == "linux2":
-        output_fig_name = '../figs/%s_%s_%s-%s.png' % (region, data.variables[var].long_name, date_start, date_end)
+        output_fig_name = '../figs/%s_%s_%s-%s.png' % (location_info['region'], data.variables[var].long_name, date_start, date_end)
         plt.savefig(output_fig_name, bbox_inches='tight', dpi=500)
 
 

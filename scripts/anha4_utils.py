@@ -260,13 +260,44 @@ def init_location(hudson_bay=True):
     """
 
     if hudson_bay:
-        proj_size = 2
+        # proj_size = 2
         region = 'HudsonBay'
+
+        # Setting up James Bay location
+        east = -75
+        west = -93
+        north = 65
+        south = 50
+
+        lat_range = (south, north)
+        lon_range = (west, east)
+
+        location_info = {'lat_range': lat_range,
+                         'lon_range': lon_range,
+                         'region': region,
+                         # 'proj_size': proj_size,
+                         }
     else:
-        proj_size = 4
+
+        # proj_size = 4
         region = 'JamesBay'
 
-    return region, proj_size
+        # Setting up James Bay location
+        east = -78.5
+        west = -82.5
+        north = 54.7
+        south = 51
+
+        lat_range = (south, north)
+        lon_range = (west, east)
+
+        location_info = {'lat_range': lat_range,
+                         'lon_range': lon_range,
+                         'region': region,
+                         # 'proj_size': proj_size,
+                         }
+
+    return location_info
 
 
 def show_var_data_maps(file_list, lat_range, lon_range, depth=0, var='votemper'):
