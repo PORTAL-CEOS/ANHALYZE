@@ -63,6 +63,9 @@ class ANHAlyze:
     """
 
     def __init__(self, grid=None, years=None, month_list=None, one_per_month=False, verbose=True):
+        """ Initializing class.
+
+        """
 
         # -------
         # The global wild west
@@ -344,7 +347,8 @@ def get_timeseries(file_list, lat_range, lon_range, depth=0, no_min_max=True, va
 
 
 def calc_timeseries(timeseries, action='g_mean', n_year=None):
-    """   """
+    """  Generalized code that calculates one specific operation, depending on how it is called.
+    """
 
     # Making timeseries copy
     timeseries = timeseries.copy()
@@ -357,8 +361,10 @@ def calc_timeseries(timeseries, action='g_mean', n_year=None):
 
         if 'mean' in action:
             action_timeseries = grouped_timeseries.mean().reset_index()
-        elif 'quantile' in action:
+        elif 'quantile90' in action:
             action_timeseries = grouped_timeseries.quantile(.9).reset_index()
+        elif 'quantile10' in action:
+            action_timeseries = grouped_timeseries.quantile(.1).reset_index()
         elif 'median' in action:
             action_timeseries = grouped_timeseries.median().reset_index()
         elif 'max' in action:
@@ -373,7 +379,7 @@ def calc_timeseries(timeseries, action='g_mean', n_year=None):
         if 'long' in action:
             action_timeseries = np.array(timeseries['var_mean'].to_list() * n_year)
 
-        # Adding MHW categories to timeseries dataframe for easy comparison.
+        # Calculating MHW categories to timeseries dataframe.
         else:
             delta_t = timeseries['var_mean_quantile'] - timeseries['var_mean_mean']
 
@@ -385,20 +391,40 @@ def calc_timeseries(timeseries, action='g_mean', n_year=None):
                 action_timeseries = timeseries['var_mean_mean'] + 4*delta_t
             else:
                 action_timeseries = None
+    elif 'remove_' in action:
+
+        # Calculating Marine Cold Spells categories to timeseries dataframe.
+        delta_t = timeseries['var_mean_mean'] - timeseries['var_mean_quantile']
+
+        if '2T' in action:
+            action_timeseries = timeseries['var_mean_mean'] - 2*delta_t
+        elif '3T' in action:
+            action_timeseries = timeseries['var_mean_mean'] - 3*delta_t
+        elif '4T' in action:
+            action_timeseries = timeseries['var_mean_mean'] - 4*delta_t
+        else:
+            action_timeseries = None
+
     else:
         action_timeseries = None
 
     return action_timeseries
 
 
-def anhalize_timeseries(raw_timeseries):
-    """  """
+def anhalize_timeseries(raw_timeseries, mhw=True):
+    """
+    """
 
     # Set year vars
     year_standard = 2000
     year_min = 1958
     year_max = 2009
     n_year = year_max - year_min + 1
+
+    if mhw:
+        actions = ['g_quantile90', 'add_2T', 'add_3T', 'add_4T']
+    else:
+        actions = ['g_quantile10', 'remove_2T', 'remove_3T', 'remove_4T']
 
     # Make copy of raw data
     anhalyzed_timeseries = raw_timeseries.copy()
@@ -426,7 +452,7 @@ def anhalize_timeseries(raw_timeseries):
 
     # Folding data yearly to get day stats.
     timeseries_year_mean = calc_timeseries(anhalyzed_timeseries, action='g_mean')
-    timeseries_year_quantile = calc_timeseries(anhalyzed_timeseries, action='g_quantile')
+    timeseries_year_quantile = calc_timeseries(anhalyzed_timeseries, action=actions[0])
     # timeseries_year_max = calc_timeseries(anhalyzed_timeseries, action='g_max')
     # timeseries_year_median = calc_timeseries(anhalyzed_timeseries, action='g_median')
 
@@ -439,9 +465,9 @@ def anhalize_timeseries(raw_timeseries):
                                                                 n_year=n_year)
 
     # Calculating timeseries MHW categories and adding them to timeseries
-    anhalyzed_timeseries['var_mean_2T'] = calc_timeseries(anhalyzed_timeseries, action='add_2T')
-    anhalyzed_timeseries['var_mean_3T'] = calc_timeseries(anhalyzed_timeseries, action='add_3T')
-    anhalyzed_timeseries['var_mean_4T'] = calc_timeseries(anhalyzed_timeseries, action='add_4T')
+    anhalyzed_timeseries['var_mean_2T'] = calc_timeseries(anhalyzed_timeseries, action=actions[1])
+    anhalyzed_timeseries['var_mean_3T'] = calc_timeseries(anhalyzed_timeseries, action=actions[2])
+    anhalyzed_timeseries['var_mean_4T'] = calc_timeseries(anhalyzed_timeseries, action=actions[3])
 
     return anhalyzed_timeseries
 
