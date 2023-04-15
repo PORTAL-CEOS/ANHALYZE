@@ -473,6 +473,20 @@ def anhalize_timeseries(raw_timeseries, mhw=True):
 
 
 def plot_timeseries(timeseries_var, data_variables, lat_range, lon_range, var='votemper'):
-    """    """
+    """  Wrapper to plot timeseries function  """
 
     apu.plot_timeseries(timeseries_var, data_variables, lat_range, lon_range, var=var)
+
+
+def plot_mhw(anhalyzed_timeseries, year=1998, remove_mean=True, show_cat4=False, region="James Bay", mhw=True):
+    """  Wrapper to plot mhw function  """
+
+    apu.plot_mhw(anhalyzed_timeseries, year=year, remove_mean=remove_mean, show_cat4=show_cat4, region=region, mhw=mhw)
+
+
+def find_mhw_info(anhalyzed_timeseries, mhw=True):
+    """  placeholder, to find dates and deltaTs/categories on mhws or mcs """
+
+#    if mhw:
+
+    return None
