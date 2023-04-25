@@ -14,7 +14,7 @@ from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 from cartopy import crs as ccrs
 import seaborn as sns
 
-# Project custom made libaries
+# Project custom made libraries
 import anha4_utils as au
 
 
@@ -177,7 +177,7 @@ def plot_timeseries(timeseries_var, data_variables, lat_range, lon_range, var='v
     """    """
 
     # Setting up seaborn defaults
-    sns.set()
+    sns.set(rc={'axes.facecolor': 'whitesmoke'})
 
     # Setting up timeseries plot
     fig, ax = plt.subplots(ncols=1, nrows=1, figsize=(9, 5))
@@ -205,7 +205,7 @@ def plot_mhw(anhalyzed_timeseries, year=1998, remove_mean=True, show_cat4=False,
     """
 
     # Setting up seaborn defaults
-    sns.set()
+    sns.set(rc={'axes.facecolor': 'whitesmoke'})
 
     # Selecting year from timeseries
     anhalyzed_timeseries_year = anhalyzed_timeseries[anhalyzed_timeseries['year'] == year].copy()
@@ -216,7 +216,7 @@ def plot_mhw(anhalyzed_timeseries, year=1998, remove_mean=True, show_cat4=False,
         # Get freezing line
         freezing_line = anhalyzed_timeseries_year['var_mean_mean'] * -1
 
-        # Removing the yealy average T$_{c}$
+        # Removing the yearly average T$_{c}$
         anhalyzed_timeseries_year['var_mean'] = anhalyzed_timeseries_year.apply(
             lambda row: row.var_mean - row.var_mean_mean, axis=1)
         anhalyzed_timeseries_year['var_mean_quantile'] = anhalyzed_timeseries_year.apply(
@@ -229,7 +229,10 @@ def plot_mhw(anhalyzed_timeseries, year=1998, remove_mean=True, show_cat4=False,
             lambda row: row.var_mean_4T - row.var_mean_mean, axis=1)
 
     else:
-        labels = ['SST', 'T$_{90}$', r'T$_{c}$+2$\Delta$T', r'T$_{c}$+3$\Delta$T', r'T$_{c}$+4$\Delta$T']
+        if mhw:
+            labels = ['SST', 'T$_{90}$', r'T$_{c}$+2$\Delta$T', r'T$_{c}$+3$\Delta$T', r'T$_{c}$+4$\Delta$T']
+        else:
+            labels = ['SST', 'T$_{90}$', r'T$_{c}$-2$\Delta$T', r'T$_{c}$-3$\Delta$T', r'T$_{c}$-4$\Delta$T']
         freezing_line = anhalyzed_timeseries_year['var_mean_mean'] * 0. - 2.
 
     # Setting up MHW/MCS related variables.
@@ -308,10 +311,11 @@ def plot_mhw(anhalyzed_timeseries, year=1998, remove_mean=True, show_cat4=False,
         plt.ylim(bottom=-2)
 
     plt.xlim([anhalyzed_timeseries_year['date'].iloc[0], anhalyzed_timeseries_year['date'].iloc[-1]])
-    plt.ylabel(' Residual\n Temperature [\N{DEGREE SIGN}C]', fontsize=12)
-    plt.xlabel('Year', fontsize=12)
-    plt.title('%s %i %s' % (region, year, mhw_title), fontsize=16)
-    plt.legend()
+    plt.ylabel(' Residual\n Temperature [\N{DEGREE SIGN}C]', fontsize=15)
+    plt.title('%s %i %s' % (region, year, mhw_title), fontsize=18)
+    plt.xticks(fontsize=14, rotation=30)
+    plt.yticks(fontsize=14)
+    plt.legend(fontsize=14)
 
     plt.tight_layout()
     plt.show()
