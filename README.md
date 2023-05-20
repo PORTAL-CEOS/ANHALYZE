@@ -1,4 +1,4 @@
-# CEOS_ANHA
+# ANHALIZE
 
 This software supports ocean modeling reserach at the Centre for Earth Observation Science (CEOS). 
 
