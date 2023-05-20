@@ -17,11 +17,28 @@ import seaborn as sns
 # Project custom made libraries
 import anha4_utils as au
 
+# TODO: check best practices for these global variabbles
+# Setting plotting variables
+levels = 42
+line_levels = 11
+vmax = 20.
+vmin = -20.
+cmap = 'coolwarm'
+
 
 def show_var_data_map(data, lat_range, lon_range, depth=0, var='votemper'):
-    """ Displays map of given var in lat-lon range and depth.
+    """ Displays map of given parameter (var) in lat-lon range and depth.
         Note: depth has not been tested.
+
+       data: ANHA4 data in NCDF format. [nc]
+       lat_range: latitute range [tupple]
+       lon_range: longitude range [tupple]
+       depth: dep level [int]
+       var: variable name [str]
     """
+
+    # Init location info
+    location_info = au.init_location()
 
     # Get var data
     var_data = au.get_var_data(data, lat_range, lon_range, depth=depth, var=var)
@@ -29,21 +46,11 @@ def show_var_data_map(data, lat_range, lon_range, depth=0, var='votemper'):
     # getting lat and lon
     lat, lon = au.get_lat_lon(data, lat_range, lon_range)
 
-    # EE: should move this elsewhere
-    # Setting plotting vars.
-    levels = 42
-    line_levels = 11
-    vmax = 20.
-    vmin = -20.
-    standard_parallels = (55, 60)
-    central_longitude = -80
-    cmap = 'coolwarm'
-
-    # Set up plot
+    # Set up figure and projection
     fig = plt.figure()
     ax = fig.add_subplot(1, 1, 1,
-                         projection=ccrs.LambertConformal(central_longitude=central_longitude,
-                                                          standard_parallels=standard_parallels))
+                         projection=ccrs.LambertConformal(central_longitude=location_info['central_longitude'],
+                                                          standard_parallels=location_info['standard_parallels']))
     ax.set_extent([lon_range[0], lon_range[1], lat_range[0], lat_range[1]])
 
     # Adding ocean and land features
@@ -54,7 +61,7 @@ def show_var_data_map(data, lat_range, lon_range, depth=0, var='votemper'):
     im = ax.contourf(lon, lat, var_data, levels=levels, cmap=cmap,
                      vmin=vmin, vmax=vmax, transform=ccrs.PlateCarree(), zorder=2)
 
-    # Plotting data contour lines
+    # Plotting var data contour lines
     ax.contour(lon, lat, var_data, levels=line_levels, cmap='Greys', linewidths=.2, transform=ccrs.PlateCarree())
 
     # Create grid-line labels
@@ -69,26 +76,26 @@ def show_var_data_map(data, lat_range, lon_range, depth=0, var='votemper'):
 
 
 def show_var_data_maps(file_list, lat_range, lon_range, depth=0, var='votemper'):
-    """ Displays map of given var in lat-lon range and depth.
+    """ Displays maps of given parameter (var) in lat-lon range and depth, and date selection.
         Note: depth has not been tested.
+
+       file_list: list of ANHA4 data files in NCDF format. [list]
+       lat_range: latitute range [tupple]
+       lon_range: longitude range [tupple]
+       depth: dep level [int]
+       var: variable name [str]
     """
 
-    # Setting plotting vars.
+    # Setting loop variables.
     lat = None
     lon = None
     data = None
-    levels = 42
-    line_levels = 11
-    vmax = 20.
-    vmin = -20.
-    standard_parallels = (52.5, 62.5)
-    central_longitude = -80
-    cmap = 'coolwarm'
 
+    # Init location info
     # region, proj_size = au.init_location()
     location_info = au.init_location()
 
-    # Get
+    # Get date
     date_start = au.get_date(file_list[0])
     date_end = au.get_date(file_list[-1])
 
@@ -97,23 +104,24 @@ def show_var_data_maps(file_list, lat_range, lon_range, depth=0, var='votemper')
     ncols = 3
     nrows = int(np.ceil(len(file_list) / ncols))
     fig, ax = plt.subplots(ncols=ncols, nrows=nrows, figsize=[ncols * f_size, nrows * f_size + 1],
-                           subplot_kw={'projection': ccrs.LambertConformal(central_longitude=central_longitude,
-                                                                           standard_parallels=standard_parallels)})
+                           subplot_kw={'projection': ccrs.LambertConformal(
+                                                          central_longitude=location_info['central_longitude'],
+                                                          standard_parallels=location_info['standard_parallels'])})
 
-    # Looping over files
+    # Looping over ANHA4 model files
     for i, xx in enumerate(fig.axes):
 
-        # Stop loop when number of subplots is larger than the number of files.
+        # Stop loop when current subplot number is larger than the number of files in list.
         if i == len(file_list):
             break
 
-        # Get data
+        # Get ncdf data
         data = nc.Dataset(file_list[i])
 
-        # Get var data
+        # Get var data from ncdf data
         var_data = au.get_var_data(data, lat_range, lon_range, depth=depth, var=var)
 
-        # getting lat and lon
+        # Getting lat and lon
         if i == 0:
             lat, lon = au.get_lat_lon(data, lat_range, lon_range)
 
@@ -150,7 +158,7 @@ def show_var_data_maps(file_list, lat_range, lon_range, depth=0, var='votemper')
                     transform=xx.transAxes)
 
         # Set title
-        # EE: change to anha.file_date
+        # TODO: change to anha.file_date. If/when moving into class.
         xx.set_title(file_list[i].split('/')[-1].split('_')[1])
 
         # Set Color-bar
@@ -158,24 +166,38 @@ def show_var_data_maps(file_list, lat_range, lon_range, depth=0, var='votemper')
         label = '%s [%s]' % (data.variables[var].long_name.title(), data.variables[var].units.title())
         fig.colorbar(im, cax=axins, orientation="vertical", label=label, format='%.1f')
 
+    # TODO: generlize foor any number of plots. If/when moving into class.
     # Temp fix to plot position given number of plots.
     if len(fig.axes) == 18:
         hspace = .27
     else:
         hspace = .1
 
+    # Add titles to eah figure
     fig.suptitle(data.variables[var].standard_name.replace('_', ' '), fontsize=16)
+    # Set up plots positions
     fig.subplots_adjust(bottom=0.1, top=0.9, left=0.07, right=.92, wspace=.65, hspace=hspace)
 
-    # Save figure to file.
+    # Save figure to file if running in portal (which is a linux system).
     if platform == "linux" or platform == "linux2":
-        output_fig_name = '../figs/%s_%s_%s-%s.png' % (location_info['region'], data.variables[var].long_name, date_start, date_end)
+        output_fig_name = '../figs/%s_%s_%s-%s.png' % (location_info['region'],
+                                                       data.variables[var].long_name,
+                                                       date_start,
+                                                       date_end)
         plt.savefig(output_fig_name, bbox_inches='tight', dpi=500)
 
 
 def plot_timeseries(timeseries_var, data_variables, lat_range, lon_range, var='votemper'):
-    """    """
+    """  Displays timeseries of given parameter (var) in lat-lon range and depth, and date selection.
+        Note: no depth option available, currently .
 
+       file_list: list of ANHA4 data files in NCDF format. [list]
+       lat_range: latitute range [tupple]
+       lon_range: longitude range [tupple]
+       depth: dep level [int]
+       var: variable name [str]  """
+
+    # TODO: update funtion with newer versions found in ipynb reports.
     # Setting up seaborn defaults
     sns.set(rc={'axes.facecolor': 'whitesmoke'})
 
@@ -197,11 +219,15 @@ def plot_timeseries(timeseries_var, data_variables, lat_range, lon_range, var='v
 
 def plot_mhw(anhalyzed_timeseries, year=1998, remove_mean=True, show_cat4=False, region="James Bay", mhw=True):
     """
-        Plot time series data for given year, along with MHW curve categories.
+        Plot time series data for given year, along with Marine Heat Wave or Marine Cold Spells curve categories.
+        Categories are defined in Hobday et. al. (2008).
 
-        remove_mean: remove overall mean from data
-        show_cat4: show category 4 curve
-
+        anhalyzed_timeseries: calculated time series for a given region
+        year: year [int]
+        remove_mean: remove overall mean from data  [bool]
+        show_cat4: show Category 4 curve [bool]
+        region: region name [str]
+        mhw: MHW or MCS [bool]
     """
 
     # Setting up seaborn defaults
@@ -210,6 +236,7 @@ def plot_mhw(anhalyzed_timeseries, year=1998, remove_mean=True, show_cat4=False,
     # Selecting year from timeseries
     anhalyzed_timeseries_year = anhalyzed_timeseries[anhalyzed_timeseries['year'] == year].copy()
 
+    # Prep data/plot if removing mean values or not
     if remove_mean:
         labels = ['SST - T$_{c}$', r'$\Delta$T', r'2$\Delta$T', r'3$\Delta$T', r'4$\Delta$T']
 
@@ -235,7 +262,7 @@ def plot_mhw(anhalyzed_timeseries, year=1998, remove_mean=True, show_cat4=False,
             labels = ['SST', 'T$_{90}$', r'T$_{c}$-2$\Delta$T', r'T$_{c}$-3$\Delta$T', r'T$_{c}$-4$\Delta$T']
         freezing_line = anhalyzed_timeseries_year['var_mean_mean'] * 0. - 2.
 
-    # Setting up MHW/MCS related variables.
+    # Setting up MHW/MCS related plotting variables.
     if mhw:
         colors = ['gold', 'orange', 'red', 'maroon']
         alphas = [0.2, 0.3, 0.1]
@@ -248,7 +275,7 @@ def plot_mhw(anhalyzed_timeseries, year=1998, remove_mean=True, show_cat4=False,
     # Setting up figure
     plt.figure(figsize=(9, 5))
 
-    # Plotting all data
+    # Plotting data and categories
     if not remove_mean:
         plt.plot(anhalyzed_timeseries['date'],
                  anhalyzed_timeseries.var_mean_mean,

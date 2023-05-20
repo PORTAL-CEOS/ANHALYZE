@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # coding: utf-8
 
 # Data-related libraries
@@ -21,6 +21,7 @@ import anha4_plot_utils as apu
 
 def get_paths():
     """ Get paths to data and mask standard locations."""
+    # TODO: need to generalize if other people is gonna use this code.
 
     if platform == "linux" or platform == "linux2":
         # linux
@@ -46,8 +47,10 @@ def get_date(filename, how=''):
          Multiple output formats possible.
     """
 
+    # Get full date from filename
     date = filename.split('_')[-2]
 
+    # Return format specific date info
     if how == 'ymd':
         return int(date[1:5]), int(date[6:8]), int(date[9:11])
     elif how == 'y':
@@ -59,12 +62,17 @@ def get_date(filename, how=''):
 
 
 class ANHAlyze:
-    """ This class does analysis of ANHA4 data.
+    """ This class will do analysis of ANHA4 data, for now it initializes the location of files.
     """
 
     def __init__(self, grid=None, years=None, month_list=None, one_per_month=False, verbose=True):
         """ Initializing class.
 
+            grid:
+            years:
+            month_list:
+            one_per_month:
+            verbose:
         """
 
         # -------
@@ -74,6 +82,7 @@ class ANHAlyze:
         if grid is None:
             self.grid = 'T'
 
+        # Init file list given conditions
         self.file_list = self.get_file_list(one_per_month=one_per_month, month_list=month_list)
 
         if verbose:
@@ -94,14 +103,13 @@ class ANHAlyze:
         data_path, mask_path = get_paths()
 
         # Get complete file list from path
-        #EE update look at ltp_water project to be more specific using format: ANHA4-EPM111_y1998m04d05_gridB.nc
         file_list = os.listdir(data_path)
 
         # Selecting list of files given params
         for year in self.years:
             selected_file_list += (sorted([f for f in file_list if '_y'+year in f and '_grid'+self.grid in f]))
 
-        # Selecting first day on given month.
+        # Selecting first day on given month
         if one_per_month:
             if not month_list:
                 month_list = [get_date(filename, how='m') for filename in selected_file_list]
@@ -268,15 +276,12 @@ def init_location(hudson_bay=True):
         west = -93
         north = 65
         south = 50
+        standard_parallels = (52.5, 62.5)
+        central_longitude = -80
 
         lat_range = (south, north)
         lon_range = (west, east)
 
-        location_info = {'lat_range': lat_range,
-                         'lon_range': lon_range,
-                         'region': region,
-                         # 'proj_size': proj_size,
-                         }
     else:
 
         # proj_size = 4
@@ -287,15 +292,19 @@ def init_location(hudson_bay=True):
         west = -82.5
         north = 54.7
         south = 51
+        standard_parallels = (52, 53)
+        central_longitude = -80
 
         lat_range = (south, north)
         lon_range = (west, east)
 
-        location_info = {'lat_range': lat_range,
-                         'lon_range': lon_range,
-                         'region': region,
-                         # 'proj_size': proj_size,
-                         }
+    location_info = {'lat_range': lat_range,
+                     'lon_range': lon_range,
+                     'region': region,
+                     'standard_parallels':standard_parallels,
+                     'central_longitude':central_longitude,
+                     # 'proj_size': proj_size,
+                     }
 
     return location_info
 
