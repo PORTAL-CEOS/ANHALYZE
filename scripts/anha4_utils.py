@@ -90,7 +90,7 @@ class ANHAlyze:
 
     def get_file_list(self, month_list=None, one_per_month=False):
         """  Returns file list given a list of years, a grid type,
-             and ether all the days in a month, or the first one.
+             and either all the days in a month, or the first one.
         """
 
         # Setup
@@ -119,7 +119,6 @@ class ANHAlyze:
                     file_name_stump = 'y{}m{}'.format(year, month)
                     file_month_name = [f for f in selected_file_list if file_name_stump in f][0]
                     monthly_file_list.append(file_month_name)
-
         else:
             # Make month selection
             if month_list:
@@ -301,8 +300,8 @@ def init_location(hudson_bay=True):
     location_info = {'lat_range': lat_range,
                      'lon_range': lon_range,
                      'region': region,
-                     'standard_parallels':standard_parallels,
-                     'central_longitude':central_longitude,
+                     'standard_parallels': standard_parallels,
+                     'central_longitude': central_longitude,
                      # 'proj_size': proj_size,
                      }
 
