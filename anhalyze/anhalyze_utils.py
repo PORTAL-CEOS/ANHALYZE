@@ -16,7 +16,7 @@ from sys import platform
 import os
 
 # Project custom made libraries
-import anha4_plot_utils as apu
+import anhalyze_plot_utils as apu
 
 
 def get_paths():

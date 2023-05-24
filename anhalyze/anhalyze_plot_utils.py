@@ -15,7 +15,7 @@ from cartopy import crs as ccrs
 import seaborn as sns
 
 # Project custom made libraries
-import anha4_utils as au
+import anhalyze_utils as au
 
 # TODO: check best practices for these global variabbles
 # Setting plotting variables
