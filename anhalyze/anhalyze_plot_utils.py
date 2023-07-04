@@ -179,12 +179,12 @@ def show_var_data_maps(file_list, lat_range, lon_range, depth=0, var='votemper')
     fig.subplots_adjust(bottom=0.1, top=0.9, left=0.07, right=.92, wspace=.65, hspace=hspace)
 
     # Save figure to file if running in portal (which is a linux system).
-    if platform == "linux" or platform == "linux2":
-        output_fig_name = '../figs/%s_%s_%s-%s.png' % (location_info['region'],
-                                                       data.variables[var].long_name,
-                                                       date_start,
-                                                       date_end)
-        plt.savefig(output_fig_name, bbox_inches='tight', dpi=500)
+    #if platform == "linux" or platform == "linux2":
+    #    output_fig_name = '../figs/%s_%s_%s-%s.png' % (location_info['region'],
+    #                                                   data.variables[var].long_name,
+    #                                                   date_start,
+    #                                                   date_end)
+    #    plt.savefig(output_fig_name, bbox_inches='tight', dpi=500)
 
 
 def plot_timeseries(timeseries_var, data_variables, lat_range, lon_range, var='votemper'):
