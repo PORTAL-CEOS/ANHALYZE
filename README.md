@@ -7,4 +7,16 @@ The focus is on data manipulation, analysis and vizualization of the Arctic and 
 Currently, the development is concentrated in ANHA4 data. 
 
 
-Test. 
+
+## Set up:
+
+Need to add the following environmental variables to your .bash_profile (or .bashrc, etc..):
+``` 
+#------------------------------------------------------------- 
+#ANHALIZE setup
+#-------------------------------------------------------------
+export MASK_PATH='/mnt/storage0/jmarson/ANALYSES/MASKS/'
+export DATA_PATH='/mnt/storage0/jmarson/NEMO/ANHA4/ANHA4-EPM111-S/'
+#-------------------------------------------------------------
+```
+

@@ -6,7 +6,6 @@ import numpy as np
 import netCDF4 as nc
 
 # OS-specific libraries
-from sys import platform
 
 # Plotting-related libraries
 import matplotlib.pyplot as plt
@@ -75,7 +74,7 @@ def show_var_data_map(data, lat_range, lon_range, depth=0, var='votemper'):
     fig.colorbar(im, cax=axins, orientation="vertical", label=label, format='%.1f')
 
 
-def show_var_data_maps(file_list, lat_range, lon_range, depth=0, var='votemper'):
+def show_var_data_maps(file_list, lat_range, lon_range, depth=0, var='votemper', save_fig=False):
     """ Displays maps of given parameter (var) in lat-lon range and depth, and date selection.
         Note: depth has not been tested.
 
@@ -166,7 +165,7 @@ def show_var_data_maps(file_list, lat_range, lon_range, depth=0, var='votemper')
         label = '%s [%s]' % (data.variables[var].long_name.title(), data.variables[var].units.title())
         fig.colorbar(im, cax=axins, orientation="vertical", label=label, format='%.1f')
 
-    # TODO: generlize foor any number of plots. If/when moving into class.
+    # TODO: generalize for any number of plots. If/when moving into class.
     # Temp fix to plot position given number of plots.
     if len(fig.axes) == 18:
         hspace = .27
@@ -178,8 +177,8 @@ def show_var_data_maps(file_list, lat_range, lon_range, depth=0, var='votemper')
     # Set up plots positions
     fig.subplots_adjust(bottom=0.1, top=0.9, left=0.07, right=.92, wspace=.65, hspace=hspace)
 
-    # Save figure to file if running in portal (which is a linux system).
-    if platform == "linux" or platform == "linux2":
+    # Save figure
+    if save_fig:
         output_fig_name = '../figs/%s_%s_%s-%s.png' % (location_info['region'],
                                                        data.variables[var].long_name,
                                                        date_start,
