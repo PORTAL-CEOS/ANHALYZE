@@ -12,7 +12,6 @@ import matplotlib
 from cartopy import feature as cfeature
 
 # OS-specific libraries
-from sys import platform
 import os
 
 # Project custom made libraries
@@ -21,24 +20,25 @@ import anhalyze_plot_utils as apu
 
 def get_paths():
     """ Get paths to data and mask standard locations."""
-    # TODO: need to generalize if other people is gonna use this code.
 
-    if platform == "linux" or platform == "linux2":
-        # linux
-        # setup paths
-        mask_path = '/mnt/storage0/jmarson/ANALYSES/MASKS/'
-        data_path = '/mnt/storage0/jmarson/NEMO/ANHA4/ANHA4-EPM111-S/'
-    elif platform == "darwin":
-        # OS X
-        # setup paths
-        data_path = '/Users/jeenriquez/Documents/CEOS/ANHA4/Test_Data/'
-        mask_path = '/Users/jeenriquez/Documents/CEOS/ANHA4/Test_Data/'
-    else:
-        data_path = ''
-        mask_path = ''
-        # raise ValueError("Platform not recognized.")
+    # setup paths
+    try:
+        mask_path = os.environ['MASK_PATH']
+        data_path = os.environ['DATA_PATH']
 
-    return data_path, mask_path
+        return data_path, mask_path
+
+    except KeyError:
+        message = "Relevant paths not defined, "
+        message += "please add in your .bash_profile (or .bashrc, etc..) something like this: \n\n"
+        message += "#-------------------------------------------------------------\n"
+        message += "# ANHALIZE setup\n"
+        message += "#-------------------------------------------------------------\n"
+        message += "export MASK_PATH='/mnt/storage0/jmarson/ANALYSES/MASKS/'\n"
+        message += "export DATA_PATH='/mnt/storage0/jmarson/NEMO/ANHA4/ANHA4-EPM111-S/'\n"
+        message += "#-------------------------------------------------------------\n"
+
+        print(message)
 
 
 def get_date(filename, how=''):
