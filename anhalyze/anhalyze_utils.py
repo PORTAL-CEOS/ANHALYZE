@@ -13,32 +13,61 @@ from cartopy import feature as cfeature
 
 # OS-specific libraries
 import os
+import socket
 
 # Project custom made libraries
 import anhalyze_plot_utils as apu
 
 
-def get_paths():
-    """ Get paths to data and mask standard locations."""
+def get_paths(run_name=None, environ_paths=False):
+    """ Get paths to data and mask standard locations.
 
-    # setup paths
-    try:
-        mask_path = os.environ['MASK_PATH']
-        data_path = os.environ['DATA_PATH']
+    Input
+    run_name :  Simulation name (e.g. 'ANHA4-WJM004'); type: string
 
-        return data_path, mask_path
+    """
 
-    except KeyError:
-        message = "Relevant paths not defined, "
-        message += "please add in your .bash_profile (or .bashrc, etc..) something like this: \n\n"
-        message += "#-------------------------------------------------------------\n"
-        message += "# ANHALIZE setup\n"
-        message += "#-------------------------------------------------------------\n"
-        message += "export MASK_PATH='/mnt/storage0/jmarson/ANALYSES/MASKS/'\n"
-        message += "export DATA_PATH='/mnt/storage0/jmarson/NEMO/ANHA4/ANHA4-EPM111-S/'\n"
-        message += "#-------------------------------------------------------------\n"
+    if 'portal' not in socket.gethostname() or not run_name or environ_paths:
+        # Try getting paths from environment variables
+        try:
+            mask_path = os.environ['MASK_PATH']
+            data_path = os.environ['DATA_PATH']
 
-        print(message)
+        except KeyError:
+            message = "Relevant paths not defined, "
+            message += "please add in your .bash_profile (or .bashrc, etc..) something like this: \n\n"
+            message += "#-------------------------------------------------------------\n"
+            message += "# ANHALIZE setup\n"
+            message += "#-------------------------------------------------------------\n"
+            message += "export MASK_PATH='/mnt/storage0/jmarson/ANALYSES/MASKS/'\n"
+            message += "export DATA_PATH='/mnt/storage0/jmarson/NEMO/ANHA4/ANHA4-EPM111-S/'\n"
+            message += "#-------------------------------------------------------------\n"
+
+            print(message)
+
+    else:
+
+        # Asserting input format
+        assert '-' in run_name
+        assert 'ANHA' in run_name
+        assert len(run_name) == len('ANHA4-WJM000')
+
+        # Get simulation info
+        model_path = run_name.split('-')[0]
+        user_initials = run_name.split('-')[1][1:3].upper()
+        if any([x in user_initials for x in ["JM", "PM"]]):
+            user_path = 'jmarson'
+        elif user_initials == 'MC':
+            user_path = 'madhurima'
+        elif user_initials == 'EE':
+            user_path = 'emilio'
+        else:
+            raise ValueError('Incorrect run_name.')
+
+        data_path = f'/mnt/storage0/{user_path}/NEMO/{model_path}/{run_name}-S/'
+        mask_path = f'/mnt/storage0/{user_path}/ANALYSES/MASKS/'
+
+    return data_path, mask_path
 
 
 def get_date(filename, how=''):
