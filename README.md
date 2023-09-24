@@ -11,12 +11,13 @@ Currently, the development is concentrated in ANHA4 data.
 
 ## Set up:
 
-Need to add the following environmental variables to your .bash_profile (or .bashrc, etc..):
+Need to add the following environmental variables to your .bash_profile (or .bashrc, etc..), 
+and edith paths to your needs:
 ``` 
 #------------------------------------------------------------- 
 #ANHALIZE setup
 #-------------------------------------------------------------
-export MASK_PATH='/mnt/storage0/jmarson/ANALYSES/MASKS/'
-export DATA_PATH='/mnt/storage0/jmarson/NEMO/ANHA4/ANHA4-EPM111-S/'
+export MASK_PATH='/root_path/user/ANALYSES/MASKS/'
+export DATA_PATH='/root_path/user/NEMO/ANHA4/ANHA4-Wxx000-S/'
 #-------------------------------------------------------------
 ```
