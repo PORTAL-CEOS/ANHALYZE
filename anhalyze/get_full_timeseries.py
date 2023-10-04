@@ -5,7 +5,7 @@
 import numpy as np
 
 # Project custom-made libraries
-import anha4_utils as au
+import anhalyze_utils as au
 
 # global variable selection.
 

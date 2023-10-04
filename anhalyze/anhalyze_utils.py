@@ -13,32 +13,68 @@ from cartopy import feature as cfeature
 
 # OS-specific libraries
 import os
+import socket
 
 # Project custom made libraries
 import anhalyze_plot_utils as apu
 
 
-def get_paths():
-    """ Get paths to data and mask standard locations."""
+def get_paths(run_name=None, environ_paths=False):
+    """ Get paths to data and mask standard locations.
 
-    # setup paths
-    try:
-        mask_path = os.environ['MASK_PATH']
-        data_path = os.environ['DATA_PATH']
+    Parameters
+    ----------
+    run_name :  str, optional
+        Simulation name (e.g. 'ANHA4-WJM004')
+    environ_paths :  bool, optional
+        True if using environment variables
+    Returns
+    -------
+    data_path, mask_path: str
+        directory paths for data and mask
+    """
 
-        return data_path, mask_path
+    if 'portal' not in socket.gethostname() or not run_name or environ_paths:
+        # Try getting paths from environment variables
+        try:
+            mask_path = os.environ['MASK_PATH']
+            data_path = os.environ['DATA_PATH']
 
-    except KeyError:
-        message = "Relevant paths not defined, "
-        message += "please add in your .bash_profile (or .bashrc, etc..) something like this: \n\n"
-        message += "#-------------------------------------------------------------\n"
-        message += "# ANHALIZE setup\n"
-        message += "#-------------------------------------------------------------\n"
-        message += "export MASK_PATH='/mnt/storage0/jmarson/ANALYSES/MASKS/'\n"
-        message += "export DATA_PATH='/mnt/storage0/jmarson/NEMO/ANHA4/ANHA4-EPM111-S/'\n"
-        message += "#-------------------------------------------------------------\n"
+        except KeyError:
+            message = "Relevant paths not defined, "
+            message += "please add in your .bash_profile (or .bashrc, etc..) something like this: \n\n"
+            message += "#-------------------------------------------------------------\n"
+            message += "# ANHALIZE setup\n"
+            message += "#-------------------------------------------------------------\n"
+            message += "export MASK_PATH='/root_path/user/ANALYSES/MASKS/'\n"
+            message += "export DATA_PATH='/root_path/user/NEMO/ANHA4/ANHA4-EPM111-S/'\n"
+            message += "#-------------------------------------------------------------\n"
 
-        print(message)
+            print(message)
+
+    else:
+
+        # Asserting input format
+        assert '-' in run_name
+        assert 'ANHA' in run_name
+        assert len(run_name) == len('ANHA4-WJM000')
+
+        # Get simulation info
+        model_path = run_name.split('-')[0]
+        user_initials = run_name.split('-')[1][1:3].upper()
+        if any([x in user_initials for x in ["JM", "PM"]]):
+            user_path = 'jmarson'
+        elif user_initials == 'MC':
+            user_path = 'madhurima'
+        elif user_initials == 'EE':
+            user_path = 'emilio'
+        else:
+            raise ValueError('Incorrect run_name.')
+
+        data_path = f'/mnt/storage0/{user_path}/NEMO/{model_path}/{run_name}-S/'
+        mask_path = f'/mnt/storage0/{user_path}/ANALYSES/MASKS/'
+
+    return data_path, mask_path
 
 
 def get_date(filename, how=''):
@@ -61,26 +97,70 @@ def get_date(filename, how=''):
         return date
 
 
-class ANHAlyze:
+class Anhalyze:
     """ This class will do analysis of ANHA4 data, for now it initializes the location of files.
+   ...
+
+    Attributes
+    ----------
+        run_name : str
+            Simulation name (e.g. 'ANHA4-WJM004')  (default is ??)
+        grid : str
+            Simulation output grid. (e.g. gridT, gridU)   (default is T)
+        years : str
+            List of years to be analysed  (default is [1998])
+        month_list : str
+            List of months to be analysed. If None(default), return all 12 months
+        one_per_month : bool
+            If True return only the first file of each month (default is False)
+        verbose : bool
+            Print outputs (default is True)
+
+    Methods
+    -------
+    get_file_list(month_list=None, one_per_month=False, monthly_mean=False)
+        Returns file list given a list of years, a grid type,
+        and either all the days in a month, or the first one.
+
     """
 
-    def __init__(self, grid=None, years=None, month_list=None, one_per_month=False, verbose=True):
+    def __init__(self, run_name=None, grid=None, years=None, month_list=None, one_per_month=False, verbose=True):
         """ Initializing class.
 
-            grid:
-            years:
-            month_list:
-            one_per_month:
-            verbose:
+        Parameters
+        ----------
+        run_name : str, optional
+            Simulation name (e.g. 'ANHA4-WJM004')  (default is ??)
+        grid : str, optional
+            Simulation output grid. (e.g. gridT, gridU)   (default is T)
+        years : str, optional
+            List of years to be analysed  (default is [1998])
+        month_list : str, optional
+            List of months to be analysed. If None(default), return all 12 months
+        one_per_month : bool, optional
+            If True return only the first file of each month (default is False)
+        verbose : bool, optional
+            Print outputs (default is True)
+
+         TODO: where is the nc.Dataset to get the data?
         """
 
         # -------
         # The global wild west
-        if years is None:
-            self.years = ['1998']
+        self.run_name = run_name
         if grid is None:
             self.grid = 'T'
+        else:
+            self.grid = grid
+        # TODO: add assert to grid values
+        if years is None:
+            self.years = ['1998']
+        else:
+            self.years = years
+        # TODO: add assert to years
+        self.month_list = month_list
+        self.one_per_month = one_per_month
+        self.verbose = verbose
 
         # Init file list given conditions
         self.file_list = self.get_file_list(one_per_month=one_per_month, month_list=month_list)
@@ -88,9 +168,25 @@ class ANHAlyze:
         if verbose:
             print(self.file_list)
 
-    def get_file_list(self, month_list=None, one_per_month=False):
+    def get_file_list(self, month_list=None, one_per_month=False, monthly_mean=False):
         """  Returns file list given a list of years, a grid type,
              and either all the days in a month, or the first one.
+
+        Parameters
+        ----------
+        month_list :  str, optional
+            List of months to be analysed. If None(default), return all 12 months
+        one_per_month :  bool, optional
+            If True return only the first file of each month (default is False)
+        monthly_mean :  bool, optional
+            If not using the default 5 days averaged outputs,
+            The function ask the user to insert the monthly mean path.
+
+        Returns
+        -------
+        selected_file_list: list
+            List of files for analysis
+
         """
 
         # Setup
@@ -100,14 +196,19 @@ class ANHAlyze:
             month_list = []
 
         # Get paths
-        data_path, mask_path = get_paths()
+        data_path, mask_path = get_paths(self.run_name)
+
+        # TODO: update code below (from luiz)
+        if monthly_mean:
+            print('---------------------------')
+            data_path = str(input('Insert monthly averaged data path: '))
 
         # Get complete file list from path
         file_list = os.listdir(data_path)
 
         # Selecting list of files given params
         for year in self.years:
-            selected_file_list += (sorted([f for f in file_list if '_y'+year in f and '_grid'+self.grid in f]))
+            selected_file_list += (sorted([f for f in file_list if '_y' + year in f and '_grid' + self.grid in f]))
 
         # Selecting first day on given month
         if one_per_month:
@@ -132,7 +233,7 @@ class ANHAlyze:
             selected_file_list = monthly_file_list
 
         # Adding full path to filenames
-        selected_file_list = [data_path+filename for filename in selected_file_list]
+        selected_file_list = [data_path + filename for filename in selected_file_list]
 
         return selected_file_list
 
@@ -205,12 +306,17 @@ def get_var_data(data, lat_range, lon_range, depth=0, var='votemper', masked=Tru
     return var_data
 
 
-def get_row_col_range(data, lat_range, lon_range):
-    """ Get the row col range given lat lon range.  """
+def get_row_col_range(data, lat_range, lon_range, grid='gridT'):
+    """ Get the row and col range given lat and lon range.  """
 
     # Get all lat-lon data
-    lat = data['nav_lat_grid_T'][:]
-    lon = data['nav_lon_grid_T'][:]
+    if grid == 'gridT':
+        lat = data['nav_lat_grid_T'][:]
+        lon = data['nav_lon_grid_T'][:]
+    else:
+        # Get all lat-lon data
+        lat = data['nav_lat'][:]
+        lon = data['nav_lon'][:]
 
     # Create mask given lat lon values.
     lat_mask = np.ma.filled((lat.data > lat_range[0]) & (lat.data < lat_range[1]))
