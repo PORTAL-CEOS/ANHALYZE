@@ -177,7 +177,6 @@ def show_var_data_maps(file_list, lat_range, lon_range, depth=0, var='votemper',
     # Set up plots positions
     fig.subplots_adjust(bottom=0.1, top=0.9, left=0.07, right=.92, wspace=.65, hspace=hspace)
 
-
     # Save figure
     if save_fig:
         output_fig_name = '../figs/%s_%s_%s-%s.png' % (location_info['region'],
