@@ -198,11 +198,6 @@ class Anhalyze:
         # Get paths
         data_path, mask_path = get_paths(self.run_name)
 
-        # TODO: update code below (from luiz)
-        if monthly_mean:
-            print('---------------------------')
-            data_path = str(input('Insert monthly averaged data path: '))
-
         # Get complete file list from path
         file_list = os.listdir(data_path)
 
