@@ -1,0 +1,16 @@
+
+[project]
+name = "anhalyze"
+description = "My package description"
+readme = "README.md"
+version = "0.0.1"
+dependencies = [
+]
+
+[tool.setuptools.packages.find]
+include = ["anhalyze*"]  # package names should match these glob patterns (["*"] by default)
+exclude = ["anhalyze.tests*"]  # exclude packages matching these glob patterns (empty by default)
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
