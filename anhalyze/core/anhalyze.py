@@ -4,14 +4,11 @@
 import os
 
 # Data-related libraries
-import numpy as np
 import netCDF4 as nc
-
 
 # Possible other names AnhaModelData, Dataset, AnhaData, AnhaDataframe
 class AnhaDataset:
-    """ This class will do analysis of ANHA4 data, for now it initializes the location of files.
-   ...
+    """ This wrapper class opens netCDF4 files with ANHA specific properties.
 
     Attributes
     ----------
@@ -23,7 +20,7 @@ class AnhaDataset:
 
     """
 
-    def __init__(self, filename, load_data=True):
+    def __init__(self, filename, load_data=True, cartesian=True):
         """ Initializing class.
 
         Parameters
@@ -33,12 +30,16 @@ class AnhaDataset:
             or *_mask*.nc
         load_data : bool, optional
             Bool for loading data (Default is False)
+        cartesian : bool, optional
+            Bool for using cartesian coordinates (Default is True)
+            Otherwise use geographic coordinates and SI units
 
         """
 
         assert os.path.isfile(filename)
         self.filename = filename
 
+        # Initialize file type from filename
         if '_grid' in filename:
             self.grid = filename.split('_grid')[-1][0]
             self.is_mask = False
@@ -52,9 +53,30 @@ class AnhaDataset:
         grid_values = 'TBUVWK'
         assert self.grid in grid_values, 'File type not recognized'
 
+        # Initialize data properties
         if load_data:
             self.anha_data = nc.Dataset(filename)
+            self.depth = self.anha_data.dimensions['deptht'].size
+            self.i_range = [0, self.anha_data.dimensions['x'].size]
+            self.j_range = [0, self.anha_data.dimensions['y'].size]
+            self.xdim = self.anha_data.dimensions['x'].size
+            self.ydim = self.anha_data.dimensions['x'].size
         else:
             self.anha_data = None
 
+        # Initialize model properties from filename
+        if '_grid' in filename:
+            self.model_run = filename.split('_')[0]
+            self.year = filename.split('y')[-1][:4]
+            self.month = filename.split('m')[-1][:2]
+            self.day = filename.split('d')[1][:2]
 
+            assert 'ANHA' in self.model_run, 'Filename format not recognized.'
+
+            self.configuration = self.filename.split('-')[0]
+
+        else:
+            pass
+
+        # Initialize unit properties
+        self.cartesian = cartesian
