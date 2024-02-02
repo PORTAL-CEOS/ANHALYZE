@@ -3,6 +3,7 @@
 
 # System-related libraries
 import os
+#import pdb
 
 # Data-related libraries
 import netCDF4 as nc
@@ -24,7 +25,6 @@ class AnhaDataset:
     -------
 
 
-
     """
 
     def __init__(self, filename, load_data=True, cartesian=True):
@@ -43,13 +43,19 @@ class AnhaDataset:
 
         """
 
+        # Setting up filename
         assert os.path.isfile(filename)
-        self.filename = filename
+        if os.path.dirname(filename):
+            self.filename = os.path.basename(filename)
+            self.filepath = os.path.dirname(filename)
+        else:
+            self.filename = filename
+            self.filepath = ''
 
         # Initialize data properties
         # TODO update to use xarray to be able to load file info without loading data
         if load_data:
-            self.anha_data = nc.Dataset(filename)
+            self.anha_data = nc.Dataset(os.path.join(self.filepath, self.filename))
             # self.depth = self.anha_data.dimensions['deptht'].size
             # self.xdim = self.anha_data.dimensions['x'].size
             # self.ydim = self.anha_data.dimensions['x'].size
@@ -62,27 +68,28 @@ class AnhaDataset:
         else:
             self.anha_data = None
 
-
         # Initialize grid type from filename
         self._init_grid()
 
         # Initialize model properties from filename
-        if '_grid' in filename:
-            self.model_run = filename.split('_')[0]
-            self.year = filename.split('y')[-1][:4]
-            self.month = filename.split('m')[-1][:2]
-            self.day = filename.split('d')[1][:2]
+        if '_grid' in self.filename:
+            self.model_run = self.filename.split('_')[0]
+            self.year = self.filename.split('y')[-1][:4]
+            self.month = self.filename.split('m')[-1][:2]
+            self.day = self.filename.split('d')[1][:2]
 
-            assert 'ANHA' in self.model_run, 'Filename format not recognized.'
+            assert 'ANHA' in self.model_run, f'Filename format not recognized: {self.model_run}'
 
             self.configuration = self.filename.split('-')[0]
 
         else:
             pass
 
-
         # Initialize unit properties
         self.cartesian = cartesian
+
+        # Initialize selection
+        self._setup_selection_range(init=True)
 
     def _init_grid(self):
         """Setup grid related values
@@ -128,31 +135,48 @@ class AnhaDataset:
 
     def _setup_selection_range(self, lat_range=None, lon_range=None, i_range=None, j_range=None, init=False):
         """Setup data selection range,
+
+
         """
-        # TODO set an absolut minimum for lat at: -20.07611 , or min in file.
+        # TODO could, set an absolut minimum for lat at: -20.07611 , or min in file.
 
         if init:
-            self.i_begin = 0
-            self.i_end = self.anha_data.dimensions['x'].size
-            self.j_begin = 0
-            self.j_end = self.anha_data.dimensions['y'].size
-            self.k_begin = 0
-            self.k_end = self.anha_data.dimensions['deptht'].size
 
+            # For cartesian coordinates
+            self.i_begin = 0
+            self.i_end = self.nc_dimensions[self.x_var_name].size
+            self.j_begin = 0
+            self.j_end = self.nc_dimensions[self.y_var_name].size
+            self.k_begin = 0
+            self.k_end = self.nc_dimensions[self.depth_var_name].size
+
+            self.i_range = [self.i_begin, self.i_end]
+            self.j_range = [self.j_begin, self.j_end]
+            self.k_range = [self.k_begin, self.k_end]
+
+            # For geographic coordinates
             self.lat_range = [self.anha_data[self.lat_var_name][:].min(),
                               self.anha_data[self.lat_var_name][:].max()]
             self.lon_range = [self.anha_data[self.lon_var_name][:].min(),
                               self.anha_data[self.lon_var_name][:].max()]
-            self.i_range = [0, self.anha_data.dimensions['x'].size]
-            self.j_range = [0, self.anha_data.dimensions['y'].size]
+            self.depth_range = [self.anha_data[self.depth_var_name][:].min(),
+                                self.anha_data[self.depth_var_name][:].max()]
+
         else:
             if lat_range:
                 self.lat_range = lat_range
             if lon_range:
                 self.lon_range = lon_range
+
+            if i_range:
+                self.i_range = i_range
+            if j_range:
+                self.j_range = j_range
+
             #TODO add assest if ranges are correct
-            self.i_range = [0, self.anha_data.dimensions['x'].size]
-            self.j_range = [0, self.anha_data.dimensions['y'].size]
+
+
+
 
 
     def show_var_data_map(self, var=''):
