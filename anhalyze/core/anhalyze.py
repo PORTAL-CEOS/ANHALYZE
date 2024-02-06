@@ -39,7 +39,7 @@ class AnhaDataset:
             Bool for loading data (Default is False)
         cartesian : bool, optional
             Bool for using cartesian coordinates (Default is True)
-            Otherwise use geographic coordinates and SI units
+            Otherwise use geographical coordinates and SI units
 
         """
 
@@ -154,7 +154,7 @@ class AnhaDataset:
             self.j_range = [self.j_begin, self.j_end]
             self.k_range = [self.k_begin, self.k_end]
 
-            # For geographic coordinates
+            # For geographical coordinates
             self.lat_range = [self.anha_data[self.lat_var_name][:].min(),
                               self.anha_data[self.lat_var_name][:].max()]
             self.lon_range = [self.anha_data[self.lon_var_name][:].min(),
@@ -163,6 +163,9 @@ class AnhaDataset:
                                 self.anha_data[self.depth_var_name][:].max()]
 
         else:
+
+            #TODO add assest if ranges are correct
+
             if lat_range:
                 self.lat_range = lat_range
             if lon_range:
@@ -172,12 +175,6 @@ class AnhaDataset:
                 self.i_range = i_range
             if j_range:
                 self.j_range = j_range
-
-            #TODO add assest if ranges are correct
-
-
-
-
 
     def show_var_data_map(self, var=''):
         """ Displays map of given var.
