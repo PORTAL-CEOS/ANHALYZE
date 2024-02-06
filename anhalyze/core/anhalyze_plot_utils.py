@@ -2,6 +2,7 @@
 # coding: utf-8
 
 # Data-related libraries
+import matplotlib
 import numpy as np
 import netCDF4 as nc
 
@@ -10,13 +11,14 @@ import netCDF4 as nc
 # Plotting-related libraries
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
-from cartopy import crs as ccrs
+from cartopy import crs as ccrs, feature as cfeature
 import seaborn as sns
 
 # Project custom made libraries
-import anhalyze_utils as au
+import anhalyze.core.anhalyze_geo
+import anhalyze.core.anhalyze_utils as au
 
-# TODO: check best practices for these global variabbles
+# TODO: check best practices for these global variables
 # Setting plotting variables
 levels = 42
 line_levels = 11
@@ -37,7 +39,7 @@ def show_var_data_map(data, lat_range, lon_range, depth=0, var='votemper'):
     """
 
     # Init location info
-    location_info = au.init_location()
+    location_info = anhalyze.core.anhalyze_geo.init_location()
 
     # Get var data
     var_data = au.get_var_data(data, lat_range, lon_range, depth=depth, var=var)
@@ -53,8 +55,8 @@ def show_var_data_map(data, lat_range, lon_range, depth=0, var='votemper'):
     ax.set_extent([lon_range[0], lon_range[1], lat_range[0], lat_range[1]])
 
     # Adding ocean and land features
-    ax.add_feature(au.get_feature_mask())
-    ax.add_feature(au.get_feature_mask(feature='ocean'))
+    ax.add_feature(get_feature_mask())
+    ax.add_feature(get_feature_mask(feature='ocean'))
 
     # Plotting var data as filled contour regions
     im = ax.contourf(lon, lat, var_data, levels=levels, cmap=cmap,
@@ -92,7 +94,7 @@ def show_var_data_maps(file_list, lat_range, lon_range, depth=0, var='votemper',
 
     # Init location info
     # region, proj_size = au.init_location()
-    location_info = au.init_location()
+    location_info = anhalyze.core.anhalyze_geo.init_location()
 
     # Get date
     date_start = au.get_date(file_list[0])
@@ -129,8 +131,8 @@ def show_var_data_maps(file_list, lat_range, lon_range, depth=0, var='votemper',
         xx.set_extent([lon_range[0], lon_range[1], lat_range[0], lat_range[1]])
 
         # Set map features
-        xx.add_feature(au.get_feature_mask())
-        xx.add_feature(au.get_feature_mask(feature='ocean'))
+        xx.add_feature(get_feature_mask())
+        xx.add_feature(get_feature_mask(feature='ocean'))
 
         # Plotting var data as filled contour regions
         im = xx.contourf(lon, lat, var_data, levels=levels, cmap=cmap,
@@ -348,3 +350,23 @@ def plot_mhw(anhalyzed_timeseries, year=1998, remove_mean=True, show_cat4=False,
 
     # Returning to matplotlib defaults
     sns.reset_orig()
+
+
+def get_feature_mask(feature='land', resolution='50m'):
+    """   """
+
+    # Select facecolor
+    if 'land' in feature:
+        facecolor = matplotlib.colors.to_hex('wheat')
+    elif 'ocean' in feature:
+        facecolor = '#000066'
+    else:
+        facecolor = matplotlib.colors.to_hex('gray')
+
+        # Construct feature mask
+    feature_mask = cfeature.NaturalEarthFeature('physical', feature,
+                                                scale=resolution,
+                                                edgecolor='face',
+                                                facecolor=facecolor)
+
+    return feature_mask
