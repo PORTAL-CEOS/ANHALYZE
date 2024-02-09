@@ -15,6 +15,7 @@ from cartopy import crs as ccrs, feature as cfeature
 import seaborn as sns
 
 # Project custom made libraries
+import anhalyze.core.anhalyze
 import anhalyze.core.anhalyze_geo
 import anhalyze.core.anhalyze_utils as au
 
@@ -97,8 +98,8 @@ def show_var_data_maps(file_list, lat_range, lon_range, depth=0, var='votemper',
     location_info = anhalyze.core.anhalyze_geo.init_location()
 
     # Get date
-    date_start = au.get_date(file_list[0])
-    date_end = au.get_date(file_list[-1])
+    date_start = anhalyze.core.anhalyze.get_date(file_list[0])
+    date_end = anhalyze.core.anhalyze.get_date(file_list[-1])
 
     # Setting up figure
     f_size = 4

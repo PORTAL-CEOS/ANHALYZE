@@ -13,6 +13,7 @@ import socket
 
 # Project custom made libraries
 import anhalyze.core.anhalyze_plot_utils as apu
+from anhalyze.core.anhalyze import get_date
 from anhalyze.core.anhalyze_geo import getIndex_sec
 
 
@@ -73,26 +74,6 @@ def get_paths(run_name=None, environ_paths=False):
 
     return data_path, mask_path
 
-
-#TODO mode this funtion to anhalyze.py
-def get_date(filename, how=''):
-    """  Get date from filename.
-         Assuming filename format: */*/ANHA4-EPM111_y1998m04d05_gridB.nc
-         Multiple output formats possible.
-    """
-
-    # Get full date from filename
-    date = filename.split('_')[-2]
-
-    # Return format specific date info
-    if how == 'ymd':
-        return int(date[1:5]), int(date[6:8]), int(date[9:11])
-    elif how == 'y':
-        return int(date[1:5])
-    elif how == 'm':
-        return int(date[6:8])
-    else:
-        return date
 
 # TODO need to move bunch of functions out of here
 #   also need to separate io, timeseries, and whatever else needed

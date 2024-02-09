@@ -188,3 +188,23 @@ class AnhaDataset:
                               self.lon_range,
                               depth=self.depth,
                               var=self.var)
+
+
+def get_date(filename, how=''):
+    """  Get date from filename.
+         Assuming filename format: */*/ANHA4-EPM111_y1998m04d05_gridB.nc
+         Multiple output formats possible.
+    """
+
+    # Get full date from filename
+    date = filename.split('_')[-2]
+
+    # Return format specific date info
+    if how == 'ymd':
+        return int(date[1:5]), int(date[6:8]), int(date[9:11])
+    elif how == 'y':
+        return int(date[1:5])
+    elif how == 'm':
+        return int(date[6:8])
+    else:
+        return date

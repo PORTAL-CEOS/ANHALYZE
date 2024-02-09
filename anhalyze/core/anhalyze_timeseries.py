@@ -5,7 +5,8 @@ import numpy as np
 import pandas as pd
 
 from anhalyze.core import anhalyze_plot_utils as apu
-from anhalyze.core.anhalyze_utils import calc_stats_var_data, get_date
+from anhalyze.core.anhalyze_utils import calc_stats_var_data
+from anhalyze.core.anhalyze import get_date
 
 
 def get_timeseries(file_list, lat_range, lon_range, depth=0, no_min_max=True, var='votemper'):
