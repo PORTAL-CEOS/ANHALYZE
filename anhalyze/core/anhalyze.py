@@ -9,7 +9,6 @@ import os
 import netCDF4 as nc
 
 # Project-related libraries
-import anhalyze.core.anhalyze_plot_utils as apu
 
 
 # Possible other names AnhaModelData, Dataset, AnhaData, AnhaDataframe, AnhaReader
@@ -179,6 +178,7 @@ class AnhaDataset:
     def show_var_data_map(self, var=''):
         """ Displays map of given var.
         """
+        import anhalyze.core.anhalyze_plot_utils as apu
 
         if var:
             self.var = var
