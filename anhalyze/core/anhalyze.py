@@ -189,6 +189,39 @@ class AnhaDataset:
                               depth=self.depth,
                               var=self.var)
 
+#     def set_range(self, lat_range=None, lon_range=None, depth_range=None,
+#                   i_range=None, j_range=None, k_range=None):
+#         """ Set data range, and update both geographical and cartesian coordinates.
+#             #TODO clarify the difference between this and _setup_selection_range
+#         """
+#         # TODO  set location with default values
+#         # TODO set lat, long, depth ranges
+#         # TODO set i, j, k ranges
+#
+#         if lat_range:
+#                 self.lat_range = lat_range
+# #                self.i_range =   # TODO move get_row_col_range to this class, and use it here.
+#
+#         if lon_range:
+#                 self.lon_range = lon_range
+#
+#         if depth_range:
+#                 self.depth_range = depth_range
+#
+#         if i_range:
+#             self.i_range = i_range
+#
+#         if j_range:
+#             self.j_range = j_range
+#
+#         if k_range:
+#             self.k_range = k_range
+#
+#     def set_location(self):
+#         """
+#
+#         """
+
 
 def get_date(filename, how=''):
     """  Get date from filename.
