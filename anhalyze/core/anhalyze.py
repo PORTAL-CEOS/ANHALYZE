@@ -27,6 +27,13 @@ class AnhaDataset:
 
     """
 
+    def __repr__(self):
+        """
+
+        """
+        # return xr.core.formatting.dataset_repr(self._anha_dataset)  # placeholder, may help create own version.
+        return f'Filename: {self.filename} \n'+str(self._anha_dataset)
+
     def __init__(self, filename, load_data=True, cartesian=True):
         """ Initializing class.
 
