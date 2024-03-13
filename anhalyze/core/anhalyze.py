@@ -14,7 +14,7 @@ import xarray as xr
 
 # Possible other names AnhaModelData, Dataset, AnhaData, AnhaDataframe, AnhaReader
 class AnhaDataset:
-    """ This wrapper class opens netCDF4 files with ANHA specific properties.
+    """ This class opens a single netCDF file with ANHA/NEMO specific properties.
 
     Attributes
     ----------
@@ -85,19 +85,23 @@ class AnhaDataset:
         """Initialize model properties from filename
         """
 
-        # Initialize data properties
+        # Initialize xarray main attributes
+        self.data_vars = self._anha_dataset.data_vars
+        self.dims = self._anha_dataset.dims
+        self.coords = self._anha_dataset.coords
+        self.attrs = self._anha_dataset.attrs
+
         #TODO need to update, placeholder for now
-        # self.nc_variables = self._anha_dataset.variables
-        # self.nc_dimensions = self._anha_dataset.dimensions
-        self.nc_variables = self._anha_dataset.variables
-        self.dimensions_list = list(self._anha_dataset.dims)
+        self.dims_list = list(self._anha_dataset.dims)
+        self.vars_list = list(self._anha_dataset.data_vars)
 
         if '_grid' in self.filename:
 
             # Initialize model config
             self.model_run = self.filename.split('_')[0]
             assert 'ANHA' in self.model_run, f'Model run format not recognized: {self.model_run}'
-            self.configuration = self.filename.split('-')[0]
+            self.model_config = self.filename.split('-')[0]
+            self.model_case = self.filename.split('-')[1]
 
             # Init grid type
             self.grid = self.filename.split('_grid')[-1][0]
@@ -117,8 +121,8 @@ class AnhaDataset:
             self.y_var_name = [var for var in self.dimensions_list if 'y' in var][0]
 
             # Init grid geocoordinates var names
-            self.lat_var_name = [var for var in list(self.nc_variables.keys()) if 'nav_lat' in var][0]
-            self.lon_var_name = [var for var in list(self.nc_variables.keys()) if 'nav_lon' in var][0]
+            self.lat_var_name = [var for var in self.vars_list if 'nav_lat' in var][0]
+            self.lon_var_name = [var for var in self.vars_list if 'nav_lon' in var][0]
             self.depth_var_name = [var for var in self.dimensions_list if 'depth' in var][0]
 
         elif '_mask' in self.filename:
@@ -127,13 +131,13 @@ class AnhaDataset:
             self.is_mask = True
 
             # Init grid dimensions var names
-            self.x_var_name = [var for var in self.dimensions_list if 'x' in var][0]
-            self.y_var_name = [var for var in self.dimensions_list if 'y' in var][0]
+            self.x_var_name = [var for var in self.dims_list if 'x' in var][0]
+            self.y_var_name = [var for var in self.dims_list if 'y' in var][0]
 
             # Init grid geocoordinates var names
-            self.lat_var_name = [var for var in list(self.nc_variables.keys()) if 'nav_lat' in var][0]
-            self.lon_var_name = [var for var in list(self.nc_variables.keys()) if 'nav_lon' in var][0]
-            self.depth_var_name = [var for var in list(self.nc_variables.keys()) if 'gdep' in var][0]
+            self.lat_var_name = [var for var in self.vars_list if 'nav_lat' in var][0]
+            self.lon_var_name = [var for var in self.vars_list if 'nav_lon' in var][0]
+            self.depth_var_name = [var for var in self.vars_list if 'gdep' in var][0]
 
         else:
             self.grid = ''
@@ -150,11 +154,11 @@ class AnhaDataset:
 
             # For cartesian coordinates
             self.i_begin = 0
-            self.i_end = self.nc_dimensions[self.x_var_name].size
+            self.i_end = self.dims[self.x_var_name].size
             self.j_begin = 0
-            self.j_end = self.nc_dimensions[self.y_var_name].size
+            self.j_end = self.dims[self.y_var_name].size
             self.k_begin = 0
-#            self.k_end = self.nc_dimensions[self.depth_var_name].size
+#            self.k_end = self.dims[self.depth_var_name].size
 
             self.i_range = [self.i_begin, self.i_end]
             self.j_range = [self.j_begin, self.j_end]
