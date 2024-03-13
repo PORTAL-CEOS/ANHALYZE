@@ -70,13 +70,13 @@ class AnhaDataset:
 
         # TODO placeholder, may not use
         # Initialize unit properties
-        self.cartesian = cartesian
+        # self.cartesian = cartesian
 
         # Initialize selection
-        self._setup_selection_range(init=True)
+        # self._setup_selection_range(init=True)
 
         # Data selection: tmp
-        self.var = 'votemper'
+        self.var = ''
 
         # Setting up f
         #        self.date = get_date(self.filename)
@@ -92,8 +92,8 @@ class AnhaDataset:
         self.attrs = self._anha_dataset.attrs
 
         #TODO need to update, placeholder for now
-        self.dims_list = list(self._anha_dataset.dims)
-        self.vars_list = list(self._anha_dataset.data_vars)
+        dims_list = list(self._anha_dataset.dims)
+        vars_list = list(self._anha_dataset.data_vars)
 
         if '_grid' in self.filename:
 
@@ -117,13 +117,13 @@ class AnhaDataset:
 
             # Init grid dimensions var names
             # Need to exclude 'axis_nbounds'
-            self.x_var_name = [var for var in self.dimensions_list if 'x' in var and 'axis' not in var][0]
-            self.y_var_name = [var for var in self.dimensions_list if 'y' in var][0]
+            self.x_var_name = [var for var in dims_list if 'x' in var and 'axis' not in var][0]
+            self.y_var_name = [var for var in dims_list if 'y' in var][0]
 
             # Init grid geocoordinates var names
-            self.lat_var_name = [var for var in self.vars_list if 'nav_lat' in var][0]
-            self.lon_var_name = [var for var in self.vars_list if 'nav_lon' in var][0]
-            self.depth_var_name = [var for var in self.dimensions_list if 'depth' in var][0]
+            self.lat_var_name = [var for var in vars_list if 'nav_lat' in var][0]
+            self.lon_var_name = [var for var in vars_list if 'nav_lon' in var][0]
+            self.depth_var_name = [var for var in dims_list if 'depth' in var][0]
 
         elif '_mask' in self.filename:
             # Init grid type
@@ -131,13 +131,13 @@ class AnhaDataset:
             self.is_mask = True
 
             # Init grid dimensions var names
-            self.x_var_name = [var for var in self.dims_list if 'x' in var][0]
-            self.y_var_name = [var for var in self.dims_list if 'y' in var][0]
+            self.x_var_name = [var for var in dims_list if 'x' in var][0]
+            self.y_var_name = [var for var in dims_list if 'y' in var][0]
 
             # Init grid geocoordinates var names
-            self.lat_var_name = [var for var in self.vars_list if 'nav_lat' in var][0]
-            self.lon_var_name = [var for var in self.vars_list if 'nav_lon' in var][0]
-            self.depth_var_name = [var for var in self.vars_list if 'gdep' in var][0]
+            self.lat_var_name = [var for var in vars_list if 'nav_lat' in var][0]
+            self.lon_var_name = [var for var in vars_list if 'nav_lon' in var][0]
+            self.depth_var_name = [var for var in vars_list if 'gdep' in var][0]
 
         else:
             self.grid = ''
