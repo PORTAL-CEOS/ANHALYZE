@@ -12,7 +12,7 @@ import xarray as xr
 # Project-related libraries
 
 
-# Possible other names AnhaModelData, Dataset, AnhaData, AnhaDataframe, AnhaReader
+# Possible other names AnhaModelData, Dataset, AnhaData, AnhaDataframe, AnhaReader, AnhaGrid
 class AnhaDataset:
     """ This class opens a single netCDF file with ANHA/NEMO specific properties.
 
@@ -32,7 +32,7 @@ class AnhaDataset:
 
         """
         # return xr.core.formatting.dataset_repr(self._anha_dataset)  # placeholder, may help create own version.
-        return f'Filename: {self.filename} \n'+str(self._anha_dataset)
+        return f'Filename: {self.filename} \n'+str(self._xr_dataset)
 
     def __init__(self, filename, load_data=True, cartesian=True):
         """ Initializing class.
@@ -61,9 +61,9 @@ class AnhaDataset:
 
         # Open dataset
         if load_data:
-            self._anha_dataset = xr.open_dataset(os.path.join(self.filepath, self.filename))
+            self._xr_dataset = xr.open_dataset(os.path.join(self.filepath, self.filename))
         else:
-            self._anha_dataset = xr.open_dataset(os.path.join(self.filepath, self.filename), decode_cf=False)
+            self._xr_dataset = xr.open_dataset(os.path.join(self.filepath, self.filename), decode_cf=False)
 
         # Initialize grid type from filename
         self._init_filetype()
@@ -86,22 +86,23 @@ class AnhaDataset:
         """
 
         # Initialize xarray main attributes
-        self.data_vars = self._anha_dataset.data_vars
-        self.dims = self._anha_dataset.dims
-        self.coords = self._anha_dataset.coords
-        self.attrs = self._anha_dataset.attrs
+        self.data_vars = self._xr_dataset.data_vars
+        self.dims = self._xr_dataset.dims
+        self.coords = self._xr_dataset.coords
+        self.attrs = self._xr_dataset.attrs
 
         #TODO need to update, placeholder for now
-        dims_list = list(self._anha_dataset.dims)
-        vars_list = list(self._anha_dataset.data_vars)
+        dims_list = list(self._xr_dataset.dims)
+        # vars_list = list(self._anha_dataset.data_vars)
+        coords_list = list(self._xr_dataset.coords)
 
         if '_grid' in self.filename:
 
             # Initialize model config
-            self.model_run = self.filename.split('_')[0]
-            assert 'ANHA' in self.model_run, f'Model run format not recognized: {self.model_run}'
-            self.model_config = self.filename.split('-')[0]
-            self.model_case = self.filename.split('-')[1]
+            self.attrs['model_run'] = self.filename.split('_')[0]
+            assert 'ANHA' in self.attrs['model_run'], f'Model run format not recognized: {self.attrs["model_run"]}'
+            self.attrs['model_config'] = self.filename.split('-')[0]
+            self.attrs['model_case'] = self.filename.split('-')[1]
 
             # Init grid type
             self.grid = self.filename.split('_grid')[-1][0]
@@ -121,11 +122,12 @@ class AnhaDataset:
             self.y_var_name = [var for var in dims_list if 'y' in var][0]
 
             # Init grid geocoordinates var names
-            self.lat_var_name = [var for var in vars_list if 'nav_lat' in var][0]
-            self.lon_var_name = [var for var in vars_list if 'nav_lon' in var][0]
+            self.lat_var_name = [var for var in coords_list if 'nav_lat' in var][0]
+            self.lon_var_name = [var for var in coords_list if 'nav_lon' in var][0]
             self.depth_var_name = [var for var in dims_list if 'depth' in var][0]
 
         elif '_mask' in self.filename:
+
             # Init grid type
             self.grid = 'mask'
             self.is_mask = True
@@ -135,9 +137,9 @@ class AnhaDataset:
             self.y_var_name = [var for var in dims_list if 'y' in var][0]
 
             # Init grid geocoordinates var names
-            self.lat_var_name = [var for var in vars_list if 'nav_lat' in var][0]
-            self.lon_var_name = [var for var in vars_list if 'nav_lon' in var][0]
-            self.depth_var_name = [var for var in vars_list if 'gdep' in var][0]
+            self.lat_var_name = [var for var in coords_list if 'nav_lat' in var][0]
+            self.lon_var_name = [var for var in coords_list if 'nav_lon' in var][0]
+            self.depth_var_name = [var for var in coords_list if 'gdep' in var][0]
 
         else:
             self.grid = ''
@@ -165,12 +167,12 @@ class AnhaDataset:
 #            self.k_range = [self.k_begin, self.k_end]
 
             # For geographical coordinates
-            self.lat_range = [self._anha_dataset[self.lat_var_name][:].min(),
-                              self._anha_dataset[self.lat_var_name][:].max()]
-            self.lon_range = [self._anha_dataset[self.lon_var_name][:].min(),
-                              self._anha_dataset[self.lon_var_name][:].max()]
-            self.depth_range = [self._anha_dataset[self.depth_var_name][:].min(),
-                                self._anha_dataset[self.depth_var_name][:].max()]
+            self.lat_range = [self._xr_dataset[self.lat_var_name][:].min(),
+                              self._xr_dataset[self.lat_var_name][:].max()]
+            self.lon_range = [self._xr_dataset[self.lon_var_name][:].min(),
+                              self._xr_dataset[self.lon_var_name][:].max()]
+            self.depth_range = [self._xr_dataset[self.depth_var_name][:].min(),
+                                self._xr_dataset[self.depth_var_name][:].max()]
 
         else:
 
@@ -194,7 +196,7 @@ class AnhaDataset:
         if var:
             self.var = var
 
-        apu.show_var_data_map(self._anha_dataset,
+        apu.show_var_data_map(self._xr_dataset,
                               self.lat_range,
                               self.lon_range,
                               depth=self.depth,
