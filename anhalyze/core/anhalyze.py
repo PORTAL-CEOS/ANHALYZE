@@ -59,34 +59,37 @@ class AnhaDataset:
         else:
             self._xr_dataset = xr.open_dataset(os.path.join(self.attrs['filepath'], self.attrs['filename']), decode_cf=False)
 
-
-        # TODO placeholder, may not use
-        # Initialize unit properties
-        # self.cartesian = cartesian
+        # Initialize file metadata
+        self._init_metadata()
 
         # Initialize selection
         # self._setup_selection_range(init=True)
 
         # Data selection: tmp
-        self.var = ''
+        # self.var = ''
 
         # Setting up f
         #        self.date = get_date(self.filename)
 
     def _init_coords(self):
-        """ Initialize properties from filename
+        """ Initialize coordinates
         """
         return self._xr_dataset.coords
 
     def _init_data_vars(self):
-        """ Initialize properties from filename
+        """ Initialize data variables
         """
         return self._xr_dataset.data_vars
 
     def _init_xr_attrs(self):
-        """ Initialize properties from filename
+        """ Initialize data attributes
         """
-        self.attrs['xr_attrs'] = self._xr_dataset.data_vars
+        self.attrs['xr_attrs'] = self._xr_dataset.attrs
+
+    def _init_dims(self):
+        """ Initialize dimensions
+        """
+        return self._xr_dataset.dims
 
     def _init_filename_attrs(self, filename):
         """ Initialize properties from filename
@@ -126,6 +129,7 @@ class AnhaDataset:
             self.attrs['year'] = self.attrs['filename'].split('y')[-1][:4]
             self.attrs['month'] = self.attrs['filename'].split('m')[-1][:2]
             self.attrs['day'] = self.attrs['filename'].split('d')[1][:2]
+            self.attrs['date'] = get_date(self.attrs['filename'])
 
         elif '_mask' in self.attrs['filename']:
 
@@ -145,7 +149,7 @@ class AnhaDataset:
         # Initialize xarray main attributes
         self.data_vars = self._init_data_vars()
         self.coords = self._init_coords()
-        self.dims = self._xr_dataset.dims
+        self.dims = self._init_dims()
         self._init_xr_attrs()
 
         #TODO need to update, placeholder for now
