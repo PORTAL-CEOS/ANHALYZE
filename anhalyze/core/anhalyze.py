@@ -32,7 +32,7 @@ class AnhaDataset:
 
         """
         # return xr.core.formatting.dataset_repr(self._anha_dataset)  # placeholder, may help create own version.
-        return f'Filename: {self.filename} \n'+str(self._xr_dataset)
+        return f'Filename: {self.attrs["filename"]} \n'+str(self._xr_dataset)
 
     def __init__(self, filename, load_data=True, cartesian=True):
         """ Initializing class.
@@ -50,23 +50,15 @@ class AnhaDataset:
 
         """
 
-        # Setting up filename
-        assert os.path.isfile(filename)
-        if os.path.dirname(filename):
-            self.filename = os.path.basename(filename)
-            self.filepath = os.path.dirname(filename)
-        else:
-            self.filename = filename
-            self.filepath = ''
+        # Initialize info from filename
+        self._init_filename_attrs(filename)
 
         # Open dataset
         if load_data:
-            self._xr_dataset = xr.open_dataset(os.path.join(self.filepath, self.filename))
+            self._xr_dataset = xr.open_dataset(os.path.join(self.attrs['filepath'], self.attrs['filename']))
         else:
-            self._xr_dataset = xr.open_dataset(os.path.join(self.filepath, self.filename), decode_cf=False)
+            self._xr_dataset = xr.open_dataset(os.path.join(self.attrs['filepath'], self.attrs['filename']), decode_cf=False)
 
-        # Initialize grid type from filename
-        self._init_filetype()
 
         # TODO placeholder, may not use
         # Initialize unit properties
@@ -81,40 +73,87 @@ class AnhaDataset:
         # Setting up f
         #        self.date = get_date(self.filename)
 
-    def _init_filetype(self):
-        """Initialize model properties from filename
+    def _init_coords(self):
+        """ Initialize properties from filename
+        """
+        return self._xr_dataset.coords
+
+    def _init_data_vars(self):
+        """ Initialize properties from filename
+        """
+        return self._xr_dataset.data_vars
+
+    def _init_xr_attrs(self):
+        """ Initialize properties from filename
+        """
+        self.attrs['xr_attrs'] = self._xr_dataset.data_vars
+
+    def _init_filename_attrs(self, filename):
+        """ Initialize properties from filename
+        """
+
+        # Setting up filename
+        assert os.path.isfile(filename)
+
+        if os.path.dirname(filename):
+            filepath = os.path.dirname(filename)
+            filename = os.path.basename(filename)
+        else:
+            filepath = ''
+
+        # Init attributes
+        self.attrs = {'filename': filename,
+                      'filepath': filepath}
+
+        if '_grid' in self.attrs['filename']:
+
+            #TODO add a few asserts here in filename format
+
+            # Initialize model config
+            self.attrs['model_run'] = self.attrs['filename'].split('_')[0]
+            assert 'ANHA' in self.attrs['model_run'], f'Model run format not recognized: {self.attrs["model_run"]}'
+            self.attrs['model_config'] = self.attrs['filename'].split('-')[0]
+            self.attrs['model_case'] = self.attrs['filename'].split('-')[1]
+
+            # Init grid type
+            self.attrs['grid'] = self.attrs['filename'].split('_grid')[-1][0]
+            grid_value_options = 'TBUVW'
+            assert self.attrs['grid'] in grid_value_options, f'Grid type not recognized: {self.attrs["grid"]}'
+            self.attrs['grid'] = 'grid'+self.attrs['grid']
+            self.attrs['is_mask'] = False
+
+            # Initialize time
+            self.attrs['year'] = self.attrs['filename'].split('y')[-1][:4]
+            self.attrs['month'] = self.attrs['filename'].split('m')[-1][:2]
+            self.attrs['day'] = self.attrs['filename'].split('d')[1][:2]
+
+        elif '_mask' in self.attrs['filename']:
+
+            # Init grid type
+            self.attrs['grid'] = 'mask'
+            self.attrs['is_mask'] = True
+
+        else:
+            # TODO ask Luiz again about data types.
+            self.attrs['grid'] = ''
+            self.attrs['is_mask'] = False
+
+    def _init_metadata(self):
+        """ Initialize model properties from filename
         """
 
         # Initialize xarray main attributes
-        self.data_vars = self._xr_dataset.data_vars
+        self.data_vars = self._init_data_vars()
+        self.coords = self._init_coords()
         self.dims = self._xr_dataset.dims
-        self.coords = self._xr_dataset.coords
-        self.attrs = self._xr_dataset.attrs
+        self._init_xr_attrs()
 
         #TODO need to update, placeholder for now
         dims_list = list(self._xr_dataset.dims)
         # vars_list = list(self._anha_dataset.data_vars)
         coords_list = list(self._xr_dataset.coords)
 
-        if '_grid' in self.filename:
-
-            # Initialize model config
-            self.attrs['model_run'] = self.filename.split('_')[0]
-            assert 'ANHA' in self.attrs['model_run'], f'Model run format not recognized: {self.attrs["model_run"]}'
-            self.attrs['model_config'] = self.filename.split('-')[0]
-            self.attrs['model_case'] = self.filename.split('-')[1]
-
-            # Init grid type
-            self.grid = self.filename.split('_grid')[-1][0]
-            grid_value_options = 'TBUVW'
-            assert self.grid in grid_value_options, f'Grid type not recognized: {self.grid}'
-            self.grid = 'grid'+self.grid
-            self.is_mask = False
-
-            # Initialize time
-            self.year = self.filename.split('y')[-1][:4]
-            self.month = self.filename.split('m')[-1][:2]
-            self.day = self.filename.split('d')[1][:2]
+        if '_grid' in self.attrs['filename']:
 
             # Init grid dimensions var names
             # Need to exclude 'axis_nbounds'
@@ -126,11 +165,7 @@ class AnhaDataset:
             self.lon_var_name = [var for var in coords_list if 'nav_lon' in var][0]
             self.depth_var_name = [var for var in dims_list if 'depth' in var][0]
 
-        elif '_mask' in self.filename:
-
-            # Init grid type
-            self.grid = 'mask'
-            self.is_mask = True
+        elif '_mask' in self.attrs['filename']:
 
             # Init grid dimensions var names
             self.x_var_name = [var for var in dims_list if 'x' in var][0]
@@ -142,8 +177,7 @@ class AnhaDataset:
             self.depth_var_name = [var for var in coords_list if 'gdep' in var][0]
 
         else:
-            self.grid = ''
-            self.is_mask = None
+            pass
 
     def _setup_selection_range(self, lat_range=None, lon_range=None, i_range=None, j_range=None, init=False):
         """Setup data selection range,
