@@ -116,7 +116,7 @@ class AnhaDataset:
             self.attrs['model_run'] = self.attrs['filename'].split('_')[0]
             assert 'ANHA' in self.attrs['model_run'], f'Model run format not recognized: {self.attrs["model_run"]}'
             self.attrs['model_config'] = self.attrs['filename'].split('-')[0]
-            self.attrs['model_case'] = self.attrs['filename'].split('-')[1]
+            self.attrs['model_case'] = self.attrs['filename'].split('-')[1].split('_')[0]
 
             # Init grid type
             self.attrs['grid'] = self.attrs['filename'].split('_grid')[-1][0]
