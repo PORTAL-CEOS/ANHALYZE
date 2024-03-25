@@ -151,12 +151,14 @@ class AnhaDataset:
             self.attrs['date'] = get_date(self.attrs['filename'])
 
         elif '_mask' in self.attrs['filename']:
+            raise NotImplementedError("Loading mask data not implemented yet.")
 
             # Init grid type
             self.attrs['grid'] = 'mask'
             self.attrs['is_mask'] = True
 
         else:
+            raise NotImplementedError("Loading non_grid data not implemented yet.")
             # TODO ask Luiz again about data types.
             self.attrs['grid'] = ''
             self.attrs['is_mask'] = False
@@ -184,6 +186,7 @@ class AnhaDataset:
             self.y_var_name = [var for var in dims_list if 'y' in var][0]
 
         elif '_mask' in self.attrs['filename']:
+            raise NotImplementedError("Loading mask data not implemented yet.")
 
             # Init grid dimensions var names
             self.x_var_name = [var for var in dims_list if 'x' in var][0]
