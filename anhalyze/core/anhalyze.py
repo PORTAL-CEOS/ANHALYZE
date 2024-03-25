@@ -60,7 +60,7 @@ class AnhaDataset:
             self._xr_dataset = xr.open_dataset(os.path.join(self.attrs['filepath'], self.attrs['filename']), decode_cf=False)
 
         # Initialize file metadata
-        self._init_metadata()
+        self._init_metadata(load_data=load_data)
 
         # Initialize selection
         # self._setup_selection_range(init=True)
@@ -71,12 +71,31 @@ class AnhaDataset:
         # Setting up f
         #        self.date = get_date(self.filename)
 
-    def _init_coords(self):
+    def _init_coords(self, load_data=True):
         """ Initialize coordinates
         """
+
+        # TODO need to update, placeholder for now
+        dims_list = list(self._xr_dataset.dims)
+        vars_list = list(self._xr_dataset.data_vars)
+        coords_list = list(self._xr_dataset.coords)
+
+        #
+        if load_data:
+            geocoords_list = coords_list
+        else:
+            geocoords_list = vars_list
+
+        # TODO placeholder name, could change for something else
+        # Init grid geocoordinates var names
+        self.attrs['lat_geocoord_name'] = [var for var in geocoords_list if 'nav_lat' in var][0]
+        self.attrs['lon_geocoord_name]'] = [var for var in geocoords_list if 'nav_lon' in var][0]
+        self.attrs['depth_geocoord_name'] = [var for var in dims_list if 'depth' in var][0]
+
+        # TODO this may still be an issue if we want coords to reflect the  "real" ones (when load_data=T)
         return self._xr_dataset.coords
 
-    def _init_data_vars(self):
+    def _init_data_vars(self, load_data=True):
         """ Initialize data variables
         """
         return self._xr_dataset.data_vars
@@ -142,13 +161,13 @@ class AnhaDataset:
             self.attrs['grid'] = ''
             self.attrs['is_mask'] = False
 
-    def _init_metadata(self):
+    def _init_metadata(self, load_data=True):
         """ Initialize model properties from filename
         """
 
         # Initialize xarray main attributes
-        self.data_vars = self._init_data_vars()
-        self.coords = self._init_coords()
+        self.data_vars = self._init_data_vars(load_data=load_data)
+        self.coords = self._init_coords(load_data=load_data)
         self.dims = self._init_dims()
         self._init_xr_attrs()
 
@@ -163,11 +182,6 @@ class AnhaDataset:
             # Need to exclude 'axis_nbounds'
             self.x_var_name = [var for var in dims_list if 'x' in var and 'axis' not in var][0]
             self.y_var_name = [var for var in dims_list if 'y' in var][0]
-
-            # Init grid geocoordinates var names
-            self.lat_var_name = [var for var in coords_list if 'nav_lat' in var][0]
-            self.lon_var_name = [var for var in coords_list if 'nav_lon' in var][0]
-            self.depth_var_name = [var for var in dims_list if 'depth' in var][0]
 
         elif '_mask' in self.attrs['filename']:
 
