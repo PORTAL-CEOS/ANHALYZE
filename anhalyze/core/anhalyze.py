@@ -60,42 +60,33 @@ class AnhaDataset:
             self._xr_dataset = xr.open_dataset(os.path.join(self.attrs['filepath'], self.attrs['filename']), decode_cf=False)
 
         # Initialize file metadata
-        self._init_metadata(load_data=load_data)
+        self._load_data = load_data
+        self._init_metadata()
 
-        # Initialize selection
-        # self._setup_selection_range(init=True)
-
-        # Data selection: tmp
-        # self.var = ''
-
-        # Setting up f
-        #        self.date = get_date(self.filename)
-
-    def _init_coords(self, load_data=True):
+    def _init_coords(self):
         """ Initialize coordinates
         """
 
-        # TODO need to update, placeholder for now
+        # Load all keys from data into lists
         dims_list = list(self._xr_dataset.dims)
         vars_list = list(self._xr_dataset.data_vars)
         coords_list = list(self._xr_dataset.coords)
 
-        #
-        if load_data:
+        # Select appropriate list
+        if self._load_data:
             geocoords_list = coords_list
         else:
             geocoords_list = vars_list
 
-        # TODO placeholder name, could change for something else
         # Init grid geocoordinates var names
-        self.attrs['lat_geocoord_name'] = [var for var in geocoords_list if 'nav_lat' in var][0]
-        self.attrs['lon_geocoord_name]'] = [var for var in geocoords_list if 'nav_lon' in var][0]
-        self.attrs['depth_geocoord_name'] = [var for var in dims_list if 'depth' in var][0]
+        self.attrs['coord_lat'] = [var for var in geocoords_list if 'nav_lat' in var][0]
+        self.attrs['coord_lon'] = [var for var in geocoords_list if 'nav_lon' in var][0]
+        self.attrs['coord_depth'] = [var for var in dims_list if 'depth' in var][0]
 
         # TODO this may still be an issue if we want coords to reflect the  "real" ones (when load_data=T)
         return self._xr_dataset.coords
 
-    def _init_data_vars(self, load_data=True):
+    def _init_data_vars(self):
         """ Initialize data variables
         """
         return self._xr_dataset.data_vars
@@ -108,6 +99,14 @@ class AnhaDataset:
     def _init_dims(self):
         """ Initialize dimensions
         """
+
+        dims_list = list(self._xr_dataset.dims)
+
+        # Init grid dimensions var names
+        # Need to exclude 'axis_nbounds'
+        self.attrs['dim_x'] = [var for var in dims_list if 'x' in var and 'axis' not in var][0]
+        self.attrs['dim_y'] = [var for var in dims_list if 'y' in var][0]
+
         return self._xr_dataset.dims
 
     def _init_filename_attrs(self, filename):
@@ -132,7 +131,7 @@ class AnhaDataset:
             #TODO add a few asserts here in filename format
 
             # Initialize model config
-            self.attrs['model_run'] = self.attrs['filename'].split('_')[0]
+            self.attrs['model_run'] = self.attrs['filename'].str.split('_')[0]
             assert 'ANHA' in self.attrs['model_run'], f'Model run format not recognized: {self.attrs["model_run"]}'
             self.attrs['model_config'] = self.attrs['filename'].split('-')[0]
             self.attrs['model_case'] = self.attrs['filename'].split('-')[1].split('_')[0]
@@ -153,49 +152,44 @@ class AnhaDataset:
         elif '_mask' in self.attrs['filename']:
             raise NotImplementedError("Loading mask data not implemented yet.")
 
-            # Init grid type
-            self.attrs['grid'] = 'mask'
-            self.attrs['is_mask'] = True
+            # # Init grid type.
+            # self.attrs['grid'] = 'mask'
+            # self.attrs['is_mask'] = True
 
         else:
             raise NotImplementedError("Loading non_grid data not implemented yet.")
             # TODO ask Luiz again about data types.
-            self.attrs['grid'] = ''
-            self.attrs['is_mask'] = False
+            # self.attrs['grid'] = ''
+            # self.attrs['is_mask'] = False
 
-    def _init_metadata(self, load_data=True):
+    def _init_metadata(self):
         """ Initialize model properties from filename
         """
 
         # Initialize xarray main attributes
-        self.data_vars = self._init_data_vars(load_data=load_data)
-        self.coords = self._init_coords(load_data=load_data)
+        self.data_vars = self._init_data_vars()
+        self.coords = self._init_coords()
         self.dims = self._init_dims()
         self._init_xr_attrs()
 
-        #TODO need to update, placeholder for now
-        dims_list = list(self._xr_dataset.dims)
-        # vars_list = list(self._anha_dataset.data_vars)
-        coords_list = list(self._xr_dataset.coords)
-
         if '_grid' in self.attrs['filename']:
-
-            # Init grid dimensions var names
-            # Need to exclude 'axis_nbounds'
-            self.x_var_name = [var for var in dims_list if 'x' in var and 'axis' not in var][0]
-            self.y_var_name = [var for var in dims_list if 'y' in var][0]
+            pass
+            # # Init grid dimensions var names
+            # # Need to exclude 'axis_nbounds'
+            # self.x_var_name = [var for var in dims_list if 'x' in var and 'axis' not in var][0]
+            # self.y_var_name = [var for var in dims_list if 'y' in var][0]
 
         elif '_mask' in self.attrs['filename']:
             raise NotImplementedError("Loading mask data not implemented yet.")
 
-            # Init grid dimensions var names
-            self.x_var_name = [var for var in dims_list if 'x' in var][0]
-            self.y_var_name = [var for var in dims_list if 'y' in var][0]
-
-            # Init grid geocoordinates var names
-            self.lat_var_name = [var for var in coords_list if 'nav_lat' in var][0]
-            self.lon_var_name = [var for var in coords_list if 'nav_lon' in var][0]
-            self.depth_var_name = [var for var in coords_list if 'gdep' in var][0]
+            # # Init grid dimensions var names
+            # self.x_var_name = [var for var in dims_list if 'x' in var][0]
+            # self.y_var_name = [var for var in dims_list if 'y' in var][0]
+            #
+            # # Init grid geocoordinates var names
+            # self.lat_var_name = [var for var in coords_list if 'nav_lat' in var][0]
+            # self.lon_var_name = [var for var in coords_list if 'nav_lon' in var][0]
+            # self.depth_var_name = [var for var in coords_list if 'gdep' in var][0]
 
         else:
             pass
