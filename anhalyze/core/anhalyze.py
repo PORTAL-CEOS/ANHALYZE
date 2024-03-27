@@ -131,7 +131,7 @@ class AnhaDataset:
             #TODO add a few asserts here in filename format
 
             # Initialize model config
-            self.attrs['model_run'] = self.attrs['filename'].str.split('_')[0]
+            self.attrs['model_run'] = self.attrs['filename'].split('_')[0]
             assert 'ANHA' in self.attrs['model_run'], f'Model run format not recognized: {self.attrs["model_run"]}'
             self.attrs['model_config'] = self.attrs['filename'].split('-')[0]
             self.attrs['model_case'] = self.attrs['filename'].split('-')[1].split('_')[0]
