@@ -3,10 +3,9 @@
 
 # System-related libraries
 import os
-#import pdb
+import numpy as np
 
 # Data-related libraries
-import netCDF4 as nc
 import xarray as xr
 
 # Project-related libraries
@@ -28,14 +27,14 @@ class AnhaDataset:
     """
 
     def __repr__(self):
+        """ Return string representation of object
         """
-
-        """
+        # TODO return own dims/coords/data_vars, instead of the ones from _xr_dataset
         # return xr.core.formatting.dataset_repr(self._anha_dataset)  # placeholder, may help create own version.
         return f'Filename: {self.attrs["filename"]} \n'+str(self._xr_dataset)
 
-    def __init__(self, filename, load_data=True, cartesian=True):
-        """ Initializing class.
+    def __init__(self, filename, load_data=True, xr_dataset=None):
+        """ Initializing object.
 
         Parameters
         ----------
@@ -44,20 +43,25 @@ class AnhaDataset:
             or *_mask*.nc
         load_data : bool, optional
             Bool for loading data (Default is False)
-        cartesian : bool, optional
-            Bool for using cartesian coordinates (Default is True)
-            Otherwise use geographical coordinates and SI units
+        # cartesian : bool, optional
+        #     Bool for using cartesian coordinates (Default is True)
+        #     Otherwise use geographical coordinates and SI units
 
         """
 
         # Initialize info from filename
         self._init_filename_attrs(filename)
 
-        # Open dataset
-        if load_data:
-            self._xr_dataset = xr.open_dataset(os.path.join(self.attrs['filepath'], self.attrs['filename']))
+        # Loading data.
+        if xr_dataset:
+            #TODO assert xr_data is of xarray.Dataset type.
+            self._xr_dataset = xr_dataset
         else:
-            self._xr_dataset = xr.open_dataset(os.path.join(self.attrs['filepath'], self.attrs['filename']), decode_cf=False)
+            # Open dataset
+            if load_data:
+                self._xr_dataset = xr.open_dataset(os.path.join(self.attrs['filepath'], self.attrs['filename']))
+            else:
+                self._xr_dataset = xr.open_dataset(os.path.join(self.attrs['filepath'], self.attrs['filename']), decode_cf=False)
 
         # Initialize file metadata
         self._load_data = load_data
@@ -236,6 +240,59 @@ class AnhaDataset:
                 self.i_range = i_range
             if j_range:
                 self.j_range = j_range
+
+    def _get_row_col_range(self, lat_range, lon_range):
+        """ Get the row and col range given lat and lon range.  """
+
+        # TODO add asserts to handle lat and lon ranges
+
+        if not self._load_data:
+            raise NotImplementedError("Need load_data=True, otherwise not implemented yet.")
+
+        # Get all lat-lon data in file
+        lat = self.coords[self.attrs['coord_lat']].data[:]
+        lon = self.coords[self.attrs['coord_lon']].data[:]
+
+        # Create mask given lat lon values.
+        lat_mask = np.ma.filled((lat > lat_range[0]) & (lat < lat_range[1]))
+        lon_mask = np.ma.filled((lon > lon_range[0]) & (lon < lon_range[1]))
+
+        # Apply masks to data
+        mask = lat
+        mask[~(lat_mask & lon_mask)] = 0
+
+        # Find the row,col range by collapsing each axis.
+        row_ranges = np.where(mask.sum(axis=1) > 0)[0]
+        col_ranges = np.where(mask.sum(axis=0) > 0)[0]
+
+        # Select range
+        row_range = (row_ranges[0], row_ranges[-1])
+        col_range = (col_ranges[0], col_ranges[-1])
+
+        return row_range, col_range
+
+    def sel(self, lat_range=None, lon_range=None):
+        """
+        """
+
+        # Find row,col ranges from lat,lon values
+        row_range, col_range = self._get_row_col_range(lat_range, lon_range)
+
+        # Selection of xarray instance
+        _xr_dataset = self._xr_dataset.isel({self.attrs['dim_y']: slice(row_range[0], row_range[1]),
+                                            self.attrs['dim_x']: slice(col_range[0], col_range[1])})
+
+        return AnhaDataset(self.attrs['filename'], load_data=self._load_data, xr_dataset=_xr_dataset)
+
+    def isel(self, lat_range=None, lon_range=None):
+        """
+        """
+
+        # Set row,col ranges from lat,lon values
+        row_range, col_range = lat_range, lon_range
+
+        return self._xr_dataset.isel({self.attrs['dim_y']: slice(row_range[0], row_range[1]),
+                                      self.attrs['dim_x']: slice(col_range[0], col_range[1])})
 
     def show_var_data_map(self, var=''):
         """ Displays map of given var.
