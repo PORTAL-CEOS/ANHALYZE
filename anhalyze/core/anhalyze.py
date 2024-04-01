@@ -110,6 +110,7 @@ class AnhaDataset:
         # Need to exclude 'axis_nbounds'
         self.attrs['dim_x'] = [var for var in dims_list if 'x' in var and 'axis' not in var][0]
         self.attrs['dim_y'] = [var for var in dims_list if 'y' in var][0]
+        self.attrs['dim_z'] = [var for var in dims_list if 'depth' in var][0]
 
         return self._xr_dataset.dims
 
@@ -271,28 +272,64 @@ class AnhaDataset:
 
         return row_range, col_range
 
-    def sel(self, lat_range=None, lon_range=None):
+    def sel(self, lat_range=None, lon_range=None, depth_range=None):
         """
+        For now from xarray docs:
+        Returns a new dataset with each array indexed by tick labels
+        along the specified dimension(s).
+
+        In contrast to `Dataset.isel`, indexers for this method should use
+        labels instead of integers.
+
         """
+
+        # TODO assert values are in order, within range and valid
+        # TODO figure out selecting location 
+
+        # Setting up dict
+        dict_range = {}
 
         # Find row,col ranges from lat,lon values
         row_range, col_range = self._get_row_col_range(lat_range, lon_range)
 
+        # Populating dict for selection
+        if lat_range:
+            dict_range.update({self.attrs['dim_x']: slice(col_range[0], col_range[1])})
+        if lon_range:
+            dict_range.update({self.attrs['dim_y']: slice(row_range[0], row_range[1])})
+        if depth_range:
+            dict_range.update({self.attrs['dim_z']: slice(depth_range[0], depth_range[1])})
+
         # Selection of xarray instance
-        _xr_dataset = self._xr_dataset.isel({self.attrs['dim_y']: slice(row_range[0], row_range[1]),
-                                            self.attrs['dim_x']: slice(col_range[0], col_range[1])})
+        _xr_dataset = self._xr_dataset.isel(dict_range)
 
         return AnhaDataset(self.attrs['filename'], load_data=self._load_data, xr_dataset=_xr_dataset)
 
-    def isel(self, lat_range=None, lon_range=None):
+    def isel(self, y_range=None, x_range=None, z_range=None):
         """
+        For now from xarray docs:
+        Returns a new dataset with each array indexed along the specified
+        dimension(s).
         """
 
-        # Set row,col ranges from lat,lon values
-        row_range, col_range = lat_range, lon_range
 
-        return self._xr_dataset.isel({self.attrs['dim_y']: slice(row_range[0], row_range[1]),
-                                      self.attrs['dim_x']: slice(col_range[0], col_range[1])})
+        #TODO assert values are in order, within range and valid
+
+        # Setting up dict
+        dict_range = {}
+
+        # Populating dict for selection
+        if x_range:
+            dict_range.update({self.attrs['dim_x']: slice(x_range[0], x_range[1])})
+        if y_range:
+            dict_range.update({self.attrs['dim_y']: slice(y_range[0], y_range[1])})
+        if z_range:
+            dict_range.update({self.attrs['dim_z']: slice(z_range[0], z_range[1])})
+
+        # Selection of xarray instance
+        _xr_dataset = self._xr_dataset.isel(dict_range)
+
+        return AnhaDataset(self.attrs['filename'], load_data=self._load_data, xr_dataset=_xr_dataset)
 
     def show_var_data_map(self, var=''):
         """ Displays map of given var.
