@@ -259,6 +259,40 @@ class AnhaDataset:
 
         return row_range, col_range
 
+    def _get_row_or_col_range(self, coord_range, coord_name):
+        """ Get the row or col range given lat or lon range.  """
+
+        # TODO add asserts to handle lat and lon ranges
+
+        if not self._load_data:
+            raise NotImplementedError("Need load_data=True, otherwise not implemented yet.")
+
+        # Get all lat-lon data in file
+        coord = self.coords[coord_name].data.copy()
+
+        # Create mask given lat lon values.
+        coord_mask = np.ma.filled((coord > coord_range[0]) & (coord < coord_range[1]))
+
+        # Apply masks to data
+        mask = coord
+        mask[~coord_mask] = 0
+        # TODO there maybe a bug at the equator or the meridian.
+        #  could try using nans instead of zeros, probably not here but at the end?
+        #  I guess not since i'm not using copy() Need to plot to see...
+
+        if 'lat' in coord_name:
+            axis = 1
+        elif 'lon' in coord_name:
+            axis = 0
+
+        # Find the row,col range by collapsing each axis.
+        coord_ranges = np.where(mask.sum(axis=axis) > 0)[0]
+
+        # Select range
+        coord_range = (coord_ranges[0], coord_ranges[-1])
+
+        return coord_range
+
     def sel(self, lat_range=None, lon_range=None, depth_range=None):
         """
         For now from xarray docs:
@@ -270,20 +304,34 @@ class AnhaDataset:
 
         """
 
-        # TODO assert values are in order, within range and valid
-        # TODO figure out selecting location 
+        # TODO figure out selecting location
 
         # Setting up dict
         dict_range = {}
 
-        # Find row,col ranges from lat,lon values
-        row_range, col_range = self._get_row_col_range(lat_range, lon_range)
-
         # Populating dict for selection
-        if lat_range:
-            dict_range.update({self.attrs['dim_x']: slice(col_range[0], col_range[1])})
-        if lon_range:
-            dict_range.update({self.attrs['dim_y']: slice(row_range[0], row_range[1])})
+        if lat_range and lon_range:
+            #
+
+            self._setup_range(self.attrs['coord_lat'], lat_range)
+            self._setup_range(self.attrs['coord_lon'], lon_range)
+
+            # Find row and col ranges from lat or lon values
+            row_range, col_range = self._get_row_col_range(lat_range, lon_range)
+            dict_range.update({self.attrs['dim_x']: slice(col_range[0], col_range[1]),
+                               self.attrs['dim_y']: slice(row_range[0], row_range[1])})
+
+        else:
+            if lat_range:
+                self._setup_range(self.attrs['coord_lat'], lat_range)
+                # Find row or col ranges from lat or lon values
+                row_range = self._get_row_or_col_range(lat_range, self.attrs['coord_lat'])
+                dict_range.update({self.attrs['dim_y']: slice(row_range[0], row_range[1])})
+            if lon_range:
+                self._setup_range(self.attrs['coord_lon'], lon_range)
+                # Find row or col ranges from lat or lon values
+                col_range = self._get_row_or_col_range(lon_range, self.attrs['coord_lon'])
+                dict_range.update({self.attrs['dim_x']: slice(col_range[0], col_range[1])})
         if depth_range:
             dict_range.update({self.attrs['dim_z']: slice(depth_range[0], depth_range[1])})
 
