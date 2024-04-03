@@ -199,48 +199,35 @@ class AnhaDataset:
         else:
             pass
 
-    def _setup_selection_range(self, lat_range=None, lon_range=None, i_range=None, j_range=None, init=False):
-        """Setup data selection range,
-
-
+    def _setup_range(self, coord_name, coord_range, is_coord=True):
+        """ Setup data selection range. Assert values are in order, within range and valid.
         """
+        # TODO assert values are in order, within range and valid
+        # TODO, could choose end of file if value given out of bounds.
         # TODO could, set an absolut minimum for lat at: -20.07611 , or min in file.
+        # TODO add assert if ranges are correct
 
-        if init:
+        # Make sure range has correct format ( a list with two values).
+        assert isinstance(coord_range, list), f"The variable {coord_name} is not a list."
+        assert len(coord_range) == 2
 
-            # For cartesian coordinates
-            self.i_begin = 0
-            self.i_end = self.dims[self.x_var_name].size
-            self.j_begin = 0
-            self.j_end = self.dims[self.y_var_name].size
-            self.k_begin = 0
-#            self.k_end = self.dims[self.depth_var_name].size
+        # Make sure the range is ordered from lower to higher.
+        if coord_range[0] > coord_range[1]:
+            coord_range = [coord_range[1], coord_range[0]]
 
-            self.i_range = [self.i_begin, self.i_end]
-            self.j_range = [self.j_begin, self.j_end]
-#            self.k_range = [self.k_begin, self.k_end]
-
-            # For geographical coordinates
-            self.lat_range = [self._xr_dataset[self.lat_var_name][:].min(),
-                              self._xr_dataset[self.lat_var_name][:].max()]
-            self.lon_range = [self._xr_dataset[self.lon_var_name][:].min(),
-                              self._xr_dataset[self.lon_var_name][:].max()]
-            self.depth_range = [self._xr_dataset[self.depth_var_name][:].min(),
-                                self._xr_dataset[self.depth_var_name][:].max()]
-
+        # Find full range from instance
+        if is_coord:
+            full_range = [self.coords[coord_name].data.min(),
+                          self.coords[coord_name].data.max()]
         else:
+            full_range = [0, self.dims[coord_name]]
 
-            #TODO add assest if ranges are correct
+        # Make sure values are within full range.
+        for value in coord_range:
+            assert value >= full_range[0], f"{coord_name} value {value} is out of range {full_range}"
+            assert value <= full_range[1], f"{coord_name} value {value} is out of range {full_range}"
 
-            if lat_range:
-                self.lat_range = lat_range
-            if lon_range:
-                self.lon_range = lon_range
-
-            if i_range:
-                self.i_range = i_range
-            if j_range:
-                self.j_range = j_range
+        return coord_range
 
     def _get_row_col_range(self, lat_range, lon_range):
         """ Get the row and col range given lat and lon range.  """
@@ -311,7 +298,6 @@ class AnhaDataset:
         Returns a new dataset with each array indexed along the specified
         dimension(s).
         """
-
 
         #TODO assert values are in order, within range and valid
 
