@@ -238,8 +238,8 @@ class AnhaDataset:
             raise NotImplementedError("Need load_data=True, otherwise not implemented yet.")
 
         # Get all lat-lon data in file
-        lat = self.coords[self.attrs['coord_lat']].data[:]
-        lon = self.coords[self.attrs['coord_lon']].data[:]
+        lat = self.coords[self.attrs['coord_lat']].data.copy()
+        lon = self.coords[self.attrs['coord_lon']].data.copy()
 
         # Create mask given lat lon values.
         lat_mask = np.ma.filled((lat > lat_range[0]) & (lat < lat_range[1]))
