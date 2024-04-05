@@ -171,11 +171,12 @@ class AnhaDataset:
         """ Initialize model properties from filename
         """
 
-        # Initialize xarray main attributes
+        # Initialize attributes
         self.data_vars = self._init_data_vars()
         self.coords = self._init_coords()
         self.dims = self._init_dims()
         self._init_xr_attrs()
+        self._init_range()
 
         if '_grid' in self.attrs['filename']:
             pass
@@ -199,7 +200,29 @@ class AnhaDataset:
         else:
             pass
 
-    def _setup_range(self, coord_name, coord_range, is_coord=True):
+    def _init_range(self):
+        """
+        """
+
+        # Get all lat-lon data in file
+        lat = self.coords[self.attrs['coord_lat']].data.copy()
+        lon = self.coords[self.attrs['coord_lon']].data.copy()
+
+        lat[(lat == 0)] = np.nan
+        lon[(lon == 0)] = np.nan
+
+        # Init grid geocoordinates range
+        self.attrs['coord_lat_range'] = [np.nanmin(lat), np.nanmax(lat)]
+        self.attrs['coord_lon_range'] = [np.nanmin(lon), np.nanmax(lon)]
+        self.attrs['coord_depth_range'] = [self.coords[self.attrs['coord_depth']].data.min(),
+                                           self.coords[self.attrs['coord_depth']].data.max()]
+
+        # Init grid dims range
+        self.attrs['dim_x_range'] = [0, self._xr_dataset.sizes[self.attrs['dim_x']]]
+        self.attrs['dim_y_range'] = [0, self._xr_dataset.sizes[self.attrs['dim_y']]]
+        self.attrs['dim_z_range'] = [0, self._xr_dataset.sizes[self.attrs['dim_z']]]
+
+    def _update_range(self, coord_name, coord_range):
         """ Setup data selection range. Assert values are in order, within range and valid.
         """
         # TODO assert values are in order, within range and valid
@@ -215,13 +238,10 @@ class AnhaDataset:
         if coord_range[0] > coord_range[1]:
             coord_range = [coord_range[1], coord_range[0]]
 
-        # Find full range from instance
-        if is_coord:
-            full_range = [self.coords[coord_name].data.min(),
-                          self.coords[coord_name].data.max()]
-        else:
-            full_range = [0, self.dims[coord_name]]
+        # Get full range
+        full_range = self.attrs[coord_name+'_range']
 
+        # TODO change this to select nearest value, and return warning.
         # Make sure values are within full range.
         for value in coord_range:
             assert value >= full_range[0], f"{coord_name} value {value} is out of range {full_range}"
@@ -247,11 +267,11 @@ class AnhaDataset:
 
         # Apply masks to data
         mask = lat
-        mask[~(lat_mask & lon_mask)] = 0
+        mask[~(lat_mask & lon_mask)] = np.nan
 
         # Find the row,col range by collapsing each axis.
-        row_ranges = np.where(mask.sum(axis=1) > 0)[0]
-        col_ranges = np.where(mask.sum(axis=0) > 0)[0]
+        row_ranges = np.where(np.nansum(mask, axis=1) > 0)[0]
+        col_ranges = np.where(np.nansum(mask, axis=0) > 0)[0]
 
         # Select range
         row_range = (row_ranges[0], row_ranges[-1])
@@ -275,7 +295,7 @@ class AnhaDataset:
 
         # Apply masks to data
         mask = coord
-        mask[~coord_mask] = 0
+        mask[~coord_mask] = np.nan
         # TODO there maybe a bug at the equator or the meridian.
         #  could try using nans instead of zeros, probably not here but at the end?
         #  I guess not since i'm not using copy() Need to plot to see...
@@ -286,7 +306,7 @@ class AnhaDataset:
             axis = 0
 
         # Find the row,col range by collapsing each axis.
-        coord_ranges = np.where(mask.sum(axis=axis) > 0)[0]
+        coord_ranges = np.where(np.nansum(mask, axis=axis) > 0)[0]
 
         # Select range
         coord_range = (coord_ranges[0], coord_ranges[-1])
@@ -311,10 +331,9 @@ class AnhaDataset:
 
         # Populating dict for selection
         if lat_range and lon_range:
-            #
 
-            self._setup_range(self.attrs['coord_lat'], lat_range)
-            self._setup_range(self.attrs['coord_lon'], lon_range)
+            self._update_range('coord_lat', lat_range)
+            self._update_range('coord_lon', lon_range)
 
             # Find row and col ranges from lat or lon values
             row_range, col_range = self._get_row_col_range(lat_range, lon_range)
@@ -323,13 +342,13 @@ class AnhaDataset:
 
         else:
             if lat_range:
-                self._setup_range(self.attrs['coord_lat'], lat_range)
-                # Find row or col ranges from lat or lon values
+                self._update_range('coord_lat', lat_range)
+                # Find row ranges from lat values
                 row_range = self._get_row_or_col_range(lat_range, self.attrs['coord_lat'])
                 dict_range.update({self.attrs['dim_y']: slice(row_range[0], row_range[1])})
             if lon_range:
-                self._setup_range(self.attrs['coord_lon'], lon_range)
-                # Find row or col ranges from lat or lon values
+                self._update_range('coord_lon', lon_range)
+                # Find col ranges from lon values
                 col_range = self._get_row_or_col_range(lon_range, self.attrs['coord_lon'])
                 dict_range.update({self.attrs['dim_x']: slice(col_range[0], col_range[1])})
         if depth_range:
