@@ -119,7 +119,7 @@ class AnhaDataset:
         """
 
         # Setting up filename
-        assert os.path.isfile(filename)
+        assert os.path.isfile(filename), f'File {filename} not found.'
 
         if os.path.dirname(filename):
             filepath = os.path.dirname(filename)
@@ -357,7 +357,13 @@ class AnhaDataset:
         # Selection of xarray instance
         _xr_dataset = self._xr_dataset.isel(dict_range)
 
-        return AnhaDataset(self.attrs['filename'], load_data=self._load_data, xr_dataset=_xr_dataset)
+        # TODO Placeholder for:
+        #      if I want to show the lat,lon range asked here,
+        #      I could mask the data outside that region.
+        #      Will wait for now, until I have a way to mask data.
+
+        return AnhaDataset(os.path.join(self.attrs['filepath'], self.attrs['filename']),
+                           load_data=self._load_data, xr_dataset=_xr_dataset)
 
     def isel(self, y_range=None, x_range=None, z_range=None):
         """
@@ -382,7 +388,9 @@ class AnhaDataset:
         # Selection of xarray instance
         _xr_dataset = self._xr_dataset.isel(dict_range)
 
-        return AnhaDataset(self.attrs['filename'], load_data=self._load_data, xr_dataset=_xr_dataset)
+        return AnhaDataset(os.path.join(self.attrs['filepath'], self.attrs['filename']),
+                           load_data=self._load_data, xr_dataset=_xr_dataset)
+
 
     def show_var_data_map(self, var=''):
         """ Displays map of given var.
