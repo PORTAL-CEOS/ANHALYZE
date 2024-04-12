@@ -315,7 +315,7 @@ class AnhaDataset:
 
         return coord_range
 
-    def sel(self, lat_range=None, lon_range=None, depth_range=None):
+    def sel(self, lat_range=None, lon_range=None, depth_range=None, verbose=True):
         """
         For now from xarray docs:
         Returns a new dataset with each array indexed by tick labels
@@ -339,6 +339,10 @@ class AnhaDataset:
             lat_range = self._update_range('coord_lat', lat_range)
             lon_range = self._update_range('coord_lon', lon_range)
 
+            if verbose:
+                print(f'[Anhalyze] Selecting Latitude range: {lat_range}')
+                print(f'[Anhalyze] Selecting Longitude range: {lon_range}')
+
             # Find row and col ranges from lat or lon values
             row_range, col_range = self._get_row_col_range(lat_range, lon_range)
             dict_range.update({self.attrs['dim_x']: slice(col_range[0], col_range[1]),
@@ -348,11 +352,17 @@ class AnhaDataset:
             if lat_range:
                 lat_range = self._update_range('coord_lat', lat_range)
 
+                if verbose:
+                    print(f'[Anhalyze] Selecting Latitude range: {lat_range}')
+
                 # Find row ranges from lat values
                 row_range = self._get_row_or_col_range(lat_range, self.attrs['coord_lat'])
                 dict_range.update({self.attrs['dim_y']: slice(row_range[0], row_range[1])})
             if lon_range:
                 lon_range = self._update_range('coord_lon', lon_range)
+
+                if verbose:
+                    print(f'[Anhalyze] Selecting Longitude range: {lon_range}')
 
                 # Find col ranges from lon values
                 col_range = self._get_row_or_col_range(lon_range, self.attrs['coord_lon'])
@@ -365,6 +375,9 @@ class AnhaDataset:
         # Populating dict for lat, lon selection
         if depth_range:
             depth_range = self._update_range('coord_depth', depth_range)
+
+            if verbose:
+                print(f'[Anhalyze] Selecting Depth range: {depth_range}')
 
             dict_range = {self.attrs['dim_z']: slice(depth_range[0], depth_range[1])}
 
