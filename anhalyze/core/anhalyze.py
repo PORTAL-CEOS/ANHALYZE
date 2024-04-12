@@ -67,6 +67,10 @@ class AnhaDataset:
         self._load_data = load_data
         self._init_metadata()
 
+        # TODO update verbose with logging level
+        # Initialize other attrs
+        self.attrs['verbose'] = True
+
     def _init_coords(self):
         """ Initialize coordinates
         """
@@ -224,13 +228,9 @@ class AnhaDataset:
         self.attrs['dim_y_range'] = [0, self._xr_dataset.sizes[self.attrs['dim_y']]]
         self.attrs['dim_z_range'] = [0, self._xr_dataset.sizes[self.attrs['dim_z']]]
 
-    def _update_range(self, coord_name, coord_range):
+    def _update_range(self, coord_name, coord_range, mode='loose'):
         """ Setup data selection range. Assert values are in order, within range and valid.
         """
-        # TODO assert values are in order, within range and valid
-        # TODO, could choose end of file if value given out of bounds.
-        # TODO could, set an absolut minimum for lat at: -20.07611 , or min in file.
-        # TODO add assert if ranges are correct
 
         # Make sure range has correct format ( a list with two values).
         assert isinstance(coord_range, list), f"[Anhalyze] The variable {coord_name} is not a list."
@@ -243,18 +243,35 @@ class AnhaDataset:
         # Get full range
         full_range = self.attrs[coord_name+'_range']
 
-        # TODO change this to select nearest value, and return warning.
         # Make sure values are within full range.
-        for value in coord_range:
-            assert value >= full_range[0], f"[Anhalyze] {coord_name} value {value} is out of range {full_range}"
-            assert value <= full_range[1], f"[Anhalyze] {coord_name} value {value} is out of range {full_range}"
+        if 'rigid' in mode:
+            # Only accepting values within range
+            for value in coord_range:
+                assert value >= full_range[0], f"[Anhalyze] {coord_name} value {value} is out of range {full_range}"
+                assert value <= full_range[1], f"[Anhalyze] {coord_name} value {value} is out of range {full_range}"
+
+        else:
+            # Use edges if values outside range
+            if coord_range[0] < full_range[0]:
+                mode_message = f'[Anhalyze] Warning: {coord_name} '
+                mode_message += f'using edge value {full_range[0]} since given value {coord_range[0]} is out of bounds.'
+                coord_range[0] = full_range[0]
+
+                if self.attrs['verbose']:
+                    print(mode_message)
+
+            if coord_range[1] > full_range[1]:
+                mode_message = f'[Anhalyze] Warning: {coord_name} '
+                mode_message += f'using edge value {full_range[1]} since given value {coord_range[1]} is out of bounds.'
+                coord_range[1] = full_range[1]
+
+                if self.attrs['verbose']:
+                    print(mode_message)
 
         return coord_range
 
     def _get_row_col_range(self, lat_range, lon_range):
         """ Get the row and col range given lat and lon range.  """
-
-        # TODO add asserts to handle lat and lon ranges
 
         if not self._load_data:
             raise NotImplementedError("[Anhalyze] Need load_data=True, otherwise not implemented yet.")
@@ -283,8 +300,6 @@ class AnhaDataset:
 
     def _get_row_or_col_range(self, coord_range, coord_name):
         """ Get the row or col range given lat or lon range.  """
-
-        # TODO add asserts to handle lat and lon ranges
 
         if not self._load_data:
             raise NotImplementedError("[Anhalyze] Need load_data=True, otherwise not implemented yet.")
@@ -315,7 +330,7 @@ class AnhaDataset:
 
         return coord_range
 
-    def sel(self, lat_range=None, lon_range=None, depth_range=None, verbose=True):
+    def sel(self, lat_range=None, lon_range=None, depth_range=None):
         """
         For now from xarray docs:
         Returns a new dataset with each array indexed by tick labels
@@ -326,7 +341,7 @@ class AnhaDataset:
 
         """
 
-        # TODO figure out selecting location
+        # TODO figure out selecting by location
 
         # Setting up dict
         dict_range = {}
@@ -339,7 +354,7 @@ class AnhaDataset:
             lat_range = self._update_range('coord_lat', lat_range)
             lon_range = self._update_range('coord_lon', lon_range)
 
-            if verbose:
+            if self.attrs['verbose']:
                 print(f'[Anhalyze] Selecting Latitude range: {lat_range}')
                 print(f'[Anhalyze] Selecting Longitude range: {lon_range}')
 
@@ -352,7 +367,7 @@ class AnhaDataset:
             if lat_range:
                 lat_range = self._update_range('coord_lat', lat_range)
 
-                if verbose:
+                if self.attrs['verbose']:
                     print(f'[Anhalyze] Selecting Latitude range: {lat_range}')
 
                 # Find row ranges from lat values
@@ -361,7 +376,7 @@ class AnhaDataset:
             if lon_range:
                 lon_range = self._update_range('coord_lon', lon_range)
 
-                if verbose:
+                if self.attrs['verbose']:
                     print(f'[Anhalyze] Selecting Longitude range: {lon_range}')
 
                 # Find col ranges from lon values
@@ -376,7 +391,7 @@ class AnhaDataset:
         if depth_range:
             depth_range = self._update_range('coord_depth', depth_range)
 
-            if verbose:
+            if self.attrs['verbose']:
                 print(f'[Anhalyze] Selecting Depth range: {depth_range}')
 
             dict_range = {self.attrs['dim_z']: slice(depth_range[0], depth_range[1])}
@@ -391,14 +406,12 @@ class AnhaDataset:
         return AnhaDataset(os.path.join(self.attrs['filepath'], self.attrs['filename']),
                            load_data=self._load_data, xr_dataset=_xr_dataset)
 
-    def isel(self, x_range=None, y_range=None, z_range=None,verbose=True):
+    def isel(self, x_range=None, y_range=None, z_range=None):
         """
         For now from xarray docs:
         Returns a new dataset with each array indexed along the specified
         dimension(s).
         """
-
-        #TODO assert values are in order, within range and valid
 
         # Setting up dict
         dict_range = {}
@@ -406,17 +419,17 @@ class AnhaDataset:
         # Populating dict for selection
         if x_range:
             x_range = self._update_range('dim_x', x_range)
-            if verbose:
+            if self.attrs['verbose']:
                 print(f'[Anhalyze] Selecting x range: {x_range}')
             dict_range.update({self.attrs['dim_x']: slice(x_range[0], x_range[1])})
         if y_range:
             y_range = self._update_range('dim_y', y_range)
-            if verbose:
+            if self.attrs['verbose']:
                 print(f'[Anhalyze] Selecting y range: {y_range}')
             dict_range.update({self.attrs['dim_y']: slice(y_range[0], y_range[1])})
         if z_range:
             z_range = self._update_range('dim_z', z_range)
-            if verbose:
+            if self.attrs['verbose']:
                 print(f'[Anhalyze] Selecting z range: {z_range}')
             dict_range.update({self.attrs['dim_z']: slice(z_range[0], z_range[1])})
 
