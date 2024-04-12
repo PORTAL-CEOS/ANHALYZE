@@ -31,7 +31,7 @@ class AnhaDataset:
         """
         # TODO return own dims/coords/data_vars, instead of the ones from _xr_dataset
         # return xr.core.formatting.dataset_repr(self._anha_dataset)  # placeholder, may help create own version.
-        return f'Filename: {self.attrs["filename"]} \n'+str(self._xr_dataset)
+        return f'[Anhalyze] Filename: {self.attrs["filename"]} \n'+str(self._xr_dataset)
 
     def __init__(self, filename, load_data=True, xr_dataset=None):
         """ Initializing object.
@@ -119,7 +119,7 @@ class AnhaDataset:
         """
 
         # Setting up filename
-        assert os.path.isfile(filename), f'File {filename} not found.'
+        assert os.path.isfile(filename), f'[Anhalyze] File {filename} not found.'
 
         if os.path.dirname(filename):
             filepath = os.path.dirname(filename)
@@ -137,14 +137,16 @@ class AnhaDataset:
 
             # Initialize model config
             self.attrs['model_run'] = self.attrs['filename'].split('_')[0]
-            assert 'ANHA' in self.attrs['model_run'], f'Model run format not recognized: {self.attrs["model_run"]}'
+            assert 'ANHA' in self.attrs['model_run'],\
+                f'[Anhalyze] Model run format not recognized: {self.attrs["model_run"]}'
             self.attrs['model_config'] = self.attrs['filename'].split('-')[0]
             self.attrs['model_case'] = self.attrs['filename'].split('-')[1].split('_')[0]
 
             # Init grid type
             self.attrs['grid'] = self.attrs['filename'].split('_grid')[-1][0]
             grid_value_options = 'TBUVW'
-            assert self.attrs['grid'] in grid_value_options, f'Grid type not recognized: {self.attrs["grid"]}'
+            assert self.attrs['grid'] in grid_value_options,\
+                f'[Anhalyze] Grid type not recognized: {self.attrs["grid"]}'
             self.attrs['grid'] = 'grid'+self.attrs['grid']
             self.attrs['is_mask'] = False
 
@@ -231,8 +233,8 @@ class AnhaDataset:
         # TODO add assert if ranges are correct
 
         # Make sure range has correct format ( a list with two values).
-        assert isinstance(coord_range, list), f"The variable {coord_name} is not a list."
-        assert len(coord_range) == 2
+        assert isinstance(coord_range, list), f"[Anhalyze] The variable {coord_name} is not a list."
+        assert len(coord_range) == 2, '[Anhalyze] Coordinate range size need to be equal to two.'
 
         # Make sure the range is ordered from lower to higher.
         if coord_range[0] > coord_range[1]:
@@ -244,8 +246,8 @@ class AnhaDataset:
         # TODO change this to select nearest value, and return warning.
         # Make sure values are within full range.
         for value in coord_range:
-            assert value >= full_range[0], f"{coord_name} value {value} is out of range {full_range}"
-            assert value <= full_range[1], f"{coord_name} value {value} is out of range {full_range}"
+            assert value >= full_range[0], f"[Anhalyze] {coord_name} value {value} is out of range {full_range}"
+            assert value <= full_range[1], f"[Anhalyze] {coord_name} value {value} is out of range {full_range}"
 
         return coord_range
 
@@ -255,7 +257,7 @@ class AnhaDataset:
         # TODO add asserts to handle lat and lon ranges
 
         if not self._load_data:
-            raise NotImplementedError("Need load_data=True, otherwise not implemented yet.")
+            raise NotImplementedError("[Anhalyze] Need load_data=True, otherwise not implemented yet.")
 
         # Get all lat-lon data in file
         lat = self.coords[self.attrs['coord_lat']].data.copy()
@@ -285,7 +287,7 @@ class AnhaDataset:
         # TODO add asserts to handle lat and lon ranges
 
         if not self._load_data:
-            raise NotImplementedError("Need load_data=True, otherwise not implemented yet.")
+            raise NotImplementedError("[Anhalyze] Need load_data=True, otherwise not implemented yet.")
 
         # Get all lat-lon data in file
         coord = self.coords[coord_name].data.copy()
@@ -329,11 +331,13 @@ class AnhaDataset:
         # Setting up dict
         dict_range = {}
 
-        # Populating dict for selection
-        if lat_range and lon_range:
+        # Make copy of xarray
+        _xr_dataset = self._xr_dataset.copy()
 
-            self._update_range('coord_lat', lat_range)
-            self._update_range('coord_lon', lon_range)
+        # Populating dict for lat, lon selection
+        if lat_range and lon_range:
+            lat_range = self._update_range('coord_lat', lat_range)
+            lon_range = self._update_range('coord_lon', lon_range)
 
             # Find row and col ranges from lat or lon values
             row_range, col_range = self._get_row_col_range(lat_range, lon_range)
@@ -342,24 +346,33 @@ class AnhaDataset:
 
         else:
             if lat_range:
-                self._update_range('coord_lat', lat_range)
+                lat_range = self._update_range('coord_lat', lat_range)
+
                 # Find row ranges from lat values
                 row_range = self._get_row_or_col_range(lat_range, self.attrs['coord_lat'])
                 dict_range.update({self.attrs['dim_y']: slice(row_range[0], row_range[1])})
             if lon_range:
-                self._update_range('coord_lon', lon_range)
+                lon_range = self._update_range('coord_lon', lon_range)
+
                 # Find col ranges from lon values
                 col_range = self._get_row_or_col_range(lon_range, self.attrs['coord_lon'])
                 dict_range.update({self.attrs['dim_x']: slice(col_range[0], col_range[1])})
-        if depth_range:
-            dict_range.update({self.attrs['dim_z']: slice(depth_range[0], depth_range[1])})
 
-        # Selection of xarray instance
-        _xr_dataset = self._xr_dataset.isel(dict_range)
+        # Lat/lon selection
+        if dict_range:
+            _xr_dataset = _xr_dataset.isel(dict_range)
+
+        # Populating dict for lat, lon selection
+        if depth_range:
+            depth_range = self._update_range('coord_depth', depth_range)
+
+            dict_range = {self.attrs['dim_z']: slice(depth_range[0], depth_range[1])}
+
+            # Depth selection
+            _xr_dataset = _xr_dataset.sel(dict_range)
 
         # TODO Placeholder for:
-        #      if I want to show the lat,lon range asked here,
-        #      I could mask the data outside that region.
+        #      I could mask the data outside the lat,lon range region asked here.
         #      Will wait for now, until I have a way to mask data.
 
         return AnhaDataset(os.path.join(self.attrs['filepath'], self.attrs['filename']),
