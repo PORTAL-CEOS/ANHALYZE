@@ -391,7 +391,7 @@ class AnhaDataset:
         return AnhaDataset(os.path.join(self.attrs['filepath'], self.attrs['filename']),
                            load_data=self._load_data, xr_dataset=_xr_dataset)
 
-    def isel(self, y_range=None, x_range=None, z_range=None):
+    def isel(self, x_range=None, y_range=None, z_range=None,verbose=True):
         """
         For now from xarray docs:
         Returns a new dataset with each array indexed along the specified
@@ -405,10 +405,19 @@ class AnhaDataset:
 
         # Populating dict for selection
         if x_range:
+            x_range = self._update_range('dim_x', x_range)
+            if verbose:
+                print(f'[Anhalyze] Selecting x range: {x_range}')
             dict_range.update({self.attrs['dim_x']: slice(x_range[0], x_range[1])})
         if y_range:
+            y_range = self._update_range('dim_y', y_range)
+            if verbose:
+                print(f'[Anhalyze] Selecting y range: {y_range}')
             dict_range.update({self.attrs['dim_y']: slice(y_range[0], y_range[1])})
         if z_range:
+            z_range = self._update_range('dim_z', z_range)
+            if verbose:
+                print(f'[Anhalyze] Selecting z range: {z_range}')
             dict_range.update({self.attrs['dim_z']: slice(z_range[0], z_range[1])})
 
         # Selection of xarray instance
