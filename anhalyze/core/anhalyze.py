@@ -408,14 +408,14 @@ class AnhaDataset:
         return AnhaDataset(os.path.join(self.attrs['filepath'], self.attrs['filename']),
                            load_data=self._load_data, xr_dataset=_xr_dataset)
 
-    def show_var_data_map(self, var=''):
+    def show_var_data_map(self, var='', idepth=0):
         """ Displays map of given var.
         """
         import anhalyze.core.anhalyze_plot_utils as apu
 
         assert var in list(self.data_vars), f'[anhalyze] Variable {var} not found in data_vars: {list(self.data_vars)}'
 
-        apu.show_var_data_map(self, var=var)
+        apu.show_var_data_map(self, var=var, idepth=idepth)
 
     def apply_mask(self, mask_filename=None):
         """

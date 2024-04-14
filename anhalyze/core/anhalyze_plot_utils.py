@@ -48,7 +48,7 @@ def get_feature_mask(feature='land', resolution='50m'):
     return feature_mask
 
 
-def show_var_data_map(data, depth=0, var=''):
+def show_var_data_map(data, idepth=0, var=''):
     """ Displays map of given parameter (var) in lat-lon range and depth.
         Note: depth has not been tested.
 
@@ -66,7 +66,7 @@ def show_var_data_map(data, depth=0, var=''):
     location_info = anhalyze.core.anhalyze_geo.init_location()
 
     # Get var data
-    var_data = data.data_vars[var].data[0, depth, :]
+    var_data = data.data_vars[var].data[0, idepth, :]
 
     # getting lat and lon
     lat, lon = data.coords[data.attrs['coord_lat']].data, data.coords[data.attrs['coord_lon']].data
