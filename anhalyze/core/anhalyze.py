@@ -110,6 +110,11 @@ class AnhaDataset:
 
         dims_list = list(self._xr_dataset.dims)
 
+        # For some reason there are W dims in a gridT file, removing them since not used.
+        if 'T' in self.attrs['grid']:
+            del_list = [dim for dim in dims_list if 'w' in dim or 'W' in dim]
+            self._xr_dataset = self._xr_dataset.drop_dims(del_list)
+
         # Init grid dimensions var names
         # Need to exclude 'axis_nbounds'
         self.attrs['dim_x'] = [var for var in dims_list if 'x' in var and 'axis' not in var][0]
@@ -164,9 +169,9 @@ class AnhaDataset:
         """
 
         # Initialize attributes
+        self.dims = self._init_dims()  # Should init before coords and data_vars
         self.data_vars = self._init_data_vars()
         self.coords = self._init_coords()
-        self.dims = self._init_dims()
         self._init_xr_attrs()
         self._init_range()
 
