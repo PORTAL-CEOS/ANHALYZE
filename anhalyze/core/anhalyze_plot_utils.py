@@ -28,6 +28,26 @@ vmin = -20.
 cmap = 'coolwarm'
 
 
+def get_feature_mask(feature='land', resolution='50m'):
+    """   """
+
+    # Select facecolor
+    if 'land' in feature:
+        facecolor = matplotlib.colors.to_hex('wheat')
+    elif 'ocean' in feature:
+        facecolor = '#000066'
+    else:
+        facecolor = matplotlib.colors.to_hex('gray')
+
+        # Construct feature mask
+    feature_mask = cfeature.NaturalEarthFeature('physical', feature,
+                                                scale=resolution,
+                                                edgecolor='face',
+                                                facecolor=facecolor)
+
+    return feature_mask
+
+
 def show_var_data_map(data, depth=0, var=''):
     """ Displays map of given parameter (var) in lat-lon range and depth.
         Note: depth has not been tested.
@@ -409,22 +429,3 @@ def plot_mhw(anhalyzed_timeseries, year=1998, remove_mean=True, show_cat4=False,
     # Returning to matplotlib defaults
     sns.reset_orig()
 
-
-def get_feature_mask(feature='land', resolution='50m'):
-    """   """
-
-    # Select facecolor
-    if 'land' in feature:
-        facecolor = matplotlib.colors.to_hex('wheat')
-    elif 'ocean' in feature:
-        facecolor = '#000066'
-    else:
-        facecolor = matplotlib.colors.to_hex('gray')
-
-        # Construct feature mask
-    feature_mask = cfeature.NaturalEarthFeature('physical', feature,
-                                                scale=resolution,
-                                                edgecolor='face',
-                                                facecolor=facecolor)
-
-    return feature_mask
