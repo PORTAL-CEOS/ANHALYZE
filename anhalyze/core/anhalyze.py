@@ -417,7 +417,25 @@ class AnhaDataset:
 
         apu.show_var_data_map(self, var=var)
 
-#
+    def apply_mask(self, mask_filename=None):
+        """
+
+        """
+
+        if not mask_filename:
+            mask_filename = 'ANHA4_mask.nc'
+
+        # Getting mask data
+        mask = xr.open_dataset(mask_filename).tmask.data
+
+        # Adding mask data to coords
+        self.coords['mask'] = ((self.attrs['dim_z'], self.attrs['dim_y'], self.attrs['dim_x']),
+                               mask[0, :, :, :])
+
+        # TODO not exactly what I want. for now this works if used before using sel(), since not returning new instance
+        # Applying mask data
+        self._xr_dataset = self._xr_dataset.where(self.coords['mask'] == 1)
+
 #     def set_location(self):
 #         """
 #
