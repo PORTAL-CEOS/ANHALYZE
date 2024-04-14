@@ -408,20 +408,14 @@ class AnhaDataset:
         return AnhaDataset(os.path.join(self.attrs['filepath'], self.attrs['filename']),
                            load_data=self._load_data, xr_dataset=_xr_dataset)
 
-
     def show_var_data_map(self, var=''):
         """ Displays map of given var.
         """
         import anhalyze.core.anhalyze_plot_utils as apu
 
-        if var:
-            self.var = var
+        assert var in list(self.data_vars), f'[anhalyze] Variable {var} not found in data_vars: {list(self.data_vars)}'
 
-        apu.show_var_data_map(self._xr_dataset,
-                              self.lat_range,
-                              self.lon_range,
-                              depth=self.depth,
-                              var=self.var)
+        apu.show_var_data_map(self, var=var)
 
 #
 #     def set_location(self):

@@ -28,7 +28,64 @@ vmin = -20.
 cmap = 'coolwarm'
 
 
-def show_var_data_map(data, lat_range, lon_range, depth=0, var='votemper'):
+def show_var_data_map(data, depth=0, var=''):
+    """ Displays map of given parameter (var) in lat-lon range and depth.
+        Note: depth has not been tested.
+
+       data: In AnhaDataset or xarray.Dataset formats.
+       depth: dep level; default first level (0)    [int]
+       var: variable name [str]
+    """
+    # TODO add projection options
+
+    assert var in list(data.data_vars), \
+        f'[anhalyze_plot_utils] Variable {var} not found in data_vars: {list(data.data_vars)}'
+
+    # TODO better use of init_location, if location set then load it, otherwise calculate it.
+    # Init location info
+    location_info = anhalyze.core.anhalyze_geo.init_location()
+
+    # Get var data
+    var_data = data.data_vars[var].data[0, depth, :]
+
+    # getting lat and lon
+    lat, lon = data.coords[data.attrs['coord_lat']].data, data.coords[data.attrs['coord_lon']].data
+
+    # Set up figure and projection
+    fig = plt.figure()
+    ax = fig.add_subplot(1, 1, 1,
+                         projection=ccrs.LambertConformal(central_longitude=location_info['central_longitude'],
+                                                          standard_parallels=location_info['standard_parallels']))
+    ax.set_extent([data.attrs['coord_lon_range'][0],
+                   data.attrs['coord_lon_range'][1],
+                   data.attrs['coord_lat_range'][0],
+                   data.attrs['coord_lat_range'][1]])
+
+    # Adding ocean and land features
+    ax.add_feature(get_feature_mask())
+    ax.add_feature(get_feature_mask(feature='ocean'))
+
+    # Plotting var data as filled contour regions
+    im = ax.contourf(lon, lat, var_data, levels=levels, cmap=cmap,
+                     vmin=vmin, vmax=vmax, transform=ccrs.PlateCarree(), zorder=2)
+
+    # Plotting var data contour lines
+    ax.contour(lon, lat, var_data, levels=line_levels, cmap='Greys', linewidths=.2, transform=ccrs.PlateCarree())
+
+    # Create grid-line labels
+    gl = ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=True, x_inline=False,
+                      y_inline=False, color='k', alpha=.3, linewidths=.01)
+    gl.right_labels = gl.top_labels = False
+
+    # Set Color-bar
+    axins = inset_axes(ax, width="5%", height="100%", loc='right', borderpad=-1)
+    label = '%s [%s]' % (data.data_vars[var].attrs['long_name'].title(), data.data_vars[var].attrs['units'])
+    fig.colorbar(im, cax=axins, orientation="vertical", label=label, format='%.1f')
+
+
+# TODO DEPRECATED BELOW THIS LINE -----------------------------------
+
+def show_var_data_map_old(data, lat_range, lon_range, depth=0, var='votemper'):
     """ Displays map of given parameter (var) in lat-lon range and depth.
         Note: depth has not been tested.
 
