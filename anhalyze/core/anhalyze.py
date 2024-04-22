@@ -33,7 +33,7 @@ class AnhaDataset:
         # return xr.core.formatting.dataset_repr(self._anha_dataset)  # placeholder, may help create own version.
         return f'[Anhalyze] Filename: {self.attrs["filename"]} \n'+str(self._xr_dataset)
 
-    def __init__(self, filename, load_data=True, xr_dataset=None):
+    def __init__(self, filename, load_data=True, _xr_dataset=None, _attrs=None):
         """ Initializing object.
 
         Parameters
@@ -43,19 +43,24 @@ class AnhaDataset:
             or *_mask*.nc
         load_data : bool, optional
             Bool for loading data (Default is False)
-        # cartesian : bool, optional
-        #     Bool for using cartesian coordinates (Default is True)
-        #     Otherwise use geographical coordinates and SI units
+        _xr_dataset : xarray.Dataset, optional
+            Instance of xarray.Dataset object.
+        _attrs : dict, optional
+            Dict of attributes, use internally.
 
         """
 
         # Initialize info from filename
-        self._init_filename_attrs(filename)
+        if _attrs:
+            self.attrs = _attrs
+        else:
+            self._init_filename_attrs(filename)
 
         # Loading data.
-        if xr_dataset:
-            #TODO assert xr_data is of xarray.Dataset type.
-            self._xr_dataset = xr_dataset
+        if _xr_dataset:
+            assert type(_xr_dataset) == xr.core.dataset.Dataset, \
+                TypeError('[Anhalyze] Parameter xr_dataset incorrect type.')
+            self._xr_dataset = _xr_dataset
         else:
             # Open dataset
             if load_data:
@@ -124,7 +129,8 @@ class AnhaDataset:
         return self._xr_dataset.dims
 
     def _init_filename_attrs(self, filename):
-        """ Initialize properties from filename
+        """ Initialize properties from filename.
+            Filename given in format ANHA?-??????_y????m??d??_grid?.nc
         """
 
         # Setting up filename
@@ -140,13 +146,15 @@ class AnhaDataset:
         self.attrs = {'filename': filename,
                       'filepath': filepath}
 
-        #TODO add a few asserts here in filename format
+        # Making sure filename format is correct
+        assert '.nc' in self.attrs['filename'], IOError('[Anhalyze] Incorrect file format.')
         assert '_grid' in self.attrs['filename'], f'[Anhalyze] Filename {filename} does not contain "_grid".'
+        assert 'ANHA' in self.attrs['filename'], f'[Anhalyze] Filename {filename} does not contain "ANHA".'
 
         # Initialize model config
         self.attrs['model_run'] = self.attrs['filename'].split('_')[0]
         assert 'ANHA' in self.attrs['model_run'],\
-            f'[Anhalyze] Model run format not recognized: {self.attrs["model_run"]}'
+            f'[Anhalyze] model_run format not recognized: {self.attrs["model_run"]} should include ANHA'
         self.attrs['model_config'] = self.attrs['filename'].split('-')[0]
         self.attrs['model_case'] = self.attrs['filename'].split('-')[1].split('_')[0]
 
@@ -156,7 +164,6 @@ class AnhaDataset:
         assert self.attrs['grid'] in grid_value_options,\
             f'[Anhalyze] Grid type not recognized: {self.attrs["grid"]}'
         self.attrs['grid'] = 'grid'+self.attrs['grid']
-        self.attrs['is_mask'] = False
 
         # Initialize time
         self.attrs['year'] = self.attrs['filename'].split('y')[-1][:4]
@@ -164,19 +171,24 @@ class AnhaDataset:
         self.attrs['day'] = self.attrs['filename'].split('d')[1][:2]
         self.attrs['date'] = get_date(self.attrs['filename'])
 
+        # Initialize other attrs
+        if 'mask_applied' not in self.attrs.keys():
+            self.attrs['mask_applied'] = False
+
     def _init_metadata(self):
         """ Initialize model properties from filename
         """
 
         # Initialize attributes
-        self.dims = self._init_dims()  # Should init before coords and data_vars
+        self.dims = self._init_dims()  # Note this should init before coords and data_vars
         self.data_vars = self._init_data_vars()
         self.coords = self._init_coords()
-        self._init_xr_attrs()
+        if 'xr_attrs' not in self.attrs.keys():
+            self._init_xr_attrs()
         self._init_range()
 
     def _init_range(self):
-        """
+        """ Initialize boundary values.
         """
 
         # Get all lat-lon data in file
@@ -240,7 +252,7 @@ class AnhaDataset:
         return coord_range
 
     def _get_row_col_range(self, lat_range, lon_range):
-        """ Get the row and col range given lat and lon range.  """
+        """ Get the row AND col range given lat AND lon range.  """
 
         if not self._load_data:
             raise NotImplementedError("[Anhalyze] Need load_data=True, otherwise not implemented yet.")
@@ -268,7 +280,7 @@ class AnhaDataset:
         return row_range, col_range
 
     def _get_row_or_col_range(self, coord_range, coord_name):
-        """ Get the row or col range given lat or lon range.  """
+        """ Get the row OR col range given lat OR lon range.  """
 
         if not self._load_data:
             raise NotImplementedError("[Anhalyze] Need load_data=True, otherwise not implemented yet.")
@@ -290,6 +302,8 @@ class AnhaDataset:
             axis = 1
         elif 'lon' in coord_name:
             axis = 0
+        else:
+            raise ValueError('[Anhalyze] coord_name should be "lat" or "lon".')
 
         # Find the row,col range by collapsing each axis.
         coord_ranges = np.where(np.nansum(mask, axis=axis) > 0)[0]
@@ -307,6 +321,15 @@ class AnhaDataset:
 
         In contrast to `Dataset.isel`, indexers for this method should use
         labels instead of integers.
+
+        Parameters
+        ----------
+        lat_range : list
+            Two element list containing min and max Latitude values for selection.
+        lon_range : list
+            Two element list containing min and max Longitude values for selection.
+        depth_range : list
+            Two element list containing min and max depth values for selection.
 
         """
 
@@ -372,14 +395,25 @@ class AnhaDataset:
         #      I could mask the data outside the lat,lon range region asked here.
         #      Will wait for now, until I have a way to mask data.
 
+        # TODO should add something in the filename just to mark is not the original file.
         return AnhaDataset(os.path.join(self.attrs['filepath'], self.attrs['filename']),
-                           load_data=self._load_data, xr_dataset=_xr_dataset)
+                           load_data=self._load_data, _xr_dataset=_xr_dataset, _attrs=self.attrs)
 
     def isel(self, x_range=None, y_range=None, z_range=None):
         """
         For now from xarray docs:
         Returns a new dataset with each array indexed along the specified
         dimension(s).
+
+        Parameters
+        ----------
+        x_range : list
+            Two element list containing min and max x values for selection.
+        y_range : list
+            Two element list containing min and max y values for selection.
+        z_range : list
+            Two element list containing min and max z values for selection.
+
         """
 
         # Setting up dict
@@ -406,10 +440,18 @@ class AnhaDataset:
         _xr_dataset = self._xr_dataset.isel(dict_range)
 
         return AnhaDataset(os.path.join(self.attrs['filepath'], self.attrs['filename']),
-                           load_data=self._load_data, xr_dataset=_xr_dataset)
+                           load_data=self._load_data, _xr_dataset=_xr_dataset, _attrs=self.attrs)
 
-    def show_var_data_map(self, var='', idepth=0):
+    def show_var_data_map(self, var, idepth=0):
         """ Displays map of given var.
+
+        Parameters
+        ----------
+        var : str
+            Variable name.
+        idepth : int
+            Depth value from z_range.
+
         """
         import anhalyze.core.anhalyze_plot_utils as apu
 
@@ -418,7 +460,12 @@ class AnhaDataset:
         apu.show_var_data_map(self, var=var, idepth=idepth)
 
     def apply_mask(self, mask_filename=None):
-        """
+        """ Applies mask to data.
+
+        Parameters
+        ----------
+        mask_filename : str
+            Mask filename
 
         """
 
@@ -435,6 +482,8 @@ class AnhaDataset:
         # TODO not exactly what I want. for now this works if used before using sel(), since not returning new instance
         # Applying mask data
         self._xr_dataset = self._xr_dataset.where(self.coords['mask'] == 1)
+        self.attrs['mask_applied'] = True
+
 
 #     def set_location(self):
 #         """
