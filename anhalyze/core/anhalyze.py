@@ -40,7 +40,6 @@ class AnhaDataset:
         ----------
         filename : str
             Filename given in format ANHA?-??????_y????m??d??_grid?.nc
-            or *_mask*.nc
         load_data : bool, optional
             Bool for loading data (Default is False)
         _xr_dataset : xarray.Dataset, optional
@@ -315,21 +314,25 @@ class AnhaDataset:
 
     def sel(self, lat_range=None, lon_range=None, depth_range=None):
         """
-        For now from xarray docs:
-        Returns a new dataset with each array indexed by tick labels
-        along the specified dimension(s).
+        Returns a new `AnhaDataset` with each data array indexed
+        along the specified coordinate(s) in `AnhaDataset.coords`.
 
-        In contrast to `Dataset.isel`, indexers for this method should use
-        labels instead of integers.
+        In contrast to `AnhaDataset.isel`, indexers for this method should use
+        'geographical' values, instead of 'cartesian' integers.
 
         Parameters
         ----------
         lat_range : list
-            Two element list containing min and max Latitude values for selection.
+            Two element list containing min and max Latitude values for selection. [in degrees]
         lon_range : list
-            Two element list containing min and max Longitude values for selection.
+            Two element list containing min and max Longitude values for selection. [in degrees]
         depth_range : list
-            Two element list containing min and max depth values for selection.
+            Two element list containing min and max depth values for selection. [in meters]
+
+        Returns
+        -------
+        out : AnhaDataset
+            An `AnhaDataset` given lat, lon and/or depth range.
 
         """
 
@@ -401,9 +404,9 @@ class AnhaDataset:
 
     def isel(self, x_range=None, y_range=None, z_range=None):
         """
-        For now from xarray docs:
-        Returns a new dataset with each array indexed along the specified
-        dimension(s).
+        Returns a new `AnhaDataset` with each data array indexed
+        along the specified dimension(s) in `AnhaDataset.dims`.
+        Using 'cartesian' integer values.
 
         Parameters
         ----------
@@ -413,6 +416,11 @@ class AnhaDataset:
             Two element list containing min and max y values for selection.
         z_range : list
             Two element list containing min and max z values for selection.
+
+        Returns
+        -------
+        out : AnhaDataset
+            An AnhaDataset given x, y and/or z range.
 
         """
 
@@ -443,7 +451,7 @@ class AnhaDataset:
                            load_data=self._load_data, _xr_dataset=_xr_dataset, _attrs=self.attrs)
 
     def show_var_data_map(self, var, idepth=0):
-        """ Displays map of given var.
+        """ Displays a map for given var in `AnhaDataset.data_vars`.
 
         Parameters
         ----------
@@ -460,7 +468,7 @@ class AnhaDataset:
         apu.show_var_data_map(self, var=var, idepth=idepth)
 
     def apply_mask(self, mask_filename=None):
-        """ Applies mask to data.
+        """ Applies mask to `AnhaDataset.data_vars`.
 
         Parameters
         ----------
