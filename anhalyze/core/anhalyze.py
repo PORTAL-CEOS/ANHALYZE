@@ -13,16 +13,22 @@ import xarray as xr
 
 # Possible other names AnhaModelData, Dataset, AnhaData, AnhaDataframe, AnhaReader, AnhaGrid
 class AnhaDataset:
-    """ This class opens a single netCDF file with ANHA/NEMO specific properties.
+    """ Wrapper :py:class: for `xarray.Dataset` with specific implementation
+    for netCDF files created with ANHA/NEMO ocean models. Similarly to a
+    `xarray.Dataset`, it organizes netCDF data into data_vars, coords,
+    attrs and dims.
 
-    Attributes
+    Parameters
     ----------
-        filename : str
-            Filename given in format ANHA?-??????_y????m??d??_grid?.nc
+    filename : str
+        Filename given with format */*/ANHA?-??????_y????m??d??_grid?.nc
+    load_data : bool, optional
+        Bool for loading data (Default: True)
 
-    Methods
+    Returns
     -------
-
+    dataset : AnhaDataset
+        `AnhaDataset` instance from given filename.
 
     """
 
@@ -38,15 +44,10 @@ class AnhaDataset:
 
         Parameters
         ----------
-        filename : str
-            Filename given in format ANHA?-??????_y????m??d??_grid?.nc
-        load_data : bool, optional
-            Bool for loading data (Default is False)
         _xr_dataset : xarray.Dataset, optional
             Instance of xarray.Dataset object.
         _attrs : dict, optional
             Dict of attributes, use internally.
-
         """
 
         # Initialize info from filename
