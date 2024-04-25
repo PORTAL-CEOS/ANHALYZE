@@ -1,12 +1,11 @@
-# ANHALIZE
+# ANHALIZE  (beta)
 
-This software supports ocean modeling research at the Centre for Earth Observation Science (CEOS). 
+`ANHALIZE` is an analysis tool for the Arctic and Northern Hemisphere Atlantic (ANHA) configuration of the NEMO model. 
+This tool has been originally developed to support ocean modeling research at the 
+Centre for Earth Observation Science (CEOS), at the University of Manitoba. 
 
 The focus is on data manipulation, analysis and visualization of the 
 [Arctic and Northern Hemisphere Atlantic (ANHA)]((https://canadian-nemo-ocean-modelling-forum-commuity-of-practice.readthedocs.io/en/latest/Institutions/UofA/Configurations/ANHA4/index.html)) configuration of the NEMO model. 
-
-Currently, the development is concentrated in ANHA data. 
-
 
 
 
