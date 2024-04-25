@@ -2,13 +2,27 @@
 
 This software supports ocean modeling research at the Centre for Earth Observation Science (CEOS). 
 
-The focus is on data manipulation, analysis and visualization of the Arctic and Northern Hemisphere Atlantic (ANHA) configuration of the NEMO model. 
+The focus is on data manipulation, analysis and visualization of the 
+[Arctic and Northern Hemisphere Atlantic (ANHA)]((https://canadian-nemo-ocean-modelling-forum-commuity-of-practice.readthedocs.io/en/latest/Institutions/UofA/Configurations/ANHA4/index.html)) configuration of the NEMO model. 
 
-Currently, the development is concentrated in ANHA4 data. 
+Currently, the development is concentrated in ANHA data. 
+
+
 
 
 
 ## Set up:
+
+Install with
+
+`python -m pip install .`
+
+
+
+
+
+-------------------- Deprecated below this line. --------------------
+
 
 Need to add the following environmental variables to your .bash_profile (or .bashrc, etc..), 
 and edith paths to your needs:
