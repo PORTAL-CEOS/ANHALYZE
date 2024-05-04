@@ -4,6 +4,7 @@ import netCDF4 as nc
 import numpy as np
 import pandas as pd
 
+import anhalyze.core.anhalyze_plot_utils_depr
 from anhalyze.core import anhalyze_plot_utils as apu
 from anhalyze.core.anhalyze_utils import calc_stats_var_data
 from anhalyze.core.anhalyze import get_date
@@ -187,7 +188,7 @@ def anhalize_timeseries(raw_timeseries, mhw=True):
 def plot_timeseries(timeseries_var, data_variables, lat_range, lon_range, var='votemper'):
     """  Wrapper to plot timeseries function  """
 
-    apu.plot_timeseries(timeseries_var, data_variables, lat_range, lon_range, var=var)
+    anhalyze.core.anhalyze_plot_utils_depr.plot_timeseries(timeseries_var, data_variables, lat_range, lon_range, var=var)
 
 
 def show_var_data_maps(file_list, lat_range, lon_range, depth=0, var='votemper'):
@@ -195,13 +196,13 @@ def show_var_data_maps(file_list, lat_range, lon_range, depth=0, var='votemper')
         Note: depth has not been tested.
     """
 
-    apu.show_var_data_maps(file_list, lat_range, lon_range, depth=depth, var=var)
+    anhalyze.core.anhalyze_plot_utils_depr.show_var_data_maps(file_list, lat_range, lon_range, depth=depth, var=var)
 
 
 def plot_mhw(anhalyzed_timeseries, year=1998, remove_mean=True, show_cat4=False, region="James Bay", mhw=True):
     """  Wrapper to plot mhw function  """
 
-    apu.plot_mhw(anhalyzed_timeseries, year=year, remove_mean=remove_mean, show_cat4=show_cat4, region=region, mhw=mhw)
+    anhalyze.core.anhalyze_plot_utils_depr.plot_mhw(anhalyzed_timeseries, year=year, remove_mean=remove_mean, show_cat4=show_cat4, region=region, mhw=mhw)
 
 
 def find_mhw_info(anhalyzed_timeseries, mhw=True):
