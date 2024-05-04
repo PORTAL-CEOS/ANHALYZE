@@ -1,15 +1,21 @@
-import datetime
 
+
+
+# General libraries
+import datetime
 import netCDF4 as nc
 import numpy as np
 import pandas as pd
+import deprecation
 
+# project specific
 import anhalyze.core.anhalyze_plot_utils_depr
 from anhalyze.core import anhalyze_plot_utils as apu
 from anhalyze.core.anhalyze_utils import calc_stats_var_data
 from anhalyze.core.anhalyze import get_date
 
 
+@deprecation.deprecated()
 def get_timeseries(file_list, lat_range, lon_range, depth=0, no_min_max=True, var='votemper'):
     """    """
 
@@ -59,6 +65,7 @@ def get_timeseries(file_list, lat_range, lon_range, depth=0, no_min_max=True, va
     return timeseries_var
 
 
+@deprecation.deprecated()
 def calc_timeseries(timeseries, action='g_mean', n_year=None):
     """  Generalized code that calculates one specific operation, depending on how it is called.
     """
@@ -124,6 +131,7 @@ def calc_timeseries(timeseries, action='g_mean', n_year=None):
     return action_timeseries
 
 
+@deprecation.deprecated()
 def anhalize_timeseries(raw_timeseries, mhw=True):
     """
     """
@@ -185,12 +193,14 @@ def anhalize_timeseries(raw_timeseries, mhw=True):
     return anhalyzed_timeseries
 
 
+@deprecation.deprecated()
 def plot_timeseries(timeseries_var, data_variables, lat_range, lon_range, var='votemper'):
     """  Wrapper to plot timeseries function  """
 
     anhalyze.core.anhalyze_plot_utils_depr.plot_timeseries(timeseries_var, data_variables, lat_range, lon_range, var=var)
 
 
+@deprecation.deprecated()
 def show_var_data_maps(file_list, lat_range, lon_range, depth=0, var='votemper'):
     """ Displays map of given var in lat-lon range and depth.
         Note: depth has not been tested.
@@ -199,12 +209,14 @@ def show_var_data_maps(file_list, lat_range, lon_range, depth=0, var='votemper')
     anhalyze.core.anhalyze_plot_utils_depr.show_var_data_maps(file_list, lat_range, lon_range, depth=depth, var=var)
 
 
+@deprecation.deprecated()
 def plot_mhw(anhalyzed_timeseries, year=1998, remove_mean=True, show_cat4=False, region="James Bay", mhw=True):
     """  Wrapper to plot mhw function  """
 
     anhalyze.core.anhalyze_plot_utils_depr.plot_mhw(anhalyzed_timeseries, year=year, remove_mean=remove_mean, show_cat4=show_cat4, region=region, mhw=mhw)
 
 
+@deprecation.deprecated()
 def find_mhw_info(anhalyzed_timeseries, mhw=True):
     """  placeholder, to find dates and deltaTs/categories on mhws or mcs """
 
