@@ -1,15 +1,21 @@
+
+
+# System-related libraries
 import netCDF4 as nc
 import numpy as np
 import seaborn as sns
 from cartopy import crs as ccrs
 from matplotlib import pyplot as plt
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
+import deprecation
 
+# Project-related libraries
 import anhalyze.core
 from anhalyze.core import anhalyze_utils as au
 from anhalyze.core.anhalyze_plot_utils import get_feature_mask, levels, cmap, vmin, vmax, line_levels
 
 
+@deprecation.deprecated()
 def show_var_data_map_old(data, lat_range, lon_range, depth=0, var='votemper'):
     """ Displays map of given parameter (var) in lat-lon range and depth.
         Note: depth has not been tested.
@@ -59,6 +65,7 @@ def show_var_data_map_old(data, lat_range, lon_range, depth=0, var='votemper'):
     fig.colorbar(im, cax=axins, orientation="vertical", label=label, format='%.1f')
 
 
+@deprecation.deprecated()
 def show_var_data_maps(file_list, lat_range, lon_range, depth=0, var='votemper', save_fig=False):
     """ Displays maps of given parameter (var) in lat-lon range and depth, and date selection.
         Note: depth has not been tested.
@@ -171,6 +178,7 @@ def show_var_data_maps(file_list, lat_range, lon_range, depth=0, var='votemper',
         plt.savefig(output_fig_name, bbox_inches='tight', dpi=500)
 
 
+@deprecation.deprecated()
 def plot_timeseries(timeseries_var, data_variables, lat_range, lon_range, var='votemper'):
     """  Displays timeseries of given parameter (var) in lat-lon range and depth, and date selection.
         Note: no depth option available, currently .
@@ -201,6 +209,7 @@ def plot_timeseries(timeseries_var, data_variables, lat_range, lon_range, var='v
     sns.reset_orig()
 
 
+@deprecation.deprecated()
 def plot_mhw(anhalyzed_timeseries, year=1998, remove_mean=True, show_cat4=False, region="James Bay", mhw=True):
     """
         Plot time series data for given year, along with Marine Heat Wave or Marine Cold Spells curve categories.

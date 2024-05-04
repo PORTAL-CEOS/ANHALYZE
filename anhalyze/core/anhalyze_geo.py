@@ -1,8 +1,11 @@
 #!/usr/bin/env python
 # coding: utf-8
 
+import deprecation
+
 
 # TODO can make these sections into its own class
+@deprecation.deprecated()
 def init_location(hudson_bay=True):
     """
     Setting up model parameters based on Hudson Bay and James Bay locations.
@@ -53,6 +56,7 @@ def init_location(hudson_bay=True):
 
 
 # TODO can make these sections into its own class
+@deprecation.deprecated()
 def getIndex_sec(sectName):
     """Return the number associated to each section.
     One can check the respective numbers and sections on the Lab Guide.

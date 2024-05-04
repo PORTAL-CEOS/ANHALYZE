@@ -10,6 +10,7 @@ import netCDF4 as nc
 # OS-specific libraries
 import os
 import socket
+import deprecation
 
 # Project custom made libraries
 import anhalyze.core.anhalyze_plot_utils as apu
@@ -17,6 +18,7 @@ from .anhalyze import get_date
 from anhalyze.core.anhalyze_geo import getIndex_sec
 
 
+@deprecation.deprecated()
 def get_paths(run_name=None, environ_paths=False):
     """ Get paths to data and mask standard locations.
 
@@ -79,6 +81,7 @@ def get_paths(run_name=None, environ_paths=False):
 #   also need to separate io, timeseries, and whatever else needed
 
 
+@deprecation.deprecated()
 class Anhalyze:
     """ This class will do analysis of ANHA4 data, for now it initializes the location of files.
    ...
@@ -215,6 +218,7 @@ class Anhalyze:
         return selected_file_list
 
 
+@deprecation.deprecated()
 def get_lat_lon(data, lat_range, lon_range, cartesian=True):
     """  Getting Latitude and Longitude """
 
@@ -230,6 +234,7 @@ def get_lat_lon(data, lat_range, lon_range, cartesian=True):
     return lat, lon
 
 
+@deprecation.deprecated()
 def get_mask(data, lat_range, lon_range, depth=0, cartesian=True):
     """  Getting Mask given Latitude and Longitude """
 
@@ -254,6 +259,7 @@ def get_mask(data, lat_range, lon_range, depth=0, cartesian=True):
     return surf_mask
 
 
+@deprecation.deprecated()
 def get_var_data(data, lat_range, lon_range, depth=0, var='votemper', masked=True, cartesian=True):
     """  Getting Data Latitude and Longitude
 
@@ -283,6 +289,7 @@ def get_var_data(data, lat_range, lon_range, depth=0, var='votemper', masked=Tru
     return var_data
 
 
+@deprecation.deprecated()
 def get_row_col_range(data, lat_range, lon_range, grid='gridT'):
     """ Get the row and col range given lat and lon range.  """
 
@@ -314,6 +321,7 @@ def get_row_col_range(data, lat_range, lon_range, grid='gridT'):
     return row_range, col_range
 
 
+@deprecation.deprecated()
 def getMask_region(run,depth,row_range,col_range):
     """ Return the land/ocean ANHA4 mask given lat and lon sliced area
     
@@ -337,7 +345,7 @@ def getMask_region(run,depth,row_range,col_range):
     return mask_region[:].data
 
 
-
+@deprecation.deprecated()
 def getVar_region(run, grid, depth, lon_range,lat_range,var,years_list, month_list=None, one_per_month=False,monthly_mean=False,masked=True,cardinal=True):
     
     """
@@ -445,7 +453,7 @@ def getVar_region(run, grid, depth, lon_range,lat_range,var,years_list, month_li
     return var_region, lon, lat, depth_levels
 
 
-
+@deprecation.deprecated()
 def getClim_region(run, grid, depth, lon_range, lat_range, var, years_list,monthly_mean=False):
     
     """ Get the climatologic year of a choosen variable from an especific region """
@@ -479,7 +487,7 @@ def getClim_region(run, grid, depth, lon_range, lat_range, var, years_list,month
     return var_clim, lon, lat, depth_levels
 
 
-
+@deprecation.deprecated()
 def getMask_sec(run,depth,sectName,i,j):
 
     # Get paths
@@ -496,9 +504,9 @@ def getMask_sec(run,depth,sectName,i,j):
         mask_sect = np.squeeze(mask['tmask'][:,:depth,i[0]:i[-1]+1,j[0]:j[-1]+1],axis=3)
         
     return mask_sect[:].data
-    
-    
-    
+
+
+@deprecation.deprecated()
 def getVar_sec(run, sectName, grid, depth, var,years_list, month_list=None, one_per_month=False,monthly_mean=False):
     
     """ var_sec, lon, lat, depth_levels = getVar_sec(run, sectName, grid, depth, years_list, month_list=None, var, one_per_month=False,monthly_mean=False):
@@ -628,7 +636,7 @@ def getVar_sec(run, sectName, grid, depth, var,years_list, month_list=None, one_
     return var_sec, lon, lat, depth_levels
 
 
-
+@deprecation.deprecated()
 def getClim_sec(run, sectName, grid, depth, var, years_list, monthly_mean=False):
     
     """ Get the climatologic year of a choosen variable from a predefined ANHA section 
@@ -689,6 +697,7 @@ def getClim_sec(run, sectName, grid, depth, var, years_list, monthly_mean=False)
     return var_clim_sec, lon, lat, depth_levels
 
 
+@deprecation.deprecated()
 def show_var_data_map(data, lat_range, lon_range, depth=0, var='votemper'):
     """ Displays map of given var in lat-lon range and depth.
         Note: depth has not been tested.
@@ -697,6 +706,7 @@ def show_var_data_map(data, lat_range, lon_range, depth=0, var='votemper'):
     apu.show_var_data_map(data, lat_range, lon_range, depth=depth, var=var)
 
 
+@deprecation.deprecated()
 def calc_stats_var_data(data, lat_range, lon_range, depth=0, no_min_max=True, var='votemper'):
     """  """
 
