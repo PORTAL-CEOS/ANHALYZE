@@ -14,7 +14,7 @@ import deprecation
 
 # Project custom made libraries
 import anhalyze.core.anhalyze_plot_utils as apu
-from anhalyze.core.anhalyze_geo import getIndex_sec
+from anhalyze.core.anhalyze_geo_depr import getIndex_sec
 
 
 @deprecation.deprecated()
