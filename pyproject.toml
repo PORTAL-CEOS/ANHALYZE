@@ -1,7 +1,7 @@
 
 [project]
 name = "anhalyze"
-description = "My package description"
+description = "`ANHALIZE` is an analysis tool for the ANHA configuration of the NEMO model."
 readme = "README.md"
 version = "0.0.1"
 dependencies = [
