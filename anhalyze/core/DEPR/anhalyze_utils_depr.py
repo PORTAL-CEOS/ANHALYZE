@@ -10,13 +10,14 @@ import netCDF4 as nc
 # OS-specific libraries
 import os
 import socket
+import deprecation
 
 # Project custom made libraries
 import anhalyze.core.anhalyze_plot_utils as apu
-from .anhalyze import get_date
-from anhalyze.core.anhalyze_geo import getIndex_sec
+from anhalyze.core.anhalyze_geo_depr import getIndex_sec
 
 
+@deprecation.deprecated()
 def get_paths(run_name=None, environ_paths=False):
     """ Get paths to data and mask standard locations.
 
@@ -79,142 +80,7 @@ def get_paths(run_name=None, environ_paths=False):
 #   also need to separate io, timeseries, and whatever else needed
 
 
-class Anhalyze:
-    """ This class will do analysis of ANHA4 data, for now it initializes the location of files.
-   ...
-
-    Attributes
-    ----------
-        run_name : str
-            Simulation name (e.g. 'ANHA4-WJM004')  (default is ??)
-        grid : str
-            Simulation output grid. (e.g. gridT, gridU)   (default is T)
-        years : str
-            List of years to be analysed  (default is [1998])
-        month_list : str
-            List of months to be analysed. If None(default), return all 12 months
-        one_per_month : bool
-            If True return only the first file of each month (default is False)
-        verbose : bool
-            Print outputs (default is True)
-
-    Methods
-    -------
-    get_file_list(month_list=None, one_per_month=False, monthly_mean=False)
-        Returns file list given a list of years, a grid type,
-        and either all the days in a month, or the first one.
-
-    """
-
-    def __init__(self, run_name=None, grid=None, years=None, month_list=None, one_per_month=False, verbose=True):
-        """ Initializing class.
-
-        Parameters
-        ----------
-        run_name : str, optional
-            Simulation name (e.g. 'ANHA4-WJM004')  (default is ??)
-        grid : str, optional
-            Simulation output grid. (e.g. gridT, gridU)   (default is T)
-        years : str, optional
-            List of years to be analysed  (default is [1998])
-        month_list : str, optional
-            List of months to be analysed. If None(default), return all 12 months
-        one_per_month : bool, optional
-            If True return only the first file of each month (default is False)
-        verbose : bool, optional
-            Print outputs (default is True)
-
-         TODO: where is the nc.Dataset to get the data?
-        """
-
-        # -------
-        # The global wild west
-        self.run_name = run_name
-        if grid is None:
-            self.grid = 'T'
-        else:
-            self.grid = grid
-        # TODO: add assert to grid values
-        if years is None:
-            self.years = ['1998']
-        else:
-            self.years = years
-        # TODO: add assert to years
-        self.month_list = month_list
-        self.one_per_month = one_per_month
-        self.verbose = verbose
-
-        # Init file list given conditions
-        self.file_list = self.get_file_list(one_per_month=one_per_month, month_list=month_list)
-
-        if verbose:
-            print(self.file_list)
-
-    def get_file_list(self, month_list=None, one_per_month=False, monthly_mean=False):
-        """  Returns file list given a list of years, a grid type,
-             and either all the days in a month, or the first one.
-
-        Parameters
-        ----------
-        month_list :  str, optional
-            List of months to be analysed. If None(default), return all 12 months
-        one_per_month :  bool, optional
-            If True return only the first file of each month (default is False)
-        monthly_mean :  bool, optional
-            If not using the default 5 days averaged outputs,
-            The function ask the user to insert the monthly mean path.
-
-        Returns
-        -------
-        selected_file_list: list
-            List of files for analysis
-
-        """
-
-        # Setup
-        selected_file_list = []
-        monthly_file_list = []
-        if month_list is None:
-            month_list = []
-
-        # Get paths
-        data_path, mask_path = get_paths(self.run_name)
-
-        # Get complete file list from path
-        file_list = os.listdir(data_path)
-
-        # Selecting list of files given params
-        for year in self.years:
-            selected_file_list += (sorted([f for f in file_list if '_y' + year in f and '_grid' + self.grid in f]))
-
-        # Selecting first day on given month
-        if one_per_month:
-            if not month_list:
-                month_list = [get_date(filename, how='m') for filename in selected_file_list]
-
-            for year in self.years:
-                for month in month_list:
-                    file_name_stump = 'y{}m{}'.format(year, month)
-                    file_month_name = [f for f in selected_file_list if file_name_stump in f][0]
-                    monthly_file_list.append(file_month_name)
-        else:
-            # Make month selection
-            if month_list:
-                for year in self.years:
-                    for month in month_list:
-                        file_name_stump = 'y{}m{}'.format(year, month)
-                        file_month_names = [f for f in selected_file_list if file_name_stump in f]
-                        monthly_file_list += file_month_names
-
-        if monthly_file_list:
-            selected_file_list = monthly_file_list
-
-        # Adding full path to filenames
-        selected_file_list = [data_path + filename for filename in selected_file_list]
-
-        return selected_file_list
-
-
+@deprecation.deprecated()
 def get_lat_lon(data, lat_range, lon_range, cartesian=True):
     """  Getting Latitude and Longitude """
 
@@ -230,6 +96,7 @@ def get_lat_lon(data, lat_range, lon_range, cartesian=True):
     return lat, lon
 
 
+@deprecation.deprecated()
 def get_mask(data, lat_range, lon_range, depth=0, cartesian=True):
     """  Getting Mask given Latitude and Longitude """
 
@@ -254,6 +121,7 @@ def get_mask(data, lat_range, lon_range, depth=0, cartesian=True):
     return surf_mask
 
 
+@deprecation.deprecated()
 def get_var_data(data, lat_range, lon_range, depth=0, var='votemper', masked=True, cartesian=True):
     """  Getting Data Latitude and Longitude
 
@@ -283,6 +151,7 @@ def get_var_data(data, lat_range, lon_range, depth=0, var='votemper', masked=Tru
     return var_data
 
 
+@deprecation.deprecated()
 def get_row_col_range(data, lat_range, lon_range, grid='gridT'):
     """ Get the row and col range given lat and lon range.  """
 
@@ -314,6 +183,7 @@ def get_row_col_range(data, lat_range, lon_range, grid='gridT'):
     return row_range, col_range
 
 
+@deprecation.deprecated()
 def getMask_region(run,depth,row_range,col_range):
     """ Return the land/ocean ANHA4 mask given lat and lon sliced area
     
@@ -337,7 +207,7 @@ def getMask_region(run,depth,row_range,col_range):
     return mask_region[:].data
 
 
-
+@deprecation.deprecated()
 def getVar_region(run, grid, depth, lon_range,lat_range,var,years_list, month_list=None, one_per_month=False,monthly_mean=False,masked=True,cardinal=True):
     
     """
@@ -445,7 +315,7 @@ def getVar_region(run, grid, depth, lon_range,lat_range,var,years_list, month_li
     return var_region, lon, lat, depth_levels
 
 
-
+@deprecation.deprecated()
 def getClim_region(run, grid, depth, lon_range, lat_range, var, years_list,monthly_mean=False):
     
     """ Get the climatologic year of a choosen variable from an especific region """
@@ -479,7 +349,7 @@ def getClim_region(run, grid, depth, lon_range, lat_range, var, years_list,month
     return var_clim, lon, lat, depth_levels
 
 
-
+@deprecation.deprecated()
 def getMask_sec(run,depth,sectName,i,j):
 
     # Get paths
@@ -496,9 +366,9 @@ def getMask_sec(run,depth,sectName,i,j):
         mask_sect = np.squeeze(mask['tmask'][:,:depth,i[0]:i[-1]+1,j[0]:j[-1]+1],axis=3)
         
     return mask_sect[:].data
-    
-    
-    
+
+
+@deprecation.deprecated()
 def getVar_sec(run, sectName, grid, depth, var,years_list, month_list=None, one_per_month=False,monthly_mean=False):
     
     """ var_sec, lon, lat, depth_levels = getVar_sec(run, sectName, grid, depth, years_list, month_list=None, var, one_per_month=False,monthly_mean=False):
@@ -628,7 +498,7 @@ def getVar_sec(run, sectName, grid, depth, var,years_list, month_list=None, one_
     return var_sec, lon, lat, depth_levels
 
 
-
+@deprecation.deprecated()
 def getClim_sec(run, sectName, grid, depth, var, years_list, monthly_mean=False):
     
     """ Get the climatologic year of a choosen variable from a predefined ANHA section 
@@ -689,6 +559,7 @@ def getClim_sec(run, sectName, grid, depth, var, years_list, monthly_mean=False)
     return var_clim_sec, lon, lat, depth_levels
 
 
+@deprecation.deprecated()
 def show_var_data_map(data, lat_range, lon_range, depth=0, var='votemper'):
     """ Displays map of given var in lat-lon range and depth.
         Note: depth has not been tested.
@@ -697,6 +568,7 @@ def show_var_data_map(data, lat_range, lon_range, depth=0, var='votemper'):
     apu.show_var_data_map(data, lat_range, lon_range, depth=depth, var=var)
 
 
+@deprecation.deprecated()
 def calc_stats_var_data(data, lat_range, lon_range, depth=0, no_min_max=True, var='votemper'):
     """  """
 
