@@ -17,6 +17,7 @@ from anhalyze.core.anhalyze_utils import calc_stats_var_data, get_paths
 from anhalyze.core.anhalyze import get_date
 
 
+# Possible names AnhalyzeProject, AnhaProject, AnhalyzeTimeseries, AnhaTimeseries
 @deprecation.deprecated()
 class Anhalyze:
     """ This class will do analysis of ANHA4 data, for now it initializes the location of files.
