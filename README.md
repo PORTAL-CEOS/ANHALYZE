@@ -55,7 +55,7 @@ aa.apply_mask(mask_filename)
 aaa = aa.sel([50,65],[-93,-75],[0,300])
 
 # Plot region for a selected variable.
-aaa.show_var_data_map(var='vosaline')
+aaa.show_var_data_map(var='votemper')
 ``` 
 
 
