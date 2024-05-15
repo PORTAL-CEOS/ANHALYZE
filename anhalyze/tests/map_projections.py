@@ -8,7 +8,11 @@ import unittest
 
 
 class MyTestCase(unittest.TestCase):
-    def test_cartopy(self):
+    """
+    """
+
+    @staticmethod
+    def test_cartopy():
         """ Testing if current installation can make a plot using cartopy projections. """
 
         # self.assertEqual(True, False)  # add assertion here
