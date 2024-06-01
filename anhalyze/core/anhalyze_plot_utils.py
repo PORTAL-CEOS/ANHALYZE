@@ -3,6 +3,7 @@
 
 # Data-related libraries
 import matplotlib
+import numpy as np
 
 # OS-specific libraries
 
@@ -19,15 +20,46 @@ import anhalyze.core.anhalyze_geo
 # Setting plotting variables
 levels = 42
 line_levels = 11
-vmax = 20.
-vmin = -20.
-cmap = 'coolwarm'
+
+
+def get_plot_config(var, var_data, color_range='physical'):
+    """ Return var-dependent plotting information
+
+        Parameters
+        ----------
+        var : str
+            Variable name.
+        var_data : np.array
+            numpy array with var data.
+        color_range : str
+            Color range either `physical` limits, or `relative` values.
+    """
+
+    if var == 'votemper':
+        # cmap = 'coolwarm'
+        # vrange = [-20, 20]   # color map based values
+        cmap = 'plasma'  # 'magma'
+        vrange = [-2, 35]    # Physical based values
+    elif var == 'vosaline':
+        cmap = 'YlGn'
+        vrange = [31, 39]    # Physical based values
+    else:
+        cmap = 'cividis'
+        vrange = None
+
+    if not vrange or color_range == 'relative':
+        vrange = [np.nanmin(var_data), np.nanmax(var_data)]
+        print(f'vrange: {vrange}')
+    else:
+        vrange = vrange
+
+    return cmap, vrange
 
 
 def get_feature_mask(feature='land', resolution='50m'):
     """   """
 
-    # Select facecolor
+    # Select face color
     if 'land' in feature:
         facecolor = matplotlib.colors.to_hex('wheat')
     elif 'ocean' in feature:
@@ -35,7 +67,7 @@ def get_feature_mask(feature='land', resolution='50m'):
     else:
         facecolor = matplotlib.colors.to_hex('gray')
 
-        # Construct feature mask
+    # Construct feature mask
     feature_mask = cfeature.NaturalEarthFeature('physical', feature,
                                                 scale=resolution,
                                                 edgecolor='face',
@@ -44,13 +76,21 @@ def get_feature_mask(feature='land', resolution='50m'):
     return feature_mask
 
 
-def show_var_data_map(data, idepth=0, var=''):
+def show_var_data_map(data, idepth=0, var='', color_range='physical'):
     """ Displays map of given parameter (var) in lat-lon range and depth.
         Note: depth has not been tested.
 
-       data: In AnhaDataset or xarray.Dataset formats.
-       depth: dep level; default first level (0)    [int]
-       var: variable name [str]
+        Parameters
+        ----------
+        var : str
+            Variable name.
+        data: AnhaDataset
+            In AnhaDataset or xarray.Dataset formats.
+        idepth: int
+            dep level; default first level (0)
+        color_range : str
+            Color range either `physical` limits, or `relative` values.
+
     """
     # TODO add projection options
 
@@ -89,9 +129,12 @@ def show_var_data_map(data, idepth=0, var=''):
     ax.add_feature(get_feature_mask())
     ax.add_feature(get_feature_mask(feature='ocean'))
 
+    # Get var-dependent plotting information
+    cmap, vrange = get_plot_config(var, var_data, color_range=color_range)
+
     # Plotting var data as filled contour regions
     im = ax.contourf(lon, lat, var_data, levels=levels, cmap=cmap,
-                     vmin=vmin, vmax=vmax, transform=ccrs.PlateCarree(), zorder=2)
+                     vmin=vrange[0], vmax=vrange[1], transform=ccrs.PlateCarree(), zorder=2)
 
     # Plotting var data contour lines
     ax.contour(lon, lat, var_data, levels=line_levels, cmap='Greys', linewidths=.2, transform=ccrs.PlateCarree())
