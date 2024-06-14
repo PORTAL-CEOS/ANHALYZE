@@ -38,7 +38,7 @@ def get_plot_config(var, var_data, color_range='physical'):
         vrange = [-2, 35]    # Physical based values
     elif var == 'vosaline':
         cmap = 'YlGn'
-        vrange = [31, 39]    # Physical based values
+        vrange = [25, 39]    # Physical based values
     else:
         cmap = 'cividis'
         vrange = None
