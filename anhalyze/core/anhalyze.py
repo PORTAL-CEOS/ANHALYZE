@@ -451,7 +451,7 @@ class AnhaDataset:
         return AnhaDataset(os.path.join(self.attrs['filepath'], self.attrs['filename']),
                            load_data=self._load_data, _xr_dataset=_xr_dataset, _attrs=self.attrs)
 
-    def show_var_data_map(self, var, idepth=0, color_range='physical'):
+    def show_var_data_map(self, var, idepth=0, color_range='physical', savefig=None):
         """ Displays a map for given var in `AnhaDataset.data_vars`.
 
         Parameters
@@ -462,13 +462,14 @@ class AnhaDataset:
             Depth value from z_range.
         color_range : str
             Color range either `physical` limits, or `relative` values.
-
+        savefig : str
+            Filename to save figure including path.
         """
         import anhalyze.core.anhalyze_plot_utils as apu
 
         assert var in list(self.data_vars), f'[anhalyze] Variable {var} not found in data_vars: {list(self.data_vars)}'
 
-        apu.show_var_data_map(self, var=var, idepth=idepth, color_range=color_range)
+        apu.show_var_data_map(self, var=var, idepth=idepth, color_range=color_range, savefig=savefig)
 
     def apply_mask(self, mask_filename=None):
         """ Applies mask to `AnhaDataset.data_vars`.

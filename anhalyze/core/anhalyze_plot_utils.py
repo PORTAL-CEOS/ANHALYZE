@@ -76,7 +76,7 @@ def get_feature_mask(feature='land', resolution='50m'):
     return feature_mask
 
 
-def show_var_data_map(data, idepth=0, var='', color_range='physical'):
+def show_var_data_map(data, idepth=0, var='', color_range='physical', savefig=None):
     """ Displays map of given parameter (var) in lat-lon range and depth.
         Note: depth has not been tested.
 
@@ -90,7 +90,8 @@ def show_var_data_map(data, idepth=0, var='', color_range='physical'):
             dep level; default first level (0)
         color_range : str
             Color range either `physical` limits, or `relative` values.
-
+        savefig : str
+            Filename to save figure including path.
     """
     # TODO add projection options
 
@@ -140,3 +141,7 @@ def show_var_data_map(data, idepth=0, var='', color_range='physical'):
     axins = inset_axes(ax, width="5%", height="100%", loc='right', borderpad=-1)
     label = '%s [%s]' % (data.data_vars[var].attrs['long_name'].title(), data.data_vars[var].attrs['units'])
     fig.colorbar(im, cax=axins, orientation="vertical", label=label)
+
+    # Save plot if filename is provided
+    if savefig:
+        fig.savefig(savefig)
