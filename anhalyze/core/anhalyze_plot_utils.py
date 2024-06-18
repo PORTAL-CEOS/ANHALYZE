@@ -72,6 +72,7 @@ def get_feature_mask(feature='land', resolution='50m'):
     return feature_mask
 
 
+
 def get_projection(proj='LambertConformal', proj_info=None):
     """
     Select Cartopy projections option and configurations based on users choice
@@ -163,7 +164,7 @@ def get_projection_info(data):
     return proj_info
 
 
-def show_var_data_map(data, var='', idepth=0, proj='', color_range='physical'):
+def show_var_data_map(data, var='', idepth=0, proj='', color_range='physical', savefig=None):
     """ Displays map of given parameter (var) in lat-lon range and depth.
         Note: depth has not been tested.
 
@@ -177,6 +178,8 @@ def show_var_data_map(data, var='', idepth=0, proj='', color_range='physical'):
             dep level; default first level (0)
         color_range : str
             Color range either `physical` limits, or `relative` values.
+        savefig : str
+            Filename to save figure including path.
     """
 
     assert var in list(data.data_vars), \
@@ -237,3 +240,7 @@ def show_var_data_map(data, var='', idepth=0, proj='', color_range='physical'):
     axins = inset_axes(ax, width="2.5%", height="100%", loc='right', borderpad=-1)
     label = '%s [%s]' % (data.data_vars[var].attrs['long_name'].title(), data.data_vars[var].attrs['units'])
     fig.colorbar(im, cax=axins, orientation="vertical", label=label, extend='both')
+
+    # Save plot if filename is provided
+    if savefig:
+        fig.savefig(savefig)
