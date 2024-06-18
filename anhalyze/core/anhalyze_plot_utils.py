@@ -147,4 +147,4 @@ def show_var_data_map(data, idepth=0, var='', color_range='physical'):
     # Set Color-bar
     axins = inset_axes(ax, width="5%", height="100%", loc='right', borderpad=-1)
     label = '%s [%s]' % (data.data_vars[var].attrs['long_name'].title(), data.data_vars[var].attrs['units'])
-    fig.colorbar(im, cax=axins, orientation="vertical", label=label, format='%.1f')
+    fig.colorbar(im, cax=axins, orientation="vertical", label=label)
