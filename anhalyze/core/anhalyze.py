@@ -137,7 +137,7 @@ class AnhaDataset:
         assert os.path.isfile(filename), f'[Anhalyze] File {filename} not found.'
 
         if os.path.dirname(filename):
-            filepath = os.path.dirname(filename)
+            filepath = os.path.dirname(os.path.realpath(filename))
             filename = os.path.basename(filename)
         else:
             filepath = ''
