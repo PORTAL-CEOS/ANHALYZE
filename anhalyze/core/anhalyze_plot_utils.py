@@ -63,7 +63,10 @@ def show_var_data_map(data, idepth=0, var=''):
 
     # Get var data
     if len(data.data_vars[var].dims) == 4:
-        var_data = data.data_vars[var].data[0, idepth, :]
+        if data.attrs['mask_applied'] == True:
+            var_data = data.data_vars[var].data[0,:,:,0]  
+        else:
+            var_data = data.data_vars[var].data[0, idepth, :]
     elif len(data.data_vars[var].dims) == 3:
         var_data = data.data_vars[var].data[0, :]
     else:
