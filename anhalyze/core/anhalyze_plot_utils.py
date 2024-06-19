@@ -67,7 +67,9 @@ def show_var_data_map(data, idepth=0, var=''):
     elif len(data.data_vars[var].dims) == 3:
         var_data = data.data_vars[var].data[0, :]
     else:
-        print('Variable should be a 2D or 3D field.')
+        raise ValueError(
+            f"Variable {var} should be a 2D or 3D variable."
+        )
 
 
     # getting lat and lon
