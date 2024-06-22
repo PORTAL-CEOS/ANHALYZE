@@ -33,21 +33,25 @@ def get_plot_config(var, var_data, color_range='physical'):
             Color range either `physical` limits, or `relative` values.
     """
 
-    if var == 'votemper':
+    if var == 'votemper':  # Temperature
         # cmap = 'coolwarm'
         # vrange = [-20, 20]   # color map based values
-        cmap = 'plasma'  # 'magma'
+        cmap = 'magma'  # Other possible colors: 'plasma', 'magma'
         vrange = [-2, 35]    # Physical based values
-    elif var == 'vosaline':
-        cmap = 'YlGn'
+    elif var == 'vosaline':  # Salinity
+        cmap = 'viridis'  # Other possible colors: 'winter'
         vrange = [25, 39]    # Physical based values
+    elif var == 'chl':  # Chlorophyll
+        cmap = 'BuGn'
+        vrange = None  # Placeholder for physical based values
     else:
-        cmap = 'cividis'
+        # cmap = 'cividis'
+        cmap = 'spring'
         vrange = None
 
     if not vrange or color_range == 'relative':
         vrange = [np.nanmin(var_data), np.nanmax(var_data)]
-        print(f'vrange: {vrange}')
+        print(f'  vrange: {vrange}')
     else:
         vrange = vrange
 
