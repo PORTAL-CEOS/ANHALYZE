@@ -496,6 +496,19 @@ class AnhaDataset:
         self._xr_dataset = self._xr_dataset.where(self.coords['mask'] == 1)
         self.attrs['mask_applied'] = True
 
+    def to_netcdf(self, filename='', **kwargs):
+        """ Writes netcdf file from `AnhaDataset`.
+
+        Parameters
+        ----------
+        filename : str
+            netcdf filename
+
+        """
+
+        assert '.nc' in filename, ValueError('[Anhalyze] Filename should be .nc type.')
+
+        self._xr_dataset.to_netcdf(filename, **kwargs)
 
 #     def set_location(self):
 #         """
