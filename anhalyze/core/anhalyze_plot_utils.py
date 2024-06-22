@@ -4,8 +4,7 @@
 # Data-related libraries
 import matplotlib
 import numpy as np
-
-# OS-specific libraries
+import os
 
 # Plotting-related libraries
 import matplotlib.pyplot as plt
@@ -243,4 +242,10 @@ def show_var_data_map(data, var='', idepth=0, proj='', color_range='physical', s
 
     # Save plot if filename is provided
     if savefig:
+        # Including path from original file if not given
+        if not os.path.dirname(savefig):
+            savefig = os.path.join(data.attrs["filepath"], savefig)
+
+        print(f'[Anhalyze] Saving figure: {savefig}')
+
         fig.savefig(savefig)
