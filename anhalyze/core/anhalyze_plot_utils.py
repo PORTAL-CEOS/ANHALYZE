@@ -15,10 +15,9 @@ from cartopy import crs as ccrs, feature as cfeature
 import anhalyze.core.anhalyze
 import anhalyze.core.anhalyze_geo
 
-# TODO: check best practices for these global variables
-# Setting plotting variables
-levels = 42
-line_levels = 11
+# Setting plotting variables as global constants for now
+LEVELS = 42
+LINE_LEVELS = 11
 
 
 def get_plot_config(var, var_data, color_range='physical'):
@@ -125,11 +124,11 @@ def show_var_data_map(data, idepth=0, var='', color_range='physical', savefig=No
     cmap, vrange = get_plot_config(var, var_data, color_range=color_range)
 
     # Plotting var data as filled contour regions
-    im = ax.contourf(lon, lat, var_data, levels=levels, cmap=cmap,
+    im = ax.contourf(lon, lat, var_data, levels=LEVELS, cmap=cmap,
                      vmin=vrange[0], vmax=vrange[1], transform=ccrs.PlateCarree(), zorder=2)
 
     # Plotting var data contour lines
-    ax.contour(lon, lat, var_data, levels=line_levels, cmap='Greys', linewidths=.2, transform=ccrs.PlateCarree())
+    ax.contour(lon, lat, var_data, levels=LINE_LEVELS, cmap='Greys', linewidths=.2, transform=ccrs.PlateCarree())
 
     # Create grid-line labels
     gl = ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=True, x_inline=False,
