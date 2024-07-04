@@ -20,7 +20,6 @@ vmax = 20.
 vmin = -20.
 cmap = 'coolwarm'
 
-
 def get_feature_mask(feature='land', resolution='50m'):
     """   """
 
@@ -39,6 +38,7 @@ def get_feature_mask(feature='land', resolution='50m'):
                                                 facecolor=facecolor)
 
     return feature_mask
+    
 
 def get_projection(proj='LambertConformal', proj_info=None):
     """
@@ -172,6 +172,8 @@ def show_var_data_map(data, var='', idepth=0, proj=''):
         raise ValueError(
             f"Variable {var} should be a 2D or 3D variable."
         )
+    
+   
 
     # getting lat and lon
     lat, lon = data.coords[data.attrs['coord_lat']].data, data.coords[data.attrs['coord_lon']].data
