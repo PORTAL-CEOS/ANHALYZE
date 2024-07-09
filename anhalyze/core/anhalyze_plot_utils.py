@@ -23,6 +23,7 @@ vmax = 20.
 vmin = -20.
 cmap = 'coolwarm'
 
+
 def get_feature_mask(feature='land', resolution='50m'):
     """   """
 
@@ -41,7 +42,7 @@ def get_feature_mask(feature='land', resolution='50m'):
                                                 facecolor=facecolor)
 
     return feature_mask
-    
+
 
 def show_var_data_map(data, idepth=0, var=''):
     """ Displays map of given parameter (var) in lat-lon range and depth.
@@ -63,17 +64,13 @@ def show_var_data_map(data, idepth=0, var=''):
     # Get var data
     if len(data.data_vars[var].dims) == 4:
         if 'depth' in data.data_vars[var].dims[3]:
-            var_data = data.data_vars[var].data[0,:,:,0]  
+            var_data = data.data_vars[var].data[0, :, :, 0]
         else:
             var_data = data.data_vars[var].data[0, idepth, :]
     elif len(data.data_vars[var].dims) == 3:
         var_data = data.data_vars[var].data[0, :]
     else:
-        raise ValueError(
-            f"Variable {var} should be a 2D or 3D variable."
-        )
-    
-   
+        raise ValueError(f"Variable {var} should be a 2D or 3D variable.")
 
     # getting lat and lon
     lat, lon = data.coords[data.attrs['coord_lat']].data, data.coords[data.attrs['coord_lon']].data
