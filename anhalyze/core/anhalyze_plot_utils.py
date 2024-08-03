@@ -198,7 +198,7 @@ def show_var_data_map(data, var='', idepth=0, proj='', color_range='physical', s
     proj_config = get_projection(proj, proj_info)
 
     # Get var data
-    var_data = data._get_data_var(var=var, idepth=idepth)
+    var_data = data.get_data_var(var=var, idepth=idepth)
 
     # TODO apply mask
 
