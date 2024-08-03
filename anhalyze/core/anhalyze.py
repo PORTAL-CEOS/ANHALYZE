@@ -41,7 +41,7 @@ class AnhaDataset:
         # return xr.core.formatting.dataset_repr(self._anha_dataset)  # placeholder, may help create own version.
         return f'[Anhalyze] Filename: {self.attrs["filename"]} \n' + str(self._xr_dataset)
 
-    def __init__(self, filename, load_data=True, _xr_dataset=None, _attrs=None):
+    def __init__(self, filename, load_data=True, mask_filename=None, _xr_dataset=None, _attrs=None):
         """ Initializing object.
 
         Parameters
@@ -68,7 +68,14 @@ class AnhaDataset:
             if load_data:
                 self._xr_dataset = xr.open_dataset(os.path.join(self.attrs['filepath'], self.attrs['filename']))
             else:
-                self._xr_dataset = xr.open_dataset(os.path.join(self.attrs['filepath'], self.attrs['filename']), decode_cf=False)
+                self._xr_dataset = xr.open_dataset(os.path.join(self.attrs['filepath'], self.attrs['filename']),
+                                                   decode_cf=False)
+
+        # Loading mask data
+        if not _xr_dataset:
+            # Get mask from filename
+            if 'mask' not in list(self._xr_dataset.data_vars):
+                self._mask_filename = mask_filename
 
         # Initialize file metadata
         self._load_data = load_data
@@ -104,6 +111,12 @@ class AnhaDataset:
     def _init_data_vars(self):
         """ Initialize data variables
         """
+
+        #
+        if 'mask' not in list(self._xr_dataset.data_vars):
+            # TODO find a way to move this to init_data_vars
+            self._get_mask(mask_filename=self._mask_filename)
+
         return self._xr_dataset.data_vars
 
     def _init_xr_attrs(self):
@@ -314,6 +327,45 @@ class AnhaDataset:
         coord_range = (coord_ranges[0], coord_ranges[-1])
 
         return coord_range
+
+    def _get_mask(self, mask_filename=None):
+        """ Get mask from given mask_filename or default location.
+
+        Parameters
+        ----------
+        mask_filename : str
+            Mask filename
+
+        """
+
+        if not mask_filename:
+            #  Also need to check that the file exist, otherwise skip (but will need to keep track of this)
+            mask_filename = './Test_Data/ANHA4_mask.nc'
+
+        if mask_filename:
+
+            # Getting mask data
+            if 'gridT' in self.attrs['grid']:
+                mask = xr.open_dataset(mask_filename).tmask.data
+            elif 'gridU' in self.attrs['grid']:
+                mask = xr.open_dataset(mask_filename).umask.data
+            elif 'gridV' in self.attrs['grid']:
+                mask = xr.open_dataset(mask_filename).vmask.data
+            elif 'gridW' in self.attrs['grid']:
+                # TODO use tmask and add a warning
+                raise NotImplementedError('TODO: Need to figure this out')
+                # mask = xr.open_dataset(mask_filename).tmask.data
+            else:
+                mask = xr.open_dataset(mask_filename).tmask.data
+
+            # Adding mask data to data_vars
+            self._xr_dataset = self._xr_dataset.assign({'mask': ((self.attrs['dim_z'],
+                                                                  self.attrs['dim_y'],
+                                                                  self.attrs['dim_x']),
+                                                                 mask[0, :, :, :])})
+
+        else:
+            raise OSError('[Anhalyze] No mask/mesh file found.')
 
     def sel(self, lat_range=None, lon_range=None, depth_range=None):
         """
