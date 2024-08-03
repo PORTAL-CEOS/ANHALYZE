@@ -328,6 +328,23 @@ class AnhaDataset:
 
         return coord_range
 
+    def _get_data_var(self, var='', idepth=0):
+        """ Returns selected data_var
+        """
+
+        # Get var data
+        if len(self.data_vars[var].dims) == 4:
+            if 'depth' in self.data_vars[var].dims[3]:
+                var_data = self.data_vars[var].data[0, :, :, 0]
+            else:
+                var_data = self.data_vars[var].data[0, idepth, :]
+        elif len(self.data_vars[var].dims) == 3:
+            var_data = self.data_vars[var].data[0, :]
+        else:
+            raise ValueError(f"[anhalyze] Variable {var} should be a 2D or 3D variable.")
+
+        return var_data
+
     def _get_mask(self, mask_filename=None):
         """ Get mask from given mask_filename or default location.
 

@@ -105,15 +105,9 @@ def show_var_data_map(data, idepth=0, var='', color_range='physical', savefig=No
     location_info = anhalyze.core.anhalyze_geo.init_location()
 
     # Get var data
-    if len(data.data_vars[var].dims) == 4:
-        if 'depth' in data.data_vars[var].dims[3]:
-            var_data = data.data_vars[var].data[0, :, :, 0]
-        else:
-            var_data = data.data_vars[var].data[0, idepth, :]
-    elif len(data.data_vars[var].dims) == 3:
-        var_data = data.data_vars[var].data[0, :]
-    else:
-        raise ValueError(f"Variable {var} should be a 2D or 3D variable.")
+    var_data = data._get_data_var(var=var, idepth=idepth)
+
+    # TODO apply mask
 
     # getting lat and lon
     lat, lon = data.coords[data.attrs['coord_lat']].data, data.coords[data.attrs['coord_lon']].data
