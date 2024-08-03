@@ -105,7 +105,7 @@ def show_var_data_map(data, idepth=0, var='', color_range='physical', savefig=No
     location_info = anhalyze.core.anhalyze_geo.init_location()
 
     # Get var data
-    var_data = data._get_data_var(var=var, idepth=idepth)
+    var_data = data.get_data_var(var=var, idepth=idepth)
 
     # TODO apply mask
 

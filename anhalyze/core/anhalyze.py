@@ -328,7 +328,7 @@ class AnhaDataset:
 
         return coord_range
 
-    def _get_data_var(self, var='', idepth=0):
+    def get_data_var(self, var='', idepth=0):
         """ Returns selected data_var
         """
 
