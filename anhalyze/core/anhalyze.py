@@ -24,6 +24,8 @@ class AnhaDataset:
         Filename given with format */*/ANHA?-??????_y????m??d??_grid?.nc
     load_data : bool, optional
         Bool for loading data (Default: True)
+    mask_filename : str, optional
+        Mask filename(Default: )
 
     Returns
     -------
@@ -37,7 +39,7 @@ class AnhaDataset:
         """
         # TODO return own dims/coords/data_vars, instead of the ones from _xr_dataset
         # return xr.core.formatting.dataset_repr(self._anha_dataset)  # placeholder, may help create own version.
-        return f'[Anhalyze] Filename: {self.attrs["filename"]} \n'+str(self._xr_dataset)
+        return f'[Anhalyze] Filename: {self.attrs["filename"]} \n' + str(self._xr_dataset)
 
     def __init__(self, filename, load_data=True, _xr_dataset=None, _attrs=None):
         """ Initializing object.
@@ -72,7 +74,7 @@ class AnhaDataset:
         self._load_data = load_data
         self._init_metadata()
 
-        # TODO update verbose with logging level
+        # TODO replace verbose with logging levels
         # Initialize other attrs
         self.attrs['verbose'] = True
 
@@ -96,7 +98,7 @@ class AnhaDataset:
         self.attrs['coord_lon'] = [var for var in geocoords_list if 'nav_lon' in var][0]
         self.attrs['coord_depth'] = [var for var in dims_list if 'depth' in var][0]
 
-        # TODO this may still be an issue if we want coords to reflect the  "real" ones (when load_data=T)
+        # TODO this may still be an issue if we want coords to reflect the "real" ones (when load_data=T)
         return self._xr_dataset.coords
 
     def _init_data_vars(self):
@@ -153,7 +155,7 @@ class AnhaDataset:
 
         # Initialize model config
         self.attrs['model_run'] = self.attrs['filename'].split('_')[0]
-        assert 'ANHA' in self.attrs['model_run'],\
+        assert 'ANHA' in self.attrs['model_run'], \
             f'[Anhalyze] model_run format not recognized: {self.attrs["model_run"]} should include ANHA'
         self.attrs['model_config'] = self.attrs['filename'].split('-')[0]
         self.attrs['model_case'] = self.attrs['filename'].split('-')[1].split('_')[0]
@@ -161,9 +163,9 @@ class AnhaDataset:
         # Init grid type
         self.attrs['grid'] = self.attrs['filename'].split('_grid')[-1][0]
         grid_value_options = 'TBUVW'
-        assert self.attrs['grid'] in grid_value_options,\
+        assert self.attrs['grid'] in grid_value_options, \
             f'[Anhalyze] Grid type not recognized: {self.attrs["grid"]}'
-        self.attrs['grid'] = 'grid'+self.attrs['grid']
+        self.attrs['grid'] = 'grid' + self.attrs['grid']
 
         # Initialize time
         self.attrs['year'] = self.attrs['filename'].split('y')[-1][:4]
@@ -222,7 +224,7 @@ class AnhaDataset:
             coord_range = [coord_range[1], coord_range[0]]
 
         # Get full range
-        full_range = self.attrs[coord_name+'_range']
+        full_range = self.attrs[coord_name + '_range']
 
         # Make sure values are within full range.
         if 'rigid' in mode:
