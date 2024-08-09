@@ -331,22 +331,18 @@ class AnhaDataset:
 
         return coord_range
 
-    def get_data_var(self, var='', idepth=0):
-        """ Returns selected data_var
+    def _get_var_data_array(self, var='', mask_data=True):
+        """ Returns DataArray for given var
         """
 
-        # Get var data
-        if len(self.data_vars[var].dims) == 4:
-            if 'depth' in self.data_vars[var].dims[3]:
-                var_data = self.data_vars[var].data[0, :, :, 0]
-            else:
-                var_data = self.data_vars[var].data[0, idepth, :]
-        elif len(self.data_vars[var].dims) == 3:
-            var_data = self.data_vars[var].data[0, :]
-        else:
-            raise ValueError(f"[anhalyze] Variable {var} should be a 2D or 3D variable.")
+        # Get DataArray for given var
+        var_da = self.data_vars[var]
 
-        return var_data
+        # Mask data
+        if mask_data:
+            var_da = self._apply_mask(var_da)
+
+        return var_da
 
     def _get_mask(self, mask_filename=None):
         """ Get mask from given mask_filename or default location.
@@ -556,15 +552,13 @@ class AnhaDataset:
         return AnhaDataset(os.path.join(self.attrs['filepath'], self.attrs['filename']),
                            load_data=self._load_data, _xr_dataset=_xr_dataset, _attrs=self.attrs)
 
-    def show_var_data_map(self, var, idepth=0, color_range='physical', savefig=None, proj='LambertConformal'):
+    def show_var_data_map(self, var, color_range='physical', savefig=None,proj='LambertConformal'):
         """ Displays a map for given var in `AnhaDataset.data_vars`.
 
         Parameters
         ----------
         var : str
             Variable name.
-        idepth : int
-            Depth value from z_range.
         color_range : str
             Color range either `physical` limits, or `relative` values.
         savefig : str
@@ -572,36 +566,19 @@ class AnhaDataset:
         proj : str
             Projection name.
         """
+
         import anhalyze.core.anhalyze_plot_utils as apu
 
         assert var in list(self.data_vars), f'[anhalyze] Variable {var} not found in data_vars: {list(self.data_vars)}'
 
-        apu.show_var_data_map(self, var=var, idepth=idepth, color_range=color_range, savefig=savefig, proj=proj)
+        # Get DataArray for given var
+        var_da = self._get_var_data_array(var=var)
 
-    def apply_mask(self, mask_filename=None):
-        """ Applies mask to `AnhaDataset.data_vars`.
+        # Select top layer
+        var_da = var_da.isel(indexers={self.attrs['dim_z']: [0]})
 
-        Parameters
-        ----------
-        mask_filename : str
-            Mask filename
-
-        """
-
-        if not mask_filename:
-            mask_filename = 'ANHA4_mask.nc'
-
-        # Getting mask data
-        mask = xr.open_dataset(mask_filename).tmask.data
-
-        # Adding mask data to coords
-        self.coords['mask'] = ((self.attrs['dim_z'], self.attrs['dim_y'], self.attrs['dim_x']),
-                               mask[0, :, :, :])
-
-        # TODO not exactly what I want. for now this works if used before using sel(), since not returning new instance
-        # Applying mask data
-        self._xr_dataset = self._xr_dataset.where(self.coords['mask'] == 1)
-        self.attrs['mask_applied'] = True
+        # Show var data map
+        apu.show_var_data_map(var_da, attrs=self.attrs, color_range=color_range, savefig=savefig, proj=proj)
 
     def to_netcdf(self, filename='', **kwargs):
         """ Writes netcdf file from `AnhaDataset`.
