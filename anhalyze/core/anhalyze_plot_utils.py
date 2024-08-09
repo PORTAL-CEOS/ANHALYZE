@@ -78,18 +78,16 @@ def get_feature_mask(feature='land', resolution='50m'):
     return feature_mask
 
 
-def show_var_data_map(data, idepth=0, var='', color_range='physical', savefig=None):
+def show_var_data_map(var_da, attrs, color_range='physical', savefig=None):
     """ Displays map of given parameter (var) in lat-lon range and depth.
         Note: depth has not been tested.
 
         Parameters
         ----------
-        var : str
-            Variable name.
-        data: AnhaDataset
-            In AnhaDataset or xarray.Dataset formats.
-        idepth: int
-            dep level; default first level (0)
+        var_da: xarray.DataArray
+            xarray.DataArray for given var(var_da.name).
+        attrs : dict
+            Attributes.
         color_range : str
             Color range either `physical` limits, or `relative` values.
         savefig : str
@@ -97,37 +95,32 @@ def show_var_data_map(data, idepth=0, var='', color_range='physical', savefig=No
     """
     # TODO add projection options
 
-    assert var in list(data.data_vars), \
-        f'[anhalyze_plot_utils] Variable {var} not found in data_vars: {list(data.data_vars)}'
-
     # TODO better use of init_location, if location set then load it, otherwise calculate it.
     # Init location info
     location_info = anhalyze.core.anhalyze_geo.init_location()
 
-    # Get var data
-    var_data = data.get_data_var(var=var, idepth=idepth)
-
-    # TODO apply mask
-
     # getting lat and lon
-    lat, lon = data.coords[data.attrs['coord_lat']].data, data.coords[data.attrs['coord_lon']].data
+    lat, lon = np.squeeze(var_da.coords[attrs['coord_lat']].data), np.squeeze(var_da.coords[attrs['coord_lon']].data)
+
+    # Get var data to 2D for plotting.
+    var_data = np.squeeze(var_da.data)
 
     # Set up figure and projection
     fig = plt.figure()
     ax = fig.add_subplot(1, 1, 1,
                          projection=ccrs.LambertConformal(central_longitude=location_info['central_longitude'],
                                                           standard_parallels=location_info['standard_parallels']))
-    ax.set_extent([data.attrs['coord_lon_range'][0],
-                   data.attrs['coord_lon_range'][1],
-                   data.attrs['coord_lat_range'][0],
-                   data.attrs['coord_lat_range'][1]])
+    ax.set_extent([attrs['coord_lon_range'][0],
+                   attrs['coord_lon_range'][1],
+                   attrs['coord_lat_range'][0],
+                   attrs['coord_lat_range'][1]])
 
     # Adding ocean and land features
     ax.add_feature(get_feature_mask())
     ax.add_feature(get_feature_mask(feature='ocean'))
 
     # Get var-dependent plotting information
-    cmap, vrange = get_plot_config(var, var_data, color_range=color_range)
+    cmap, vrange = get_plot_config(var_da.name, var_data, color_range=color_range)
 
     # Plotting var data as filled contour regions
     im = ax.contourf(lon, lat, var_data, levels=LEVELS, cmap=cmap,
@@ -143,14 +136,14 @@ def show_var_data_map(data, idepth=0, var='', color_range='physical', savefig=No
 
     # Set Color-bar
     axins = inset_axes(ax, width="5%", height="100%", loc='right', borderpad=-1)
-    label = '%s [%s]' % (data.data_vars[var].attrs['long_name'].title(), data.data_vars[var].attrs['units'])
+    label = '%s [%s]' % (var_da.attrs['long_name'].title(), var_da.attrs['units'])
     fig.colorbar(im, cax=axins, orientation="vertical", label=label)
 
     # Save plot if filename is provided
     if savefig:
         # Including path from original file if not given
         if not os.path.dirname(savefig):
-            savefig = os.path.join(data.attrs["filepath"], savefig)
+            savefig = os.path.join(attrs["filepath"], savefig)
 
         print(f'[Anhalyze] Saving figure: {savefig}')
 
