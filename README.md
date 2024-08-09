@@ -13,18 +13,27 @@ Centre for Earth Observation Science (CEOS), at the University of Manitoba.
 
 NOTE: This code is stable, but new features are currently under development.
 
-## Getting Started
 
-### Dependencies
+## Installation
 
-Dependencies are found in `requirements.txt`.
+Clone this [GitHub repo](https://github.com/PORTAL-CEOS/ANHALIZE): 
 
-### Installing
+```
+git clone https://github.com/PORTAL-CEOS/ANHALYZE.git
+```
 
-After cloning this [GitHub repo](https://github.com/PORTAL-CEOS/ANHALIZE). \
-Install with:
+Install the dependencies in your [environment](https://conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html) with:
 
-`python -m pip install .`
+```
+cd ANHALYZE/
+python -m pip install -r requirements.txt
+```
+
+Then install the package with:
+
+```
+python -m pip install .
+```
 
 Future Note: This will become a PyPI application. 
 
