@@ -40,7 +40,21 @@ def get_feature_mask(feature='land', resolution='50m'):
 
     return feature_mask
 
-def get_projection(proj, proj_info):
+def get_projection(proj='LambertConformal', proj_info=None):
+    """
+    Select Cartopy projections option and configurations based on users choice
+    of projection and coordinates info from anhadataset.
+    
+    Parameters
+    ----------
+    proj : str
+    Projection name from Cartopy list.
+    proj_info : dict
+    Information for projection calculated by get_projection_info.
+    """
+    
+    if proj_info is None:
+        raise "Argument proj_info is None. Use get_projection_info do obtain projection information from anhadataset."
     
     proj_list = {
     
@@ -82,6 +96,14 @@ def get_projection(proj, proj_info):
     
     
 def get_projection_info(data):
+    """
+    Calculate information used to set figure projection.
+    
+    Parameters
+    ----------
+    data: anhadataset
+    Dataset to be plotted
+    """
 
     # Setting up user's region
     east = data.attrs['coord_lon_range'][1]
@@ -120,7 +142,7 @@ def get_projection_info(data):
     return proj_info
 
 
-def show_var_data_map(data, var, idepth, proj):
+def show_var_data_map(data, var='', idepth=0, proj=''):
     """ Displays map of given parameter (var) in lat-lon range and depth.
         Note: depth has not been tested.
 
