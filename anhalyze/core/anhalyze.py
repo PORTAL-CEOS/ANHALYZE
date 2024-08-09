@@ -58,7 +58,7 @@ class AnhaDataset:
         else:
             self._init_filename_attrs(filename)
 
-        # Loading data.
+        # Loading data
         if _xr_dataset:
             assert type(_xr_dataset) == xr.core.dataset.Dataset, \
                 TypeError('[Anhalyze] Parameter xr_dataset incorrect type.')
@@ -111,10 +111,13 @@ class AnhaDataset:
     def _init_data_vars(self):
         """ Initialize data variables
         """
+        # TODO need to add case of load_data = False
 
-        #
+        # TODO May need a way to force to add mask even if already in file. In case one wants to update mask.
+        #      Could create a child class that 'fixes' files.
+
+        # Getting mask data if not already in data_vars
         if 'mask' not in list(self._xr_dataset.data_vars):
-            # TODO find a way to move this to init_data_vars
             self._get_mask(mask_filename=self._mask_filename)
 
         return self._xr_dataset.data_vars
@@ -354,8 +357,14 @@ class AnhaDataset:
             Mask filename
 
         """
+        # TODO will initialize the reading of the mask and putting it in a coord ... done
+        #      then make function to apply mask on specific data, during a specific calc (i.e. when plotting)
+        #      This means that the saving of the file will not have the mask applied.
+
+        # TODO add environment variable option
 
         if not mask_filename:
+            # TODO could add standard location for mask data.
             #  Also need to check that the file exist, otherwise skip (but will need to keep track of this)
             mask_filename = './Test_Data/ANHA4_mask.nc'
 
@@ -375,6 +384,15 @@ class AnhaDataset:
             else:
                 mask = xr.open_dataset(mask_filename).tmask.data
 
+            # TODO: for icemod,  there are u and v data variables that need to have their exceptions
+            #       (with in the same file)
+            #       rest gridT.  For  icebergs is all gridT.
+            # TODO: need to get an icemod, and an iceberg file for testing.
+
+            # TODO: need to 'cut' mask to selected dimensions before saving.
+            #       Need at least a NotImplementedError(' ... say to provide appropriate mask.')
+
+            # TODO may want to update this to save mask dataArray instead of numpy array (.data)
             # Adding mask data to data_vars
             self._xr_dataset = self._xr_dataset.assign({'mask': ((self.attrs['dim_z'],
                                                                   self.attrs['dim_y'],
@@ -468,10 +486,6 @@ class AnhaDataset:
 
             # Depth selection
             _xr_dataset = _xr_dataset.sel(dict_range)
-
-        # TODO Placeholder for:
-        #      I could mask the data outside the lat,lon range region asked here.
-        #      Will wait for now, until I have a way to mask data.
 
         # TODO should add something in the filename just to mark is not the original file.
         return AnhaDataset(os.path.join(self.attrs['filepath'], self.attrs['filename']),
@@ -579,10 +593,12 @@ class AnhaDataset:
             netcdf filename
 
         """
+        # TODO Need testing
 
         assert '.nc' in filename, ValueError('[Anhalyze] Filename should be .nc type.')
 
         self._xr_dataset.to_netcdf(filename, **kwargs)
+
 
 #     def set_location(self):
 #         """
