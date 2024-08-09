@@ -353,10 +353,6 @@ class AnhaDataset:
             Mask filename
 
         """
-        # TODO will initialize the reading of the mask and putting it in a coord ... done
-        #      then make function to apply mask on specific data, during a specific calc (i.e. when plotting)
-        #      This means that the saving of the file will not have the mask applied.
-
         # TODO add environment variable option
 
         if not mask_filename:
@@ -385,8 +381,7 @@ class AnhaDataset:
             #       rest gridT.  For  icebergs is all gridT.
             # TODO: need to get an icemod, and an iceberg file for testing.
 
-            # TODO: need to 'cut' mask to selected dimensions before saving.
-            #       Need at least a NotImplementedError(' ... say to provide appropriate mask.')
+            # TODO: add assertion of dimensions. mask dimensions need to match
 
             # TODO may want to update this to save mask dataArray instead of numpy array (.data)
             # Adding mask data to data_vars
