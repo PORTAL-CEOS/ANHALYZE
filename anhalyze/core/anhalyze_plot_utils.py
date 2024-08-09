@@ -13,7 +13,7 @@ from cartopy import crs as ccrs, feature as cfeature
 
 # Project custom made libraries
 import anhalyze.core.anhalyze
-import anhalyze.core.anhalyze_geo
+import anhalyze.core.anhalyze_geo as ah_geo
 
 # Setting plotting variables as global constants for now
 LEVELS = 42
@@ -186,7 +186,7 @@ def show_var_data_map(var_da, attrs, proj='', color_range='physical', savefig=No
             Filename to save figure including path.
     """
 
-    # Calculate projection information (e.g. Standard parallels) based on the dataset lat and lon limits	
+    # Calculate projection information (e.g. Standard parallels) based on the dataset lat and lon limits
     proj_info = get_projection_info(data)
 
     # Select figure projection	 
