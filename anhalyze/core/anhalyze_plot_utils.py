@@ -13,7 +13,7 @@ from cartopy import crs as ccrs, feature as cfeature
 
 # Project custom made libraries
 import anhalyze.core.anhalyze
-import anhalyze.core.anhalyze_geo
+import anhalyze.core.anhalyze_geo as ah_geo
 
 # Setting plotting variables as global constants for now
 LEVELS = 42
@@ -97,7 +97,7 @@ def show_var_data_map(var_da, attrs, color_range='physical', savefig=None):
 
     # TODO better use of init_location, if location set then load it, otherwise calculate it.
     # Init location info
-    location_info = anhalyze.core.anhalyze_geo.init_location()
+    location_info = ah_geo.init_location()
 
     # getting lat and lon
     lat, lon = np.squeeze(var_da.coords[attrs['coord_lat']].data), np.squeeze(var_da.coords[attrs['coord_lon']].data)
