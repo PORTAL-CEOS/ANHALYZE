@@ -405,6 +405,23 @@ class AnhaDataset:
         else:
             raise OSError('[Anhalyze] No mask/mesh file found.')
 
+    def _apply_mask(self, var_data, at_top_layer=False):
+        """ Applies mask to single var in `AnhaDataset.data_vars`.
+        """
+
+        # Applying mask data
+        if at_top_layer:
+            var_data[~np.ma.filled((1 == self.data_vars['mask'][0, :]))] = np.nan
+        else:
+            # var_data[~np.ma.filled((1 == self.data_vars['mask']))] = np.nan
+            var_data = var_data.where(self.data_vars['mask'] == 1)
+
+        # previous versions.
+        # self._xr_dataset = self._xr_dataset.where(self.coords['mask'] == 1)
+        # self.data_vars = self._xr_dataset.where(self.coords['mask'] == 1)
+
+        return var_data
+
     def sel(self, lat_range=None, lon_range=None, depth_range=None):
         """
         Returns a new `AnhaDataset` with each data array indexed
