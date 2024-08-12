@@ -94,7 +94,8 @@ class AnhaDataset:
         # Init grid geocoordinates var names
         self.attrs['coord_lat'] = [var for var in geocoords_list if 'nav_lat' in var][0]
         self.attrs['coord_lon'] = [var for var in geocoords_list if 'nav_lon' in var][0]
-        self.attrs['coord_depth'] = [var for var in dims_list if 'depth' in var][0]
+        if any('depth' in dim for dim in dims_list):
+            self.attrs['coord_depth'] = [var for var in dims_list if 'depth' in var][0]
 
         # TODO this may still be an issue if we want coords to reflect the  "real" ones (when load_data=T)
         return self._xr_dataset.coords
@@ -124,7 +125,8 @@ class AnhaDataset:
         # Need to exclude 'axis_nbounds'
         self.attrs['dim_x'] = [var for var in dims_list if 'x' in var and 'axis' not in var][0]
         self.attrs['dim_y'] = [var for var in dims_list if 'y' in var][0]
-        self.attrs['dim_z'] = [var for var in dims_list if 'depth' in var][0]
+        if any('depth' in dim for dim in dims_list):
+            self.attrs['dim_z'] = [var for var in dims_list if 'depth' in var][0]
 
         return self._xr_dataset.dims
 
@@ -148,7 +150,7 @@ class AnhaDataset:
 
         # Making sure filename format is correct
         assert '.nc' in self.attrs['filename'], IOError('[Anhalyze] Incorrect file format.')
-        assert '_grid' in self.attrs['filename'], f'[Anhalyze] Filename {filename} does not contain "_grid".'
+        assert '_grid' or '_ice' in self.attrs['filename'], f'[Anhalyze] Filename {filename} does not contain neither "_grid" nor "_ice".'
         assert 'ANHA' in self.attrs['filename'], f'[Anhalyze] Filename {filename} does not contain "ANHA".'
 
         # Initialize model config
@@ -159,17 +161,20 @@ class AnhaDataset:
         self.attrs['model_case'] = self.attrs['filename'].split('-')[1].split('_')[0]
 
         # Init grid type
-        self.attrs['grid'] = self.attrs['filename'].split('_grid')[-1][0]
-        grid_value_options = 'TBUVW'
+        self.attrs['grid'] = self.attrs['filename'].split('_')[-1][:-3]
+        grid_value_options = ['gridT', 'gridB',
+                              'gridU', 'gridV', 'gridW',
+                              'icemod', 'icebergs']
         assert self.attrs['grid'] in grid_value_options,\
             f'[Anhalyze] Grid type not recognized: {self.attrs["grid"]}'
-        self.attrs['grid'] = 'grid'+self.attrs['grid']
+        #self.attrs['grid'] = 'grid'+self.attrs['grid']
 
         # Initialize time
-        self.attrs['year'] = self.attrs['filename'].split('y')[-1][:4]
-        self.attrs['month'] = self.attrs['filename'].split('m')[-1][:2]
-        self.attrs['day'] = self.attrs['filename'].split('d')[1][:2]
         self.attrs['date'] = get_date(self.attrs['filename'])
+        self.attrs['year'] = self.attrs['date'][1:5]
+        self.attrs['month'] = self.attrs['date'][6:8]
+        self.attrs['day'] = self.attrs['date'][9:11]
+        
 
         # Initialize other attrs
         if 'mask_applied' not in self.attrs.keys():
@@ -201,13 +206,17 @@ class AnhaDataset:
         # Init grid geocoordinates range
         self.attrs['coord_lat_range'] = [np.nanmin(lat), np.nanmax(lat)]
         self.attrs['coord_lon_range'] = [np.nanmin(lon), np.nanmax(lon)]
-        self.attrs['coord_depth_range'] = [self.coords[self.attrs['coord_depth']].data.min(),
-                                           self.coords[self.attrs['coord_depth']].data.max()]
-
+        
         # Init grid dims range
         self.attrs['dim_x_range'] = [0, self._xr_dataset.sizes[self.attrs['dim_x']]]
         self.attrs['dim_y_range'] = [0, self._xr_dataset.sizes[self.attrs['dim_y']]]
-        self.attrs['dim_z_range'] = [0, self._xr_dataset.sizes[self.attrs['dim_z']]]
+        
+        # Only for 3 dimension variable
+        if hasattr(self, 'coord_depth'):
+            self.attrs['coord_depth_range'] = [self.coords[self.attrs['coord_depth']].data.min(),
+                                               self.coords[self.attrs['coord_depth']].data.max()]
+            self.attrs['dim_z_range'] = [0, self._xr_dataset.sizes[self.attrs['dim_z']]]
+        
 
     def _update_range(self, coord_name, coord_range, mode='loose'):
         """ Setup data selection range. Assert values are in order, within range and valid.
@@ -451,7 +460,7 @@ class AnhaDataset:
         return AnhaDataset(os.path.join(self.attrs['filepath'], self.attrs['filename']),
                            load_data=self._load_data, _xr_dataset=_xr_dataset, _attrs=self.attrs)
 
-    def show_var_data_map(self, var, idepth=0, proj='AzimuthalConformal', color_range='physical'):
+    def show_var_data_map(self, var, idepth=0, proj='LambertConformal', color_range='physical'):
         """ Displays a map for given var in `AnhaDataset.data_vars`.
 
         Parameters
@@ -485,9 +494,13 @@ class AnhaDataset:
         mask = xr.open_dataset(mask_filename).tmask.data
 
         # Adding mask data to coords
-        self.coords['mask'] = ((self.attrs['dim_z'], self.attrs['dim_y'], self.attrs['dim_x']),
-                               mask[0, :, :, :])
-
+        if hasattr(self, 'dim_z'):
+            self.coords['mask'] = ((self.attrs['dim_z'], self.attrs['dim_y'], self.attrs['dim_x']),
+                                   mask[0, :, :, :])
+        else:
+            self.coords['mask'] = ((self.attrs['dim_y'], self.attrs['dim_x']),
+                                   mask[0, 0, :, :])
+            
         # TODO not exactly what I want. for now this works if used before using sel(), since not returning new instance
         # Applying mask data
         self._xr_dataset = self._xr_dataset.where(self.coords['mask'] == 1)
