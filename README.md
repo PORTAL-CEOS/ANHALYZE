@@ -35,11 +35,10 @@ Then install the package with:
 python -m pip install .
 ```
 
-Future Note: This will become a PyPI application. 
 
 ## Usage
 
-Once installed you can import library:
+Once installed you can import the library like this:
 
 ```
 import anhalyze as ah
@@ -104,12 +103,13 @@ aa = ah.AnhaDataset(filename, mask_filename=your_mask_filename)
 -----
 ## Version History
 
-* 0.7 (upcoming)
+* 0.7 (planned)
     * To release `AnhalyzeLocation` class.
-* 0.6 (upcoming)
+    * Add Anhalize to PyPI.
+* 0.6 (planned)
     * To release `AnhalyzeProject` class.
 * 0.5 (upcoming)
-    * First release, includes:
+    * First main release, includes:
       * `AnhaDataset` class
       * Basic selection and plotting functionality. 
     * See [commit change]() or See [release history]()
