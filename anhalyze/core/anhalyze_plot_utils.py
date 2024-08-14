@@ -11,7 +11,6 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 from cartopy import crs as ccrs, feature as cfeature
 
-
 # TODO: check best practices for these global variables
 # Setting plotting variables
 levels = 42
@@ -40,7 +39,6 @@ def get_feature_mask(feature='land', resolution='50m'):
 
     return feature_mask
 
-
 def get_projection(proj='LambertConformal', proj_info=None):
     """
     Select Cartopy projections option and configurations based on users choice
@@ -56,46 +54,36 @@ def get_projection(proj='LambertConformal', proj_info=None):
     
     if proj_info is None:
         raise "Argument proj_info is None. Use get_projection_info do obtain projection information from anhadataset."
-    
+
     proj_list = {
-    
-		'PlateCarree': ccrs.PlateCarree(central_longitude=proj_info['central_longitude']),
-		
-		'LambertAzimuthalEqualArea': ccrs.LambertAzimuthalEqualArea(central_longitude=proj_info['central_longitude'],
-    						              central_latitude=proj_info['central_latitude']),
-		
-		'AlbersEqualArea': ccrs.AlbersEqualArea(central_longitude=proj_info['central_longitude'],
-    						              central_latitude=proj_info['central_latitude'],
-    						              standard_parallels=proj_info['standard_parallels']),
-		
-		'NorthPolarStereo': ccrs.NorthPolarStereo(central_longitude=proj_info['central_longitude']),
-		
-		'Orthographic': ccrs.Orthographic(central_longitude=proj_info['central_longitude'],
-    						              central_latitude=proj_info['central_latitude']),
-		
-		'Robinson': ccrs.Robinson(central_longitude=proj_info['central_longitude']),
-		
-		'LambertConformal': ccrs.LambertConformal(central_longitude=proj_info['central_longitude'],
-                                                          standard_parallels=proj_info['standard_parallels']),
-		
-		'Mercartor': ccrs.Mercator(central_longitude=proj_info['central_longitude'],
-					 	min_latitude=proj_info['lat_range'][0],
-					 	max_latitude=proj_info['lat_range'][1]),
+        'PlateCarree': ccrs.PlateCarree(central_longitude=proj_info['central_longitude']),
+        'LambertAzimuthalEqualArea': ccrs.LambertAzimuthalEqualArea(
+            central_longitude=proj_info['central_longitude'],
+            central_latitude=proj_info['central_latitude']),
+        'AlbersEqualArea': ccrs.AlbersEqualArea(
+            central_longitude=proj_info['central_longitude'],
+            central_latitude=proj_info['central_latitude'],
+            standard_parallels=proj_info['standard_parallels']),
+        'NorthPolarStereo': ccrs.NorthPolarStereo(central_longitude=proj_info['central_longitude']),
+        'Orthographic': ccrs.Orthographic(central_longitude=proj_info['central_longitude'],
+                                          central_latitude=proj_info['central_latitude']),
+        'Robinson': ccrs.Robinson(central_longitude=proj_info['central_longitude']),
+        'LambertConformal': ccrs.LambertConformal(central_longitude=proj_info['central_longitude'],
+                                                  standard_parallels=proj_info['standard_parallels']),
+        'Mercartor': ccrs.Mercator(central_longitude=proj_info['central_longitude'],
+                                   min_latitude=proj_info['lat_range'][0],
+                                   max_latitude=proj_info['lat_range'][1]),
+        'AzimuthalEquidistant': ccrs.AzimuthalEquidistant(central_longitude=proj_info['central_longitude'],
+                                                          central_latitude=proj_info['central_latitude']),
+    }
 
-		'AzimuthalEquidistant': ccrs.AzimuthalEquidistant(central_longitude=proj_info['central_longitude'],
-    						              central_latitude=proj_info['central_latitude']),
-		
-	    }
-
-    
     proj_config = proj_list[proj]
-    
+
     assert proj in list(proj_list.keys()), \
-	    	f'[anhalyze_plot_utils] Projection {proj} not found in list of projections available: {list(proj_list.keys())}'
-            
+        f'[anhalyze_plot_utils] Projection {proj} not found in list of projections available: {list(proj_list.keys())}'
+
     return proj_config
-    
-    
+
 def get_projection_info(data):
     """
     Calculate information used to set figure projection.
@@ -111,34 +99,33 @@ def get_projection_info(data):
     west = data.attrs['coord_lon_range'][0]
     north = data.attrs['coord_lat_range'][1]
     south = data.attrs['coord_lat_range'][0]
-    
+
     # 1/6th law to calculate the standard parallels. We calculate 1/6 of the
     # distance in degrees from south to north, then add it to the southern
     # figure limit and subtract from the northern limit.
     #
     law16 = (north - south) / 6
-    standard_parallels = (south+law16, north-law16)
-    
+    standard_parallels = (south + law16, north - law16)
+
     # Central longitude and latitude are halfway from east to west
     # and from south to north, respectively
     # Central longitude
     midway_lon = (east - west) / 2
     central_longitude = east - midway_lon
-    
+
     # Central latitude
     midway_lat = (north - south) / 2
     central_latitude = north - midway_lat
-    
+
     lat_range = (south, north)
     lon_range = (west, east)
 
-    proj_info = {
-                'lat_range': lat_range,
-                'lon_range': lon_range,
-                'standard_parallels': standard_parallels,
-                'central_longitude': central_longitude,
-                'central_latitude': central_latitude,
-                }
+    proj_info = {'lat_range': lat_range,
+                 'lon_range': lon_range,
+                 'standard_parallels': standard_parallels,
+                 'central_longitude': central_longitude,
+                 'central_latitude': central_latitude,
+                 }
 
     return proj_info
 
@@ -154,10 +141,10 @@ def show_var_data_map(data, var='', idepth=0, proj=''):
 
     assert var in list(data.data_vars), \
         f'[anhalyze_plot_utils] Variable {var} not found in data_vars: {list(data.data_vars)}'
-  	
+
     # Calculate projection information (e.g. Standard parallels) based on the dataset lat and lon limits	
     proj_info = get_projection_info(data)
-    
+
     # Select figure projection	 
     proj_config = get_projection(proj, proj_info)
 
@@ -179,13 +166,13 @@ def show_var_data_map(data, var='', idepth=0, proj=''):
     fig = plt.figure()
     ax = fig.add_subplot(1, 1, 1,
                          projection=proj_config)
-                         
+
     ax.set_extent([data.attrs['coord_lon_range'][0],
                    data.attrs['coord_lon_range'][1],
                    data.attrs['coord_lat_range'][0],
                    data.attrs['coord_lat_range'][1]],
-                   crs=ccrs.PlateCarree(),
-                   )
+                  crs=ccrs.PlateCarree(),
+                  )
 
     # Adding ocean and land features
     ax.add_feature(get_feature_mask())
@@ -194,7 +181,6 @@ def show_var_data_map(data, var='', idepth=0, proj=''):
     # Plotting var data as filled contour regions
     im = ax.contourf(lon, lat, var_data, levels=levels, cmap=cmap, extend='both',
                      vmin=vmin, vmax=vmax, transform=ccrs.PlateCarree(), zorder=2)
-                            
 
     # Plotting var data contour lines
     ax.contour(lon, lat, var_data, levels=line_levels, cmap='Greys', linewidths=.2, transform=ccrs.PlateCarree())
