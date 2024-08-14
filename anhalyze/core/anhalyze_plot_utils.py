@@ -19,8 +19,6 @@ import anhalyze.core.anhalyze_geo
 # Setting plotting variables
 levels = 42
 line_levels = 11
-vmax = 20.
-vmin = -20.
 cmap = 'coolwarm'
 
 
@@ -86,12 +84,12 @@ def show_var_data_map(data, idepth=0, var=''):
                    data.attrs['coord_lat_range'][1]])
 
     # Adding ocean and land features
-    ax.add_feature(get_feature_mask())
-    ax.add_feature(get_feature_mask(feature='ocean'))
+    ax.add_feature(get_feature_mask(), alpha=0.5)
+    ax.add_feature(get_feature_mask(feature='ocean'), alpha=0.5)
 
     # Plotting var data as filled contour regions
     im = ax.contourf(lon, lat, var_data, levels=levels, cmap=cmap,
-                     vmin=vmin, vmax=vmax, transform=ccrs.PlateCarree(), zorder=2)
+                     transform=ccrs.PlateCarree(), zorder=2)
 
     # Plotting var data contour lines
     ax.contour(lon, lat, var_data, levels=line_levels, cmap='Greys', linewidths=.2, transform=ccrs.PlateCarree())
