@@ -236,4 +236,4 @@ def show_var_data_map(data, var='', idepth=0, proj='', color_range='physical'):
     # Set Color-bar
     axins = inset_axes(ax, width="2.5%", height="100%", loc='right', borderpad=-1)
     label = '%s [%s]' % (data.data_vars[var].attrs['long_name'].title(), data.data_vars[var].attrs['units'])
-    fig.colorbar(im, cax=axins, orientation="vertical", label=label, format='%.1f', extend='both')
+    fig.colorbar(im, cax=axins, orientation="vertical", label=label, extend='both')
