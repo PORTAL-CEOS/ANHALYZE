@@ -77,10 +77,11 @@ def get_projection(proj='LambertConformal', proj_info=None):
                                                           central_latitude=proj_info['central_latitude']),
     }
 
-    proj_config = proj_list[proj]
 
     assert proj in list(proj_list.keys()), \
         f'[anhalyze_plot_utils] Projection {proj} not found in list of projections available: {list(proj_list.keys())}'
+
+    proj_config = proj_list[proj]
 
     return proj_config
 
