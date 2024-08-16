@@ -39,44 +39,43 @@ def get_feature_mask(feature='land', resolution='50m'):
 
     return feature_mask
 
+
 def get_projection(proj='LambertConformal', proj_info=None):
     """
     Select Cartopy projections option and configurations based on users choice
-    of projection and coordinates info from anhadataset.
+    of projection and coordinates info from `AnhaDataset`.
     
     Parameters
     ----------
     proj : str
-    Projection name from Cartopy list.
+        Projection name from Cartopy list.
     proj_info : dict
-    Information for projection calculated by get_projection_info.
+        Information for projection calculated by get_projection_info.
     """
-    
+
     if proj_info is None:
-        raise "Argument proj_info is None. Use get_projection_info do obtain projection information from anhadataset."
+        raise "Argument proj_info is None. Use get_projection_info do obtain projection information from `AnhaDataset`."
 
-    proj_list = {
-        'PlateCarree': ccrs.PlateCarree(central_longitude=proj_info['central_longitude']),
-        'LambertAzimuthalEqualArea': ccrs.LambertAzimuthalEqualArea(
-            central_longitude=proj_info['central_longitude'],
-            central_latitude=proj_info['central_latitude']),
-        'AlbersEqualArea': ccrs.AlbersEqualArea(
-            central_longitude=proj_info['central_longitude'],
-            central_latitude=proj_info['central_latitude'],
-            standard_parallels=proj_info['standard_parallels']),
-        'NorthPolarStereo': ccrs.NorthPolarStereo(central_longitude=proj_info['central_longitude']),
-        'Orthographic': ccrs.Orthographic(central_longitude=proj_info['central_longitude'],
-                                          central_latitude=proj_info['central_latitude']),
-        'Robinson': ccrs.Robinson(central_longitude=proj_info['central_longitude']),
-        'LambertConformal': ccrs.LambertConformal(central_longitude=proj_info['central_longitude'],
-                                                  standard_parallels=proj_info['standard_parallels']),
-        'Mercartor': ccrs.Mercator(central_longitude=proj_info['central_longitude'],
-                                   min_latitude=proj_info['lat_range'][0],
-                                   max_latitude=proj_info['lat_range'][1]),
-        'AzimuthalEquidistant': ccrs.AzimuthalEquidistant(central_longitude=proj_info['central_longitude'],
-                                                          central_latitude=proj_info['central_latitude']),
-    }
-
+    proj_list = {'PlateCarree': ccrs.PlateCarree(central_longitude=proj_info['central_longitude']),
+                 'LambertAzimuthalEqualArea': ccrs.LambertAzimuthalEqualArea(
+                     central_longitude=proj_info['central_longitude'],
+                     central_latitude=proj_info['central_latitude']),
+                 'AlbersEqualArea': ccrs.AlbersEqualArea(
+                     central_longitude=proj_info['central_longitude'],
+                     central_latitude=proj_info['central_latitude'],
+                     standard_parallels=proj_info['standard_parallels']),
+                 'NorthPolarStereo': ccrs.NorthPolarStereo(central_longitude=proj_info['central_longitude']),
+                 'Orthographic': ccrs.Orthographic(central_longitude=proj_info['central_longitude'],
+                                                   central_latitude=proj_info['central_latitude']),
+                 'Robinson': ccrs.Robinson(central_longitude=proj_info['central_longitude']),
+                 'LambertConformal': ccrs.LambertConformal(central_longitude=proj_info['central_longitude'],
+                                                           standard_parallels=proj_info['standard_parallels']),
+                 'Mercartor': ccrs.Mercator(central_longitude=proj_info['central_longitude'],
+                                            min_latitude=proj_info['lat_range'][0],
+                                            max_latitude=proj_info['lat_range'][1]),
+                 'AzimuthalEquidistant': ccrs.AzimuthalEquidistant(central_longitude=proj_info['central_longitude'],
+                                                                   central_latitude=proj_info['central_latitude']),
+                 }
 
     assert proj in list(proj_list.keys()), \
         f'[anhalyze_plot_utils] Projection {proj} not found in list of projections available: {list(proj_list.keys())}'
@@ -85,14 +84,15 @@ def get_projection(proj='LambertConformal', proj_info=None):
 
     return proj_config
 
+
 def get_projection_info(data):
     """
     Calculate information used to set figure projection.
     
     Parameters
     ----------
-    data: anhadataset
-    Dataset to be plotted
+    data: `AnhaDataset`
+        Dataset to be plotted
     """
 
     # Setting up user's region
@@ -135,7 +135,7 @@ def show_var_data_map(data, var='', idepth=0, proj=''):
     """ Displays map of given parameter (var) in lat-lon range and depth.
         Note: depth has not been tested.
 
-       data: In AnhaDataset or xarray.Dataset formats.
+       data: In `AnhaDataset` or `xarray.Dataset` formats.
        depth: dep level; default first level (0)    [int]
        var: variable name [str]
     """
