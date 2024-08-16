@@ -525,7 +525,6 @@ class AnhaDataset:
         return AnhaDataset(os.path.join(self.attrs['filepath'], self.attrs['filename']),
                            load_data=self._load_data, _xr_dataset=_xr_dataset, _attrs=self.attrs)
 
-
     def show_var_data_map(self, var, idepth=0, color_range='physical', savefig=None, proj='LambertConformal'):
         """ Displays a map for given var in `AnhaDataset.data_vars`.
 
