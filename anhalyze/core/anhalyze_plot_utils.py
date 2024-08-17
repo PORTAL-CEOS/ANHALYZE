@@ -78,7 +78,6 @@ def get_feature_mask(feature='land', resolution='50m'):
     return feature_mask
 
 
-
 def get_projection(proj='LambertConformal', proj_info=None):
     """
     Select Cartopy projections option and configurations based on users choice
@@ -124,21 +123,20 @@ def get_projection(proj='LambertConformal', proj_info=None):
     return proj_config
 
 
-def get_projection_info(data):
-    """
-    Calculate information used to set figure projection.
+def get_projection_info(attrs):
+    """ Calculate information used to set figure projection.
     
-    Parameters
-    ----------
-    data: `AnhaDataset`
-        Dataset to be plotted
+        Parameters
+        ----------
+        attrs : dict
+            Attributes from `AnhaDataset`
     """
 
     # Setting up user's region
-    east = data.attrs['coord_lon_range'][1]
-    west = data.attrs['coord_lon_range'][0]
-    north = data.attrs['coord_lat_range'][1]
-    south = data.attrs['coord_lat_range'][0]
+    east = attrs['coord_lon_range'][1]
+    west = attrs['coord_lon_range'][0]
+    north = attrs['coord_lat_range'][1]
+    south = attrs['coord_lat_range'][0]
 
     # 1/6th law to calculate the standard parallels. We calculate 1/6 of the
     # distance in degrees from south to north, then add it to the southern
@@ -179,7 +177,7 @@ def show_var_data_map(var_da, attrs, proj='', color_range='physical', savefig=No
         var_da: xarray.DataArray
             xarray.DataArray for given var(var_da.name).
         attrs : dict
-            Attributes.
+            Attributes from `AnhaDataset`
         color_range : str
             Color range either `physical` limits, or `relative` values.
         savefig : str
@@ -187,7 +185,7 @@ def show_var_data_map(var_da, attrs, proj='', color_range='physical', savefig=No
     """
 
     # Calculate projection information (e.g. Standard parallels) based on the dataset lat and lon limits
-    proj_info = get_projection_info(data)
+    proj_info = get_projection_info(attrs)
 
     # Select figure projection	 
     proj_config = get_projection(proj, proj_info)
