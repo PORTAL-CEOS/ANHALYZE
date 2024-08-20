@@ -166,16 +166,15 @@ def show_var_data_map(data, var, idepth, proj):
                    )
 
     # Adding ocean and land features
-    ax.add_feature(get_feature_mask())
-    ax.add_feature(get_feature_mask(feature='ocean'))
+    ax.add_feature(get_feature_mask(), zorder=1)
+    ax.add_feature(get_feature_mask(feature='ocean'), zorder=0)
 
     # Plotting var data as filled contour regions
-    im = ax.contourf(lon, lat, var_data, levels=levels, cmap=cmap, extend='both',
-                     vmin=vmin, vmax=vmax, transform=ccrs.PlateCarree(), zorder=2)
-                            
+    im = ax.contourf(lon, lat, var_data, levels=LEVELS, cmap=cmap, extend='both',
+                     vmin=vrange[0], vmax=vrange[1], transform=ccrs.PlateCarree(), zorder=1)
 
     # Plotting var data contour lines
-    ax.contour(lon, lat, var_data, levels=line_levels, cmap='Greys', linewidths=.2, transform=ccrs.PlateCarree())
+    ax.contour(lon, lat, var_data, levels=LINE_LEVELS, cmap='Greys', linewidths=.2, transform=ccrs.PlateCarree(), zorder=1)
 
     # Create grid-line labels
     gl = ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=True, x_inline=False,
