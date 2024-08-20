@@ -35,11 +35,10 @@ Then install the package with:
 python -m pip install .
 ```
 
-Future Note: This will become a PyPI application. 
 
 ## Usage
 
-Once installed you can import library:
+Once installed you can import the library like this:
 
 ```
 import anhalyze as ah
@@ -47,18 +46,16 @@ aa = ah.AnhaDataset(filename)
 aaa = aa.sel(lat_range=[50,65],lon_range=[-93,-75])
 ```
 
+
 ### Example 
 
-This simple example requires a .nc `grid` file, and a .nc `mask` file.
+This  example requires an `ANHA` .nc file.
 
 ```
 import anhalyze as ah
 
 # Open file
 aa = ah.AnhaDataset(filename)
-
-# Apply mask file
-aa.apply_mask(mask_filename)
 
 # Do selection of lat_range, lon_range, and depth_range, in that order.
 aaa = aa.sel([50,65],[-93,-75],[0,300])
@@ -67,15 +64,52 @@ aaa = aa.sel([50,65],[-93,-75],[0,300])
 aaa.show_var_data_map(var='votemper')
 ``` 
 
+## Additional Advanced Notes
 
+### Masking
+
+Masking is done internally. Default masking file is included in `XYZ/filename`.
+
+There are two more options for providing your own mask file:
+ 
+#### Environment variable option:
+
+You can add the following environmental variables to your .bash_profile (or .bashrc, etc..), 
+and edith paths to your needs:
+``` 
+#------------------------------------------------------------- 
+#ANHALIZE setup
+#-------------------------------------------------------------
+export MASK_FILENAME='/root_path/user/../your_mask_location/mask_name.nc'
+#-------------------------------------------------------------
+```
+
+#### Dynamic variable option:
+
+You can provide the mask filename with full path when opening
+an `ANHA` .nc file, as follows:
+
+```
+import anhalyze as ah
+
+# Open file
+aa = ah.AnhaDataset(filename, mask_filename=your_mask_filename)
+```
+
+
+
+
+
+-----
 ## Version History
 
-* 0.7 (upcoming)
+* 0.7 (planned)
     * To release `AnhalyzeLocation` class.
-* 0.6 (upcoming)
+    * Add Anhalize to PyPI.
+* 0.6 (planned)
     * To release `AnhalyzeProject` class.
 * 0.5 (upcoming)
-    * First release, includes:
+    * First main release, includes:
       * `AnhaDataset` class
       * Basic selection and plotting functionality. 
     * See [commit change]() or See [release history]()
