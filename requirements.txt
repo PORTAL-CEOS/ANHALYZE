@@ -2,6 +2,7 @@ asttokens==2.4.1
 Cartopy==0.23.0
 certifi==2024.7.4
 cftime==1.6.3
+cmocean==4.0.3
 contourpy==1.2.1
 cycler==0.12.1
 decorator==5.1.1
