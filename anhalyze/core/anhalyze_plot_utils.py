@@ -77,7 +77,6 @@ def get_feature_mask(feature='land', resolution='50m'):
 
     return feature_mask
 
-
 def get_projection(proj='LambertConformal', proj_info=None):
     """
     Select Cartopy projections option and configurations based on users choice
@@ -187,7 +186,7 @@ def show_var_data_map(var_da, attrs, proj='', color_range='physical', savefig=No
     # Calculate projection information (e.g. Standard parallels) based on the dataset lat and lon limits
     proj_info = get_projection_info(attrs)
 
-    # Select figure projection	 
+    # Select figure projection
     proj_config = get_projection(proj, proj_info)
 
     # getting lat and lon
@@ -209,8 +208,8 @@ def show_var_data_map(var_da, attrs, proj='', color_range='physical', savefig=No
                   )
 
     # Adding ocean and land features
-    ax.add_feature(get_feature_mask())
-    ax.add_feature(get_feature_mask(feature='ocean'))
+    ax.add_feature(get_feature_mask(), zorder=1)
+    ax.add_feature(get_feature_mask(feature='ocean'), zorder=0)
 
     # Get var-dependent plotting information
     cmap, vrange = get_plot_config(var_da.name, var_data, color_range=color_range)
