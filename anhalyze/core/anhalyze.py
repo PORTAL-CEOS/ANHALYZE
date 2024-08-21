@@ -161,10 +161,10 @@ class AnhaDataset:
         self.attrs['model_case'] = self.attrs['filename'].split('-')[1].split('_')[0]
 
         # Init grid type
-        self.attrs['grid'] = self.attrs['filename'].split('_')[-1][:-3]
         grid_value_options = ['gridT', 'gridB',
                               'gridU', 'gridV', 'gridW',
                               'icemod', 'icebergs']
+        self.attrs['grid'] = [grid for grid in grid_value_options if grid in self.attrs['filename']][0]
         assert self.attrs['grid'] in grid_value_options,\
             f'[Anhalyze] Grid type not recognized: {self.attrs["grid"]}'
         #self.attrs['grid'] = 'grid'+self.attrs['grid']
