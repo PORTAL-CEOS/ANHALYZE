@@ -186,6 +186,9 @@ def show_var_data_map(var_da, attrs, proj='', color_range='physical', savefig=No
     # Calculate projection information (e.g. Standard parallels) based on the dataset lat and lon limits
     proj_info = get_projection_info(attrs)
 
+    # Select figure projection
+    proj_config = get_projection(proj, proj_info)
+
     # getting lat and lon
     lat, lon = np.squeeze(var_da.coords[attrs['coord_lat']].data), np.squeeze(var_da.coords[attrs['coord_lon']].data)
 
