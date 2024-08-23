@@ -12,8 +12,6 @@ from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 from cartopy import crs as ccrs, feature as cfeature
 
 # Project custom made libraries
-import anhalyze.core.anhalyze
-import anhalyze.core.anhalyze_geo as ah_geo
 
 # Setting plotting variables as global constants for now
 LEVELS = 42
@@ -115,8 +113,9 @@ def get_projection(proj_name='LambertConformal', proj_info=None):
                                                                    central_latitude=proj_info['central_latitude']),
                  }
 
-    assert proj in list(proj_list.keys()), \
-        f'[anhalyze_plot_utils] Projection {proj} not found in list of projections available: {list(proj_list.keys())}'
+    assert_message = f'[anhalyze_plot_utils] Projection {proj_name} '
+    assert_message += f'not found in list of projections available: {list(proj_list.keys())}'
+    assert proj_name in list(proj_list.keys()), assert_message
 
     proj_config = proj_list[proj_name]
 
@@ -182,6 +181,8 @@ def show_var_data_map(var_da, attrs, color_range='physical', savefig=None, proj_
             Color range either `physical` limits, or `relative` values.
         savefig : str
             Filename to save figure including path.
+        proj_name : str
+            Projection name from Cartopy list.
     """
 
     # Calculate projection information (e.g. Standard parallels) based on the dataset lat and lon limits
