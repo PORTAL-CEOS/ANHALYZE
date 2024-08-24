@@ -13,8 +13,6 @@ from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 from cartopy import crs as ccrs, feature as cfeature
 
 # Project custom made libraries
-import anhalyze.core.anhalyze
-import anhalyze.core.anhalyze_geo as ah_geo
 
 # Setting plotting variables as global constants for now
 LEVELS = 42
@@ -80,14 +78,15 @@ def get_feature_mask(feature='land', resolution='50m'):
 
     return feature_mask
 
-def get_projection(proj='LambertConformal', proj_info=None):
+
+def get_projection(proj_name='LambertConformal', proj_info=None):
     """
     Select Cartopy projections option and configurations based on users choice
     of projection and coordinates info from `AnhaDataset`.
     
     Parameters
     ----------
-    proj : str
+    proj_name : str
         Projection name from Cartopy list.
     proj_info : dict
         Information for projection calculated by get_projection_info.
@@ -117,10 +116,11 @@ def get_projection(proj='LambertConformal', proj_info=None):
                                                                    central_latitude=proj_info['central_latitude']),
                  }
 
-    assert proj in list(proj_list.keys()), \
-        f'[anhalyze_plot_utils] Projection {proj} not found in list of projections available: {list(proj_list.keys())}'
+    assert_message = f'[anhalyze_plot_utils] Projection {proj_name} '
+    assert_message += f'not found in list of projections available: {list(proj_list.keys())}'
+    assert proj_name in list(proj_list.keys()), assert_message
 
-    proj_config = proj_list[proj]
+    proj_config = proj_list[proj_name]
 
     return proj_config
 
@@ -170,7 +170,7 @@ def get_projection_info(attrs):
     return proj_info
 
 
-def show_var_data_map(var_da, attrs, proj='', color_range='physical', savefig=None):
+def show_var_data_map(var_da, attrs, color_range='physical', savefig=None, proj_name=''):
     """ Displays map of given parameter (var) in lat-lon range and depth.
         Note: depth has not been tested.
 
@@ -184,13 +184,15 @@ def show_var_data_map(var_da, attrs, proj='', color_range='physical', savefig=No
             Color range either `physical` limits, or `relative` values.
         savefig : str
             Filename to save figure including path.
+        proj_name : str
+            Projection name from Cartopy list.
     """
 
     # Calculate projection information (e.g. Standard parallels) based on the dataset lat and lon limits
     proj_info = get_projection_info(attrs)
 
     # Select figure projection
-    proj_config = get_projection(proj, proj_info)
+    proj_config = get_projection(proj_name, proj_info)
 
     # getting lat and lon
     lat, lon = np.squeeze(var_da.coords[attrs['coord_lat']].data), np.squeeze(var_da.coords[attrs['coord_lon']].data)
