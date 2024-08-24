@@ -8,6 +8,7 @@ import os
 
 # Plotting-related libraries
 import matplotlib.pyplot as plt
+import cmocean.cm as cmo
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 from cartopy import crs as ccrs, feature as cfeature
 
@@ -36,19 +37,21 @@ def get_plot_config(var, var_data, color_range='physical'):
     if var == 'votemper':  # Temperature
         # cmap = 'coolwarm'
         # vrange = [-20, 20]   # color map based values
-        cmap = 'magma'  # Other possible colors: 'plasma', 'magma'
+        cmap = cmo.thermal  # Other possible colors: 'plasma', 'magma'
         vrange = [-2, 35]    # Physical based values
     elif var == 'vosaline':  # Salinity
-        cmap = 'viridis'  # Other possible colors: 'winter'
+        cmap = cmo.haline  # Other possible colors: 'winter'
         vrange = [25, 39]    # Physical based values
+    elif var == 'ileadfra': # Sea ice conceentration
+        cmap = cmo.ice
+        vrange = [0, 1] # Physical based values
     elif var == 'chl':  # Chlorophyll
-        cmap = 'BuGn'
+        cmap = cmo.algae
         vrange = None  # Placeholder for physical based values
     else:
         # cmap = 'cividis'
         cmap = 'spring'
         vrange = None
-
     if not vrange or color_range == 'relative':
         vrange = [np.nanmin(var_data), np.nanmax(var_data)]
         print(f'  vrange: {vrange}')
@@ -223,7 +226,7 @@ def show_var_data_map(var_da, attrs, proj='', color_range='physical', savefig=No
 
     # Create grid-line labels
     gl = ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=True, x_inline=False,
-                      y_inline=False, color='k', alpha=.3, linewidths=.01)
+                      y_inline=False, color='k', alpha=.3)
     gl.right_labels = gl.top_labels = False
 
     # Set Color-bar
