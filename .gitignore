@@ -1,8 +1,10 @@
 
 # My gitignore
 
-
+.idea/
 output_data/*
+anhalyze/tests/figs/
+anhalyze/tests/bkp_projects/
 figs/*
 *html
 
