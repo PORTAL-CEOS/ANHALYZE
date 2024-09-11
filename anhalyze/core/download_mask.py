@@ -51,6 +51,6 @@ if __name__ == '__main__':
     url = MASK_URL
 
     # Filename
-    destination = 'ANHA4_mask_test.nc'
+    destination = '../package_data/ANHA4_mask.nc'
 
     download_large_file(url, destination)
