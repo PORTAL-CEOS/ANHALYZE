@@ -9,18 +9,21 @@ MASK_URL = 'https://bit.ly/3TkYlGL'
 def download_large_file(url, destination):
     """ Download a large file given url into destination
 
+        Parameters
+        ----------
+        url : str
+            URL location
+        destination : str
+            Path and filename where to save file.
 
-    :param url: str
-        URL location
-    :param destination: str
-        Path and filename where to save file.
-    :return:
+        Return
+        ----------
         Saves file in destination.
-    Original code from:
-    https://www.geeksforgeeks.org/how-to-download-large-file-in-python-with-requests/
 
     """
 
+    # Code from:
+    # https://www.geeksforgeeks.org/how-to-download-large-file-in-python-with-requests/
     try:
         with requests.get(url, stream=True) as response:
             response.raise_for_status()
