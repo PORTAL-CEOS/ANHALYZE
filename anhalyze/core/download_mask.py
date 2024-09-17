@@ -6,14 +6,14 @@ import requests
 MASK_URL = 'https://bit.ly/3TkYlGL'
 
 
-def download_large_file(url, destination):
+def download_large_file(download_url, download_destination):
     """ Download a large file given url into destination
 
         Parameters
         ----------
-        url : str
+        download_url : str
             URL location
-        destination : str
+        download_destination : str
             Path and filename where to save file.
 
         Return
@@ -25,9 +25,9 @@ def download_large_file(url, destination):
     # Code from:
     # https://www.geeksforgeeks.org/how-to-download-large-file-in-python-with-requests/
     try:
-        with requests.get(url, stream=True) as response:
+        with requests.get(download_url, stream=True) as response:
             response.raise_for_status()
-            with open(destination, 'wb') as f:
+            with open(download_destination, 'wb') as f:
                 for chunk in response.iter_content(chunk_size=8192):
                     f.write(chunk)
         print("File downloaded successfully!")
@@ -41,11 +41,11 @@ def test_download():
 
     # TODO update to smaller file and move to tests
     # Tested with this 3Gb file, and it works well.
-    url = 'https://releases.ubuntu.com/20.04.4/ubuntu-20.04.4-desktop-amd64.iso'
+    url_test = 'https://releases.ubuntu.com/20.04.4/ubuntu-20.04.4-desktop-amd64.iso'
 
-    destination = 'ubuntu-20.04.4-desktop-amd64.iso'
+    destination_test = 'ubuntu-20.04.4-desktop-amd64.iso'
 
-    download_large_file(url, destination)
+    download_large_file(url_test, destination_test)
 
 
 if __name__ == '__main__':
