@@ -35,6 +35,19 @@ def download_large_file(download_url, download_destination):
         print("Error downloading the file:", e)
 
 
+def download_mask():
+    """ Downloads standard mask.
+    """
+
+    # URL location for mask.
+    mask_url = MASK_URL
+
+    # Filename
+    mask_destination = '../package_data/ANHA4_mask.nc'
+
+    download_large_file(mask_url, mask_destination)
+
+
 def test_download():
     """ Testing download_large_file
     """
@@ -50,10 +63,4 @@ def test_download():
 
 if __name__ == '__main__':
 
-    # URL location for mask.
-    url = MASK_URL
-
-    # Filename
-    destination = '../package_data/ANHA4_mask.nc'
-
-    download_large_file(url, destination)
+    download_mask()
