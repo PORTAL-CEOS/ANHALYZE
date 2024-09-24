@@ -48,19 +48,6 @@ def download_mask():
     download_large_file(mask_url, mask_destination)
 
 
-def test_download():
-    """ Testing download_large_file
-    """
-
-    # TODO update to smaller file and move to tests
-    # Tested with this 3Gb file, and it works well.
-    url_test = 'https://releases.ubuntu.com/20.04.4/ubuntu-20.04.4-desktop-amd64.iso'
-
-    destination_test = 'ubuntu-20.04.4-desktop-amd64.iso'
-
-    download_large_file(url_test, destination_test)
-
-
 if __name__ == '__main__':
 
     download_mask()
