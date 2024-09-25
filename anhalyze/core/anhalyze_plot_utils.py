@@ -225,7 +225,7 @@ def show_var_data_map(var_da, attrs, color_range='physical', savefig=None, proj_
 
     # Create grid-line labels
     gl = ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=True, x_inline=False,
-                      y_inline=False, color='k', alpha=.3, linewidths=.01)
+                      y_inline=False, color='k', alpha=.3)
     gl.right_labels = gl.top_labels = False
 
     # Set Color-bar
