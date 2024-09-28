@@ -190,8 +190,6 @@ class AnhaDataset:
         self.attrs['date'] = get_date(self.attrs['filename'])
 
         # Initialize other attrs
-        if 'mask_applied' not in self.attrs.keys():
-            self.attrs['mask_applied'] = False
 
     def _init_metadata(self):
         """ Initialize model properties from filename
