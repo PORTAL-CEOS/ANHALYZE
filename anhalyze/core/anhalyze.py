@@ -168,7 +168,8 @@ class AnhaDataset:
 
         # Making sure filename format is correct
         assert '.nc' in self.attrs['filename'], IOError('[Anhalyze] Incorrect file format.')
-        assert '_grid' or '_ice' in self.attrs['filename'], f'[Anhalyze] Filename {filename} does not contain neither "_grid" nor "_ice".'
+        assert '_grid' or '_ice' in self.attrs['filename'], \
+            f'[Anhalyze] Filename {filename} does not contain neither "_grid" nor "_ice".'
         assert 'ANHA' in self.attrs['filename'], f'[Anhalyze] Filename {filename} does not contain "ANHA".'
 
         # Initialize model config
@@ -185,14 +186,12 @@ class AnhaDataset:
         self.attrs['grid'] = [grid for grid in grid_value_options if grid in self.attrs['filename']][0]
         assert self.attrs['grid'] in grid_value_options,\
             f'[Anhalyze] Grid type not recognized: {self.attrs["grid"]}'
-        #self.attrs['grid'] = 'grid'+self.attrs['grid']
 
         # Initialize time
         self.attrs['date'] = get_date(self.attrs['filename'])
         self.attrs['year'] = self.attrs['date'][1:5]
         self.attrs['month'] = self.attrs['date'][6:8]
         self.attrs['day'] = self.attrs['date'][9:11]
-        
 
         # Initialize other attrs
         if 'mask_applied' not in self.attrs.keys():
@@ -234,7 +233,6 @@ class AnhaDataset:
             self.attrs['coord_depth_range'] = [self.coords[self.attrs['coord_depth']].data.min(),
                                                self.coords[self.attrs['coord_depth']].data.max()]
             self.attrs['dim_z_range'] = [0, self._xr_dataset.sizes[self.attrs['dim_z']]]
-        
 
     def _update_range(self, coord_name, coord_range, mode='loose'):
         """ Setup data selection range. Assert values are in order, within range and valid.
