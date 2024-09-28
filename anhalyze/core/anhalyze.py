@@ -353,13 +353,24 @@ class AnhaDataset:
             Mask filename
 
         """
-        # TODO add environment variable option
 
         if not mask_filename:
-            # TODO could add standard location for mask data.
-            #  Also need to check that the file exist, otherwise skip (but will need to keep track of this)
-            mask_filename = './Test_Data/ANHA4_mask.nc'
+            # Check if a mask is declared as environment variable
+            if os.environ.get('MASK_PATH_FILENAME'):
+                mask_filename = os.environ.get('MASK_PATH_FILENAME')
+            else:
+                # Get mask from standard location.
+                from os.path import dirname, join as joinpath
 
+                package_data_dir = joinpath(dirname(__file__), '../package_data')
+                mask_filename = os.path.join(package_data_dir, 'ANHA4_mask.nc')
+
+        # Check if there is a mask file
+        assert_message = '[Anhalyze] No mask file found, '
+        assert_message += 'please provide correct path, or see README for options.'
+        assert os.path.isfile(mask_filename), assert_message
+
+        # Get mask
         if mask_filename:
 
             # Getting mask data
