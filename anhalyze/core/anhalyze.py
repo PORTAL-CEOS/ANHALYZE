@@ -582,7 +582,11 @@ class AnhaDataset:
         var_da = var_da.isel(indexers={self.attrs['dim_z']: [0]})
 
         # Show var data map
-        apu.show_var_data_map(var_da, attrs=self.attrs, color_range=color_range, savefig=savefig, proj_name=projection_name)
+        apu.show_var_data_map(var_da,
+                              attrs=self.attrs,
+                              color_range=color_range,
+                              savefig=savefig,
+                              proj_name=projection_name)
 
     def to_netcdf(self, filename='', **kwargs):
         """ Writes netcdf file from `AnhaDataset`.
