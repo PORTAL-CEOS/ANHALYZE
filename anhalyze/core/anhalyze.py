@@ -556,7 +556,7 @@ class AnhaDataset:
         return AnhaDataset(os.path.join(self.attrs['filepath'], self.attrs['filename']),
                            load_data=self._load_data, _xr_dataset=_xr_dataset, _attrs=self.attrs)
 
-    def show_var_data_map(self, var, color_range='physical', savefig=None,proj='LambertConformal'):
+    def show_var_data_map(self, var, color_range='physical', savefig=None, projection_name='LambertConformal'):
         """ Displays a map for given var in `AnhaDataset.data_vars`.
 
         Parameters
@@ -567,8 +567,8 @@ class AnhaDataset:
             Color range either `physical` limits, or `relative` values.
         savefig : str
             Filename to save figure including path.
-        proj : str
-            Projection name.
+        projection_name : str
+            Projection name from Cartopy list .
         """
 
         import anhalyze.core.anhalyze_plot_utils as apu
@@ -582,7 +582,7 @@ class AnhaDataset:
         var_da = var_da.isel(indexers={self.attrs['dim_z']: [0]})
 
         # Show var data map
-        apu.show_var_data_map(var_da, attrs=self.attrs, color_range=color_range, savefig=savefig, proj_name=proj)
+        apu.show_var_data_map(var_da, attrs=self.attrs, color_range=color_range, savefig=savefig, proj_name=projection_name)
 
     def to_netcdf(self, filename='', **kwargs):
         """ Writes netcdf file from `AnhaDataset`.
