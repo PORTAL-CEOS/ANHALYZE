@@ -6,7 +6,7 @@ import requests
 MASK_URL = 'https://bit.ly/3TkYlGL'
 
 
-def download_large_file(download_url, download_destination):
+def download_nc_file(download_url, download_destination):
     """ Download a large file given url into destination
 
         Parameters
@@ -45,7 +45,7 @@ def download_mask():
     # Filename
     mask_destination = '../package_data/ANHA4_mask.nc'
 
-    download_large_file(mask_url, mask_destination)
+    download_nc_file(mask_url, mask_destination)
 
 
 if __name__ == '__main__':
