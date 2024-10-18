@@ -68,7 +68,7 @@ aaa.show_var_data_map(var='votemper')
 
 ### Masking
 
-Masking is done internally. Default masking file is included in `XYZ/filename`.
+Masking is done internally. Default masking file is included in `anhalyze/package_data/ANHA4_mask.nc`.
 
 There are two more options for providing your own mask file:
  
@@ -105,13 +105,16 @@ aa = ah.AnhaDataset(filename, mask_filename=your_mask_filename)
 
 * 0.7 (planned)
     * To release `AnhalyzeLocation` class.
-    * Add Anhalize to PyPI.
+    * pip install functionality
 * 0.6 (planned)
     * To release `AnhalyzeProject` class.
 * 0.5 (upcoming)
     * First main release, includes:
       * `AnhaDataset` class
-      * Basic selection and plotting functionality. 
+      * Basic functionality of single ANHA `nc` files. 
+        * data reading/writing
+        * region selection 
+        * map plotting
     * See [commit change]() or See [release history]()
 * 0.0.1
     * Current version in Beta. 
@@ -131,7 +134,6 @@ and edith paths to your needs:
 #------------------------------------------------------------- 
 #ANHALIZE setup
 #-------------------------------------------------------------
-export MASK_PATH='/root_path/user/ANALYSES/MASKS/'
 export DATA_PATH='/root_path/user/NEMO/ANHA4/ANHA4-Wxx000-S/'
 #-------------------------------------------------------------
 ```
