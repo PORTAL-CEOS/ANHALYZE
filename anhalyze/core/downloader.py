@@ -1,9 +1,13 @@
 #!/usr/bin/env python3
 # coding: utf-8
 
+# System-related libraries
 import requests
+import os
+from os.path import dirname, join as joinpath
 
-MASK_URL = 'https://bit.ly/3TkYlGL'
+# Project-related libraries
+import anhalyze.config as config
 
 
 def download_nc_file(download_url, download_destination):
@@ -40,10 +44,11 @@ def download_mask():
     """
 
     # URL location for mask.
-    mask_url = MASK_URL
+    mask_url = config.package_data['mask']['url']
 
-    # Filename
-    mask_destination = '../package_data/ANHA4_mask.nc'
+    # Download mask to standard location.
+    package_data_dir = joinpath(dirname(__file__).replace('core', ''), 'package_data')
+    mask_destination = os.path.join(package_data_dir, 'ANHA4_mask.nc')
 
     # Downloading mask.
     print("[Anhalyze.Downloader] Downloading mask file.")
