@@ -9,6 +9,7 @@ import numpy as np
 import xarray as xr
 
 # Project-related libraries
+import anhalyze.config as config
 
 
 # Possible other names AnhaModelData, Dataset, AnhaData, AnhaDataframe, AnhaReader, AnhaGrid
@@ -359,9 +360,15 @@ class AnhaDataset:
             else:
                 # Get mask from standard location.
                 from os.path import dirname, join as joinpath
-
-                package_data_dir = joinpath(dirname(__file__), '../package_data')
+                package_data_dir = joinpath(dirname(__file__).replace('core', ''), 'package_data')
                 mask_filename = os.path.join(package_data_dir, 'ANHA4_mask.nc')
+
+                # Download mask if not present and if config allows.
+                if not os.path.isfile(mask_filename) and config.package_data['mask']['download_file']:
+                    print('[Anhalyze] No mask file found, downloading ...')
+
+                    from anhalyze.core.downloader import download_mask
+                    download_mask()
 
         # Check if there is a mask file
         assert_message = '[Anhalyze] No mask file found, '
