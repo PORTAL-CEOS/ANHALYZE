@@ -30,9 +30,9 @@ def download_nc_file(download_url, download_destination):
             with open(download_destination, 'wb') as f:
                 for chunk in response.iter_content(chunk_size=8192):
                     f.write(chunk)
-        print("File downloaded successfully!")
+        print("[Anhalyze.Downloader] File downloaded successfully!")
     except requests.exceptions.RequestException as e:
-        print("Error downloading the file:", e)
+        print("[Anhalyze.Downloader] Error downloading file:", e)
 
 
 def download_mask():
@@ -45,6 +45,8 @@ def download_mask():
     # Filename
     mask_destination = '../package_data/ANHA4_mask.nc'
 
+    # Downloading mask.
+    print("[Anhalyze.Downloader] Downloading mask file.")
     download_nc_file(mask_url, mask_destination)
 
 
