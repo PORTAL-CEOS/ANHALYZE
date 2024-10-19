@@ -7,7 +7,7 @@ version = "0.0.1"
 dependencies = []
 
 [tool.setuptools.packages.find]
-include = ["anhalyze*"]  # package names should match these glob patterns (["*"] by default)
+include = ["anhalyze*","downloader"]  # package names should match these glob patterns (["*"] by default)
 exclude = ["anhalyze.tests*"]  # exclude packages matching these glob patterns (empty by default)
 
 [tool.setuptools.package-data]  # https://setuptools.pypa.io/en/latest/userguide/datafiles.html
