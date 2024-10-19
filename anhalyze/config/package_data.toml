@@ -1,4 +1,4 @@
 
 [mask]
 url = "https://bit.ly/3TkYlGL"
-download_file = true
+autodownload_file = true

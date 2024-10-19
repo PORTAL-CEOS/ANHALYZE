@@ -364,7 +364,7 @@ class AnhaDataset:
                 mask_filename = os.path.join(package_data_dir, 'ANHA4_mask.nc')
 
                 # Download mask if not present and if config allows.
-                if not os.path.isfile(mask_filename) and config.package_data['mask']['download_file']:
+                if not os.path.isfile(mask_filename) and config.package_data['mask']['autodownload_file']:
                     print('[Anhalyze] No mask file found, downloading ...')
 
                     from anhalyze.core.downloader import download_mask
