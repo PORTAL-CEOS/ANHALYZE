@@ -232,6 +232,10 @@ def show_var_data_map(var_da, attrs, color_range='physical', savefig=None, proj_
     label = '%s [%s]' % (var_da.attrs['long_name'].title(), var_da.attrs['units'])
     fig.colorbar(im, cax=axins, orientation="vertical", label=label, extend='both')
 
+    # Display map
+    plt.ion()
+    fig.show()
+
     # Save plot if filename is provided
     if savefig:
         # Including path from original file if not given
