@@ -359,9 +359,7 @@ class AnhaDataset:
                 mask_filename = os.environ.get('MASK_PATH_FILENAME')
             else:
                 # Get mask from standard location.
-                from os.path import dirname, join as joinpath
-                package_data_dir = joinpath(dirname(__file__).replace('core', ''), 'package_data')
-                mask_filename = os.path.join(package_data_dir, 'ANHA4_mask.nc')
+                mask_filename = os.path.join(anhalyze.PACKAGE_DATA_DIR, 'ANHA4_mask.nc')
 
                 # Download mask if not present and if config allows.
                 if not os.path.isfile(mask_filename) and config.package_data['mask']['autodownload_file']:
