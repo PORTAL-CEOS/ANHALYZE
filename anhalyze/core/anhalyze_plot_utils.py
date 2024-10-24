@@ -197,7 +197,7 @@ def show_var_data_map(var_da, attrs, color_range='physical', savefig=None, proj_
     var_data = np.squeeze(var_da.data)
 
     # Set up figure and projection
-    fig = plt.figure()
+    fig = plt.figure(num=var_da.name)
     ax = fig.add_subplot(1, 1, 1,
                          projection=proj_config)
 
