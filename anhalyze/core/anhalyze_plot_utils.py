@@ -169,7 +169,6 @@ def get_projection_info(attrs):
 
 def show_var_data_map(var_da, attrs, color_range='physical', savefig=None, proj_name=''):
     """ Displays map of given parameter (var) in lat-lon range and depth.
-        Note: depth has not been tested.
 
         Parameters
         ----------
