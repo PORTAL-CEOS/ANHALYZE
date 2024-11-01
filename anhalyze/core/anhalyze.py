@@ -229,7 +229,7 @@ class AnhaDataset:
         self.attrs['dim_y_range'] = [0, self._xr_dataset.sizes[self.attrs['dim_y']]]
         
         # Only for 3 dimension variable
-        if hasattr(self, 'coord_depth'):
+        if 'coord_depth' in self.attrs.keys():
             self.attrs['coord_depth_range'] = [self.coords[self.attrs['coord_depth']].data.min(),
                                                self.coords[self.attrs['coord_depth']].data.max()]
             self.attrs['dim_z_range'] = [0, self._xr_dataset.sizes[self.attrs['dim_z']]]
@@ -392,7 +392,14 @@ class AnhaDataset:
 
             # TODO may want to update this to save mask dataArray instead of numpy array (.data)
             # Adding mask data to data_vars
-            self._xr_dataset = self._xr_dataset.assign({'mask': ((self.attrs['dim_z'],
+            
+            if 'dim_z' not in self.attrs.keys():
+                self._xr_dataset = self._xr_dataset.assign({'mask': ((self.attrs['dim_y'],
+                                                                  self.attrs['dim_x']),
+                                                                 mask[0, 0, :, :])})
+                
+            else:
+                self._xr_dataset = self._xr_dataset.assign({'mask': ((self.attrs['dim_z'],
                                                                   self.attrs['dim_y'],
                                                                   self.attrs['dim_x']),
                                                                  mask[0, :, :, :])})
@@ -577,7 +584,8 @@ class AnhaDataset:
         var_da = self._get_var_data_array(var=var)
 
         # Select top layer
-        var_da = var_da.isel(indexers={self.attrs['dim_z']: [0]})
+        if 'dim_z' in self.attrs.keys():
+            var_da = var_da.isel(indexers={self.attrs['dim_z']: [0]})
 
         # Show var data map
         apu.show_var_data_map(var_da, attrs=self.attrs, color_range=color_range, savefig=savefig, proj_name=proj)
