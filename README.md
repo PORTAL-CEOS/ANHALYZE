@@ -68,13 +68,14 @@ aaa.show_var_data_map(var='votemper')
 
 ### Masking
 
-Masking is done internally. Default masking file is included in `XYZ/filename`.
+Masking is done internally. The default mask file will be automatically downloaded here `<package root path>/anhalyze/package_data/`,
+the default mask name is `ANHA4_mask.nc`.
 
 There are two more options for providing your own mask file:
  
 #### Environment variable option:
 
-You can add the following environmental variables to your .bash_profile (or .bashrc, etc..), 
+You can add the following environmental variable(s) to your `.bash_profile` (or `.bashrc`, etc..), 
 and edith paths to your needs:
 ``` 
 #------------------------------------------------------------- 
@@ -86,32 +87,39 @@ export MASK_FILENAME='/root_path/user/../your_mask_location/mask_name.nc'
 
 #### Dynamic variable option:
 
-You can provide the mask filename with full path when opening
-an `ANHA` .nc file, as follows:
+You can provide your mask filename with full path when opening
+an `ANHA*.nc` file, as follows:
 
 ```
 import anhalyze as ah
 
 # Open file
-aa = ah.AnhaDataset(filename, mask_filename=your_mask_filename)
+aa = ah.AnhaDataset(filename, mask_filename='mask_full_filename')
 ```
 
+#### No-autodownload option:
 
-
-
+If there is no mask available, `AnhaDataset` will attempt to download the default mask.
+If you don't want this behaviour then edit the configuration file  `package_data.toml`,
+located in `<package root path>/anhalyze/config/`. In the `[mask]` section, change
+variable `autodownload_file` from 'true' to 'false'. This will prevent the file to be downloaded.
+If you don't provide a valid mask alternative, the code will return an error message.
 
 -----
 ## Version History
 
 * 0.7 (planned)
     * To release `AnhalyzeLocation` class.
-    * Add Anhalize to PyPI.
+    * pip install functionality
 * 0.6 (planned)
     * To release `AnhalyzeProject` class.
 * 0.5 (upcoming)
     * First main release, includes:
       * `AnhaDataset` class
-      * Basic selection and plotting functionality. 
+      * Basic functionality of single ANHA `nc` files. 
+        * data reading/writing
+        * region selection 
+        * map plotting
     * See [commit change]() or See [release history]()
 * 0.0.1
     * Current version in Beta. 
@@ -131,7 +139,6 @@ and edith paths to your needs:
 #------------------------------------------------------------- 
 #ANHALIZE setup
 #-------------------------------------------------------------
-export MASK_PATH='/root_path/user/ANALYSES/MASKS/'
 export DATA_PATH='/root_path/user/NEMO/ANHA4/ANHA4-Wxx000-S/'
 #-------------------------------------------------------------
 ```

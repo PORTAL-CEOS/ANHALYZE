@@ -7,6 +7,7 @@ anhalyze/tests/figs/
 anhalyze/tests/bkp_projects/
 figs/*
 *html
+*nc
 
 #---- Standard files below
 

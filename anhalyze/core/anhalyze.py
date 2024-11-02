@@ -9,6 +9,7 @@ import numpy as np
 import xarray as xr
 
 # Project-related libraries
+import anhalyze.config as config
 
 
 # Possible other names AnhaModelData, Dataset, AnhaData, AnhaDataframe, AnhaReader, AnhaGrid
@@ -194,8 +195,6 @@ class AnhaDataset:
         self.attrs['day'] = self.attrs['date'][9:11]
 
         # Initialize other attrs
-        if 'mask_applied' not in self.attrs.keys():
-            self.attrs['mask_applied'] = False
 
     def _init_metadata(self):
         """ Initialize model properties from filename
@@ -360,13 +359,28 @@ class AnhaDataset:
             Mask filename
 
         """
-        # TODO add environment variable option
 
         if not mask_filename:
-            # TODO could add standard location for mask data.
-            #  Also need to check that the file exist, otherwise skip (but will need to keep track of this)
-            mask_filename = './Test_Data/ANHA4_mask.nc'
+            # Check if a mask is declared as environment variable
+            if os.environ.get('MASK_PATH_FILENAME'):
+                mask_filename = os.environ.get('MASK_PATH_FILENAME')
+            else:
+                # Get mask from standard location.
+                mask_filename = os.path.join(anhalyze.PACKAGE_DATA_DIR, 'ANHA4_mask.nc')
 
+                # Download mask if not present and if config allows.
+                if not os.path.isfile(mask_filename) and config.package_data['mask']['autodownload_file']:
+                    print('[Anhalyze] No mask file found, downloading ...')
+
+                    from anhalyze.core.downloader import download_mask
+                    download_mask()
+
+        # Check if there is a mask file
+        assert_message = '[Anhalyze] No mask file found, '
+        assert_message += 'please provide correct path, or see README for options.'
+        assert os.path.isfile(mask_filename), assert_message
+
+        # Get mask
         if mask_filename:
 
             # Getting mask data
@@ -561,7 +575,7 @@ class AnhaDataset:
         return AnhaDataset(os.path.join(self.attrs['filepath'], self.attrs['filename']),
                            load_data=self._load_data, _xr_dataset=_xr_dataset, _attrs=self.attrs)
 
-    def show_var_data_map(self, var, color_range='physical', savefig=None,proj='LambertConformal'):
+    def show_var_data_map(self, var, color_range='physical', savefig=None, projection_name='LambertConformal'):
         """ Displays a map for given var in `AnhaDataset.data_vars`.
 
         Parameters
@@ -572,8 +586,8 @@ class AnhaDataset:
             Color range either `physical` limits, or `relative` values.
         savefig : str
             Filename to save figure including path.
-        proj : str
-            Projection name.
+        projection_name : str
+            Projection name from Cartopy list .
         """
 
         import anhalyze.core.anhalyze_plot_utils as apu
@@ -588,7 +602,11 @@ class AnhaDataset:
             var_da = var_da.isel(indexers={self.attrs['dim_z']: [0]})
 
         # Show var data map
-        apu.show_var_data_map(var_da, attrs=self.attrs, color_range=color_range, savefig=savefig, proj_name=proj)
+        apu.show_var_data_map(var_da,
+                              attrs=self.attrs,
+                              color_range=color_range,
+                              savefig=savefig,
+                              proj_name=projection_name)
 
     def to_netcdf(self, filename='', **kwargs):
         """ Writes netcdf file from `AnhaDataset`.
