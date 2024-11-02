@@ -68,10 +68,11 @@ aaa.show_var_data_map(var='votemper')
 
 ### Masking
 
-Masking is done internally. The default mask file will be automatically downloaded here `<package root path>/anhalyze/package_data/`,
+Masking is done internally. The default mask file will be automatically 
+downloaded here `<package root path>/anhalyze/package_data/`,
 the default mask name is `ANHA4_mask.nc`.
 
-There are two more options for providing your own mask file:
+There are two alternate options for providing your own mask file:
  
 #### Environment variable option:
 
@@ -99,11 +100,14 @@ aa = ah.AnhaDataset(filename, mask_filename='mask_full_filename')
 
 #### No-autodownload option:
 
-If there is no mask available, `AnhaDataset` will attempt to download the default mask.
+`Anhalize` will first try to find your own mask, if none is provided, 
+it will attempt to download the default mask and use that.
 If you don't want this behaviour then edit the configuration file  `package_data.toml`,
 located in `<package root path>/anhalyze/config/`. In the `[mask]` section, change
 variable `autodownload_file` from 'true' to 'false'. This will prevent the file to be downloaded.
 If you don't provide a valid mask alternative, the code will return an error message.
+This assumes the default mask has not been downloaded already. 
+If that is the case, you will need to delete it manually. 
 
 -----
 ## Version History
