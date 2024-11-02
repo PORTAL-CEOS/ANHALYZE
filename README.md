@@ -42,23 +42,22 @@ Once installed you can import the library like this:
 
 ```
 import anhalyze as ah
-aa = ah.AnhaDataset(filename)
-aaa = aa.sel(lat_range=[50,65],lon_range=[-93,-75])
 ```
-
 
 ### Example 
 
-This  example requires an `ANHA` .nc file.
+This example requires an `ANHA*_gridT.nc` file.
 
 ```
 import anhalyze as ah
 
+filename = 'ANHA*gridT.nc'
+
 # Open file
 aa = ah.AnhaDataset(filename)
 
-# Do selection of lat_range, lon_range, and depth_range, in that order.
-aaa = aa.sel([50,65],[-93,-75],[0,300])
+# Do selection of lat_range, lon_range, and depth_range.
+aaa = aa.sel(lat_range=[50,65],lon_range=[-93,-75],depth_range=[0,300])
 
 # Plot region for a selected variable.
 aaa.show_var_data_map(var='votemper')
