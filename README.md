@@ -16,23 +16,25 @@ NOTE: This code is stable, but new features are currently under development.
 
 ## Installation
 
-Clone this [GitHub repo](https://github.com/PORTAL-CEOS/ANHALIZE): 
-
+Clone this [GitHub repo](https://github.com/PORTAL-CEOS/ANHALIZE):
 ```
 git clone https://github.com/PORTAL-CEOS/ANHALYZE.git
 ```
 
-Install the dependencies in your [environment](https://conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html) with:
-
+Install the dependencies in your [environment](https://docs.python.org/3/library/venv.html) with:
 ```
 cd ANHALYZE/
-python -m pip install -r requirements.txt
+python3 -m pip install -r requirements.txt
 ```
 
 Then install the package with:
-
 ```
-python -m pip install .
+python3 -m pip install .
+```
+
+If you want to install the package in development mode, you can do:
+```
+python3 -m pip install  --editable .
 ```
 
 
