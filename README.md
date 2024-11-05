@@ -14,28 +14,82 @@ Centre for Earth Observation Science (CEOS), at the University of Manitoba.
 NOTE: This code is stable, but new features are currently under development.
 
 
-## Installation
 
-Clone this [GitHub repo](https://github.com/PORTAL-CEOS/ANHALIZE):
-```
-git clone https://github.com/PORTAL-CEOS/ANHALYZE.git
-```
+-----
+## Getting Started
 
-Install the dependencies in your [environment](https://docs.python.org/3/library/venv.html) with:
-```
-cd ANHALYZE/
-python3 -m pip install -r requirements.txt
-```
+### Requirements
 
-Then install the package with:
-```
-python3 -m pip install .
-```
+* Python (> 3.10.0)
 
-If you want to install the package in development mode, you can do:
-```
-python3 -m pip install  --editable .
-```
+
+### Installation
+
+1. Clone this [repository](https://github.com/PORTAL-CEOS/ANHALIZE) with: 
+
+    ```
+    git clone git@github.com:PORTAL-CEOS/ANHALYZE.git
+    ```
+
+    **Additional Notes**
+
+    To learn about what this means, and how to use Git, see 
+    this [w3 tutorial](https://www.w3schools.com/git/default.asp?remote=github),    
+    this [datacamp tutorial](https://www.datacamp.com/blog/how-to-learn-git),
+    this [NHS Git guide](https://nhsdigital.github.io/rap-community-of-practice/training_resources/git/using-git-collaboratively/),
+    or this [git tutorial](https://git-scm.com/docs/gittutorial).
+
+
+2. Install the dependencies in your [python environment](https://docs.python.org/3/library/venv.html) with:
+    ```
+    cd ANHALYZE/
+    python3 -m pip install -r requirements.txt
+    ```
+   
+    Then install the package with:
+    ```
+    python3 -m pip install .
+    ```
+    
+    If you want to install the package in development mode, you can do:
+    ```
+    python3 -m pip install  --editable .
+    ```
+
+    **Additional Notes**
+
+    - Note1: If you are managing multiple venvs, you could use 
+    [virtualenvwrapper](https://virtualenvwrapper.readthedocs.io/en/latest/) as an organizing tool.
+    - Note2: The minimum libraries required for this project are listed in `requirements.in` which was created
+    automatically with
+       ```
+       pip install pipreqs
+       pipreqs <project-directory> --savepath requirements.in --scan-notebooks    
+       ```   
+       Additionally, the `jupyter` library was added manually. 
+   
+       The required libraries including their dependencies are listed in `requirements.txt`.
+       This was created automatically from `requirements.in` by using
+       ```
+       pip install pip-tools
+       pip-compile    
+       ```
+
+    **Additional Help**
+
+    Set up your environment using [pip](https://pypi.org/project/pip/).
+    For more information on how to use virtual environments and why they are important, 
+    see this [Real Python tutorial](https://realpython.com/python-virtual-environments-a-primer/), or 
+    see the [NHS virtual environments guide](https://nhsdigital.github.io/rap-community-of-practice/training_resources/python/virtual-environments/why-use-virtual-environments/).
+
+    If you are using Linux/MacOS you can use this simple example, 
+    or for more information about setting your venv look [here](https://nhsdigital.github.io/rap-community-of-practice/training_resources/python/virtual-environments/venv/).
+
+       ```
+       python3 -m venv <venv-directory>
+       source <venv-directory>/bin/activate
+       python3 -m pip install -r requirements.txt 
+       ```
 
 
 ## Usage
