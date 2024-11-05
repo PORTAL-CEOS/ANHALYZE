@@ -124,8 +124,8 @@ If that is the case, you will need to delete it manually.
         * region selection 
         * map plotting
     * See [commit change]() or See [release history]()
-* 0.0.1
-    * Current version in Beta. 
+* 0.0.1 (current)
+    * Beta version, initial development.  
 
 ## License
 
