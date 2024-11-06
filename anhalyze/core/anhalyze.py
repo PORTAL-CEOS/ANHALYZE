@@ -609,7 +609,7 @@ class AnhaDataset:
                               savefig=savefig,
                               proj_name=projection_name)
 
-    def to_netcdf(self, filename='', **kwargs):
+    def to_netcdf(self, filename, **kwargs):
         """ Writes netcdf file from `AnhaDataset`.
 
         Parameters
@@ -618,7 +618,6 @@ class AnhaDataset:
             netcdf filename
 
         """
-        # TODO Need testing
 
         assert '.nc' in filename, ValueError('[Anhalyze] Filename should be .nc type.')
 
