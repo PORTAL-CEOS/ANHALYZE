@@ -9,6 +9,7 @@ import numpy as np
 import xarray as xr
 
 # Project-related libraries
+import anhalyze
 import anhalyze.config as config
 
 
