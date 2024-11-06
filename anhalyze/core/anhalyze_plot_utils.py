@@ -236,8 +236,9 @@ def show_var_data_map(var_da, attrs, color_range='physical', savefig=None, proj_
     fig.colorbar(im, cax=axins, orientation="vertical", label=label, extend='both')
 
     # Display map
-    plt.ion()
-    fig.show()
+    if get_ipython().__class__.__name__ != 'ZMQInteractiveShell':
+        plt.ion()
+        fig.show()
 
     # Save plot if filename is provided
     if savefig:
