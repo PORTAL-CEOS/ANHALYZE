@@ -185,7 +185,7 @@ If that is the case, you will need to delete it manually.
 
 ## License
 
-This is a placeholder.
+MIT license, see `LICENSE`.
 
 
 
