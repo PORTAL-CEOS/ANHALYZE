@@ -14,26 +14,82 @@ Centre for Earth Observation Science (CEOS), at the University of Manitoba.
 NOTE: This code is stable, but new features are currently under development.
 
 
-## Installation
 
-Clone this [GitHub repo](https://github.com/PORTAL-CEOS/ANHALIZE): 
+-----
+## Getting Started
 
-```
-git clone https://github.com/PORTAL-CEOS/ANHALYZE.git
-```
+### Requirements
 
-Install the dependencies in your [environment](https://conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html) with:
+* Python (> 3.10.0)
 
-```
-cd ANHALYZE/
-python -m pip install -r requirements.txt
-```
 
-Then install the package with:
+### Installation
 
-```
-python -m pip install .
-```
+1. Clone this [repository](https://github.com/PORTAL-CEOS/ANHALIZE) with: 
+
+    ```
+    git clone git@github.com:PORTAL-CEOS/ANHALYZE.git
+    ```
+
+    **Additional Notes**
+
+    To learn about what this means, and how to use Git, see 
+    this [w3 tutorial](https://www.w3schools.com/git/default.asp?remote=github),    
+    this [datacamp tutorial](https://www.datacamp.com/blog/how-to-learn-git),
+    this [NHS Git guide](https://nhsdigital.github.io/rap-community-of-practice/training_resources/git/using-git-collaboratively/),
+    or this [git tutorial](https://git-scm.com/docs/gittutorial).
+
+
+2. Install the dependencies in your [python environment](https://docs.python.org/3/library/venv.html) with:
+    ```
+    cd ANHALYZE/
+    python3 -m pip install -r requirements.txt
+    ```
+   
+    Then install the package with:
+    ```
+    python3 -m pip install .
+    ```
+    
+    If you want to install the package in development mode, you can do:
+    ```
+    python3 -m pip install  --editable .
+    ```
+
+    **Additional Notes**
+
+    - Note1: If you are managing multiple venvs, you could use 
+    [virtualenvwrapper](https://virtualenvwrapper.readthedocs.io/en/latest/) as an organizing tool.
+    - Note2: The minimum libraries required for this project are listed in `requirements.in` which was created
+    automatically with
+       ```
+       pip install pipreqs
+       pipreqs <project-directory> --savepath requirements.in --scan-notebooks    
+       ```   
+       Additionally, the `jupyter` library was added manually. 
+   
+       The required libraries including their dependencies are listed in `requirements.txt`.
+       This was created automatically from `requirements.in` by using
+       ```
+       pip install pip-tools
+       pip-compile    
+       ```
+
+    **Additional Help**
+
+    Set up your environment using [pip](https://pypi.org/project/pip/).
+    For more information on how to use virtual environments and why they are important, 
+    see this [Real Python tutorial](https://realpython.com/python-virtual-environments-a-primer/), or 
+    see the [NHS virtual environments guide](https://nhsdigital.github.io/rap-community-of-practice/training_resources/python/virtual-environments/why-use-virtual-environments/).
+
+    If you are using Linux/MacOS you can use this simple example, 
+    or for more information about setting your venv look [here](https://nhsdigital.github.io/rap-community-of-practice/training_resources/python/virtual-environments/venv/).
+
+       ```
+       python3 -m venv <venv-directory>
+       source <venv-directory>/bin/activate
+       python3 -m pip install -r requirements.txt 
+       ```
 
 
 ## Usage
@@ -42,23 +98,22 @@ Once installed you can import the library like this:
 
 ```
 import anhalyze as ah
-aa = ah.AnhaDataset(filename)
-aaa = aa.sel(lat_range=[50,65],lon_range=[-93,-75])
 ```
-
 
 ### Example 
 
-This  example requires an `ANHA` .nc file.
+This example requires an `ANHA*_gridT.nc` file.
 
 ```
 import anhalyze as ah
 
+filename = 'ANHA*gridT.nc'
+
 # Open file
 aa = ah.AnhaDataset(filename)
 
-# Do selection of lat_range, lon_range, and depth_range, in that order.
-aaa = aa.sel([50,65],[-93,-75],[0,300])
+# Do selection of lat_range, lon_range, and depth_range.
+aaa = aa.sel(lat_range=[50,65],lon_range=[-93,-75],depth_range=[0,300])
 
 # Plot region for a selected variable.
 aaa.show_var_data_map(var='votemper')
@@ -68,10 +123,11 @@ aaa.show_var_data_map(var='votemper')
 
 ### Masking
 
-Masking is done internally. The default mask file will be automatically downloaded here `<package root path>/anhalyze/package_data/`,
+Masking is done internally. The default mask file will be automatically 
+downloaded here `<package root path>/anhalyze/package_data/`,
 the default mask name is `ANHA4_mask.nc`.
 
-There are two more options for providing your own mask file:
+There are two alternate options for providing your own mask file:
  
 #### Environment variable option:
 
@@ -99,11 +155,14 @@ aa = ah.AnhaDataset(filename, mask_filename='mask_full_filename')
 
 #### No-autodownload option:
 
-If there is no mask available, `AnhaDataset` will attempt to download the default mask.
+`Anhalize` will first try to find your own mask, if none is provided, 
+it will attempt to download the default mask and use that.
 If you don't want this behaviour then edit the configuration file  `package_data.toml`,
 located in `<package root path>/anhalyze/config/`. In the `[mask]` section, change
 variable `autodownload_file` from 'true' to 'false'. This will prevent the file to be downloaded.
 If you don't provide a valid mask alternative, the code will return an error message.
+This assumes the default mask has not been downloaded already. 
+If that is the case, you will need to delete it manually. 
 
 -----
 ## Version History
@@ -121,12 +180,12 @@ If you don't provide a valid mask alternative, the code will return an error mes
         * region selection 
         * map plotting
     * See [commit change]() or See [release history]()
-* 0.0.1
-    * Current version in Beta. 
+* 0.0.1 (current)
+    * Beta version, initial development.  
 
 ## License
 
-This is a placeholder.
+MIT license, see `LICENSE`.
 
 
 

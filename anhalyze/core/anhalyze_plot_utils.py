@@ -40,9 +40,9 @@ def get_plot_config(var, var_data, color_range='physical'):
     elif var == 'vosaline':  # Salinity
         cmap = cmo.haline  # Other possible colors: 'winter'
         vrange = [25, 39]    # Physical based values
-    elif var == 'ileadfra': # Sea ice conceentration
+    elif var == 'ileadfra':  # Sea ice concentration
         cmap = cmo.ice
-        vrange = [0, 1] # Physical based values
+        vrange = [0, 1]  # Physical based values
     elif var == 'chl':  # Chlorophyll
         cmap = cmo.algae
         vrange = None  # Placeholder for physical based values
@@ -236,8 +236,9 @@ def show_var_data_map(var_da, attrs, color_range='physical', savefig=None, proj_
     fig.colorbar(im, cax=axins, orientation="vertical", label=label, extend='both')
 
     # Display map
-    plt.ion()
-    fig.show()
+    if get_ipython().__class__.__name__ != 'ZMQInteractiveShell':
+        plt.ion()
+        fig.show()
 
     # Save plot if filename is provided
     if savefig:
