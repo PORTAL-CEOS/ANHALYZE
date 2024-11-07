@@ -54,6 +54,29 @@ def download_mask():
     download_nc_file(mask_url, mask_destination)
 
 
+def download_example(file_type='gridT'):
+    """ Downloads Anha file example.
+
+        Parameters
+        ----------
+        file_type : str
+            File type either 'gridT'(default) or 'icebergs'
+
+    """
+
+    assert file_type in ['gridT', 'icebergs'], '[Anhalyze.Downloader] Incorrect file_type.'
+
+    # URL location.
+    file_url = config.package_data[file_type]['url']
+
+    # Download mask to standard location.
+    file_destination = os.path.join(anhalyze.PACKAGE_DATA_DIR, config.package_data[file_type]['filename'])
+
+    # Downloading mask.
+    print(f"[Anhalyze.Downloader] Downloading {file_type} file.")
+    download_nc_file(file_url, file_destination)
+
+
 if __name__ == '__main__':
 
     download_mask()

@@ -187,6 +187,12 @@ def show_var_data_map(var_da, attrs, color_range='physical', savefig=None, proj_
             Projection name from Cartopy list.
     """
 
+    # Setting color bar feature
+    if color_range == 'relative':
+        bar_extend = 'both'
+    else:
+        bar_extend = None
+
     # Calculate projection information (e.g. Standard parallels) based on the dataset lat and lon limits
     proj_info = get_projection_info(attrs)
 
@@ -204,6 +210,7 @@ def show_var_data_map(var_da, attrs, color_range='physical', savefig=None, proj_
     ax = fig.add_subplot(1, 1, 1,
                          projection=proj_config)
 
+    #
     ax.set_extent([attrs['coord_lon_range'][0],
                    attrs['coord_lon_range'][1],
                    attrs['coord_lat_range'][0],
@@ -219,7 +226,7 @@ def show_var_data_map(var_da, attrs, color_range='physical', savefig=None, proj_
     cmap, vrange = get_plot_config(var_da.name, var_data, color_range=color_range)
 
     # Plotting var data as filled contour regions
-    im = ax.contourf(lon, lat, var_data, levels=LEVELS, cmap=cmap, extend='both',
+    im = ax.contourf(lon, lat, var_data, levels=LEVELS, cmap=cmap, extend=bar_extend,
                      vmin=vrange[0], vmax=vrange[1], transform=ccrs.PlateCarree(), zorder=2)
 
     # Plotting var data contour lines
