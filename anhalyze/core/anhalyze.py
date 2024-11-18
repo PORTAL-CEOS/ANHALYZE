@@ -584,7 +584,7 @@ class AnhaDataset:
         var : str
             Variable name.
         color_range : str
-            Color range either `physical` limits, or `relative` values.
+            Color range based on either `physical` limits, or `relative` values.
         savefig : str
             Filename to save figure including path.
         projection_name : str
