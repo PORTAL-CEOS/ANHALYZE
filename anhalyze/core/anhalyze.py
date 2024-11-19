@@ -39,9 +39,32 @@ class AnhaDataset:
     def __repr__(self):
         """ Return string representation of object
         """
-        # TODO return own dims/coords/data_vars, instead of the ones from _xr_dataset
-        # return xr.core.formatting.dataset_repr(self._anha_dataset)  # placeholder, may help create own version.
-        return f'[Anhalyze] Filename: {self.attrs["filename"]} \n' + str(self._xr_dataset)
+
+        anhalyze_repr = f'[Anhalyze] Dataset. \n'
+        anhalyze_repr += f'[Anhalyze] Filename: {self.attrs["filename"]}\n'
+
+        xarray_repr = str(self._xr_dataset)
+
+        anhalyze_warning = '\n[Anhalyze] Note: Above we show the xarray repr of this file, ' \
+                           'it should be mostly complete, ' \
+                           'but use `self.attrs` for the full set of Attributes.'
+
+        return "{0}{1}{2}".format(anhalyze_repr, xarray_repr, anhalyze_warning)
+
+    def _repr_html_(self):
+        """ Returns html representation of object
+        """
+
+        anhalyze_repr = f'[Anhalyze] Dataset. <br/>'
+        anhalyze_repr += f'[Anhalyze] Filename: {self.attrs["filename"]}<br/>'
+
+        xarray_repr = self._xr_dataset._repr_html_()
+
+        anhalyze_warning = '[Anhalyze] Note: Above we show the xarray repr of this file, ' \
+                           'it should be mostly complete, ' \
+                           'but use `self.attrs` for the full set of Attributes.'
+
+        return "{0}{1}{2}".format(anhalyze_repr, xarray_repr, anhalyze_warning)
 
     def __init__(self, filename, load_data=True, mask_filename=None, _xr_dataset=None, _attrs=None):
         """ Initializing object.
