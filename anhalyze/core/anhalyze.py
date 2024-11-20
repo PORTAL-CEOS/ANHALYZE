@@ -435,14 +435,14 @@ class AnhaDataset:
             
             if 'dim_z' not in self.attrs.keys():
                 self._xr_dataset = self._xr_dataset.assign({'mask': ((self.attrs['dim_y'],
-                                                                  self.attrs['dim_x']),
-                                                                 mask[0, 0, :, :])})
+                                                                      self.attrs['dim_x']),
+                                                                     mask[0, 0, :, :])})
                 
             else:
                 self._xr_dataset = self._xr_dataset.assign({'mask': ((self.attrs['dim_z'],
-                                                                  self.attrs['dim_y'],
-                                                                  self.attrs['dim_x']),
-                                                                 mask[0, :, :, :])})
+                                                                      self.attrs['dim_y'],
+                                                                      self.attrs['dim_x']),
+                                                                     mask[0, :, :, :])})
 
             # Add mask filename to attrs
             self._xr_dataset.attrs['mask_filename'] = mask_filename
