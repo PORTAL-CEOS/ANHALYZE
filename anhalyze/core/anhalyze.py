@@ -554,7 +554,7 @@ class AnhaDataset:
         print('suffix', self.attrs['filename'].replace('.nc', suffix))
 
         return AnhaDataset(os.path.join(self.attrs['filepath'], self.attrs['filename'].replace('.nc', suffix)),
-                           load_data=self._load_data, _xr_dataset=_xr_dataset, _attrs=self.attrs)
+                           load_data=self._load_data, _xr_dataset=_xr_dataset, _attrs=self.attrs.copy())
 
     def isel(self, x_range=None, y_range=None, z_range=None):
         """
@@ -605,7 +605,7 @@ class AnhaDataset:
         suffix = '_CutRegion.nc'
 
         return AnhaDataset(os.path.join(self.attrs['filepath'], self.attrs['filename'].replace('.nc', suffix)),
-                           load_data=self._load_data, _xr_dataset=_xr_dataset, _attrs=self.attrs)
+                           load_data=self._load_data, _xr_dataset=_xr_dataset, _attrs=self.attrs.copy())
 
     def show_var_data_map(self, var, color_range='physical', savefig=None, projection_name='LambertConformal'):
         """ Displays a map for given var in `AnhaDataset.data_vars`.
