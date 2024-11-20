@@ -13,7 +13,7 @@ import anhalyze
 import anhalyze.config as config
 
 
-# Possible other names AnhaModelData, Dataset, AnhaData, AnhaDataframe, AnhaReader, AnhaGrid
+#
 class AnhaDataset:
     """ Wrapper :py:class: for `xarray.Dataset` with specific implementation
     for netCDF files created with ANHA/NEMO ocean models. Similarly to a
@@ -537,7 +537,7 @@ class AnhaDataset:
         if dict_range:
             _xr_dataset = _xr_dataset.isel(dict_range)
 
-        # Populating dict for lat, lon selection
+        # Populating dict for depth selection
         if depth_range:
             depth_range = self._update_range('coord_depth', depth_range)
 
