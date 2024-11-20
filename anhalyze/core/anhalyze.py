@@ -283,7 +283,8 @@ class AnhaDataset:
             # Use edges if values outside range
             if coord_range[0] < full_range[0]:
                 mode_message = f'[Anhalyze] Warning: {coord_name} '
-                mode_message += f'using edge value {full_range[0]} since given value {coord_range[0]} is out of bounds.'
+                mode_message += f'using edge value {full_range[0]:.2f} ' \
+                                f'since given value {coord_range[0]} is out of bounds.'
                 coord_range[0] = full_range[0]
 
                 if self.attrs['verbose']:
@@ -291,7 +292,8 @@ class AnhaDataset:
 
             if coord_range[1] > full_range[1]:
                 mode_message = f'[Anhalyze] Warning: {coord_name} '
-                mode_message += f'using edge value {full_range[1]} since given value {coord_range[1]} is out of bounds.'
+                mode_message += f'using edge value {full_range[1]:.2f} ' \
+                                f'since given value {coord_range[1]} is out of bounds.'
                 coord_range[1] = full_range[1]
 
                 if self.attrs['verbose']:
