@@ -549,12 +549,7 @@ class AnhaDataset:
             # Depth selection
             _xr_dataset = _xr_dataset.sel(dict_range)
 
-        # TODO should add something in the filename just to mark is not the original file.
-        suffix = '_CutRegion.nc'
-        print('suffix', self.attrs['filename'].replace('.nc', suffix))
-
-        return AnhaDataset(os.path.join(self.attrs['filepath'], self.attrs['filename'].replace('.nc', suffix)),
-                           load_data=self._load_data, _xr_dataset=_xr_dataset, _attrs=self.attrs.copy())
+        return AnhaDataset('', load_data=self._load_data, _xr_dataset=_xr_dataset, _attrs=self.attrs.copy())
 
     def isel(self, x_range=None, y_range=None, z_range=None):
         """
@@ -601,11 +596,7 @@ class AnhaDataset:
         # Selection of xarray instance
         _xr_dataset = self._xr_dataset.isel(dict_range)
 
-        # TODO should add something in the filename just to mark is not the original file.
-        suffix = '_CutRegion.nc'
-
-        return AnhaDataset(os.path.join(self.attrs['filepath'], self.attrs['filename'].replace('.nc', suffix)),
-                           load_data=self._load_data, _xr_dataset=_xr_dataset, _attrs=self.attrs.copy())
+        return AnhaDataset('', load_data=self._load_data, _xr_dataset=_xr_dataset, _attrs=self.attrs.copy())
 
     def show_var_data_map(self, var, color_range='physical', savefig=None, projection_name='LambertConformal'):
         """ Displays a map for given var in `AnhaDataset.data_vars`.
