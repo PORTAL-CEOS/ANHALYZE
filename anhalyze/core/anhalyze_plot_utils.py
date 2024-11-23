@@ -180,9 +180,9 @@ def show_var_data_map(var_da, attrs, color_range='physical', savefig=None, proj_
         attrs : dict
             Attributes from `AnhaDataset`
         color_range : str
-            Color range either `physical` limits, or `relative` values.
+            Color range either `physical` limits (default), or `relative` values.
         savefig : str
-            Filename to save figure including path.
+            Filename to save figure including path. If path is not given then using path from original file.
         proj_name : str
             Projection name from Cartopy list.
     """
@@ -242,7 +242,7 @@ def show_var_data_map(var_da, attrs, color_range='physical', savefig=None, proj_
     label = '%s [%s]' % (var_da.attrs['long_name'].title(), var_da.attrs['units'])
     fig.colorbar(im, cax=axins, orientation="vertical", label=label, extend='both')
 
-    # Display map
+    # Display map when using ipython/terminal
     if get_ipython().__class__.__name__ != 'ZMQInteractiveShell':
         plt.ion()
         fig.show()
