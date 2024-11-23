@@ -85,6 +85,7 @@ class AnhaDataset:
 
         # Loading data
         if _xr_dataset:
+            # Check correct xarray.Dataset type.
             assert type(_xr_dataset) == xr.core.dataset.Dataset, \
                 TypeError('[Anhalyze] Parameter xr_dataset incorrect type.')
             self._xr_dataset = _xr_dataset
@@ -106,8 +107,8 @@ class AnhaDataset:
         self._load_data = load_data
         self._init_metadata()
 
-        # TODO replace verbose with logging levels
         # Initialize other attrs
+        # TODO could replace verbose with logging levels
         self.attrs['verbose'] = True
 
     def _init_coords(self):
@@ -549,7 +550,10 @@ class AnhaDataset:
             # Depth selection
             _xr_dataset = _xr_dataset.sel(dict_range)
 
-        return AnhaDataset('', load_data=self._load_data, _xr_dataset=_xr_dataset, _attrs=self.attrs.copy())
+        # Set attrs
+        _attrs = self.attrs.copy()
+
+        return AnhaDataset('', load_data=self._load_data, _xr_dataset=_xr_dataset, _attrs=_attrs)
 
     def isel(self, x_range=None, y_range=None, z_range=None):
         """
@@ -596,7 +600,10 @@ class AnhaDataset:
         # Selection of xarray instance
         _xr_dataset = self._xr_dataset.isel(dict_range)
 
-        return AnhaDataset('', load_data=self._load_data, _xr_dataset=_xr_dataset, _attrs=self.attrs.copy())
+        # Set attrs
+        _attrs = self.attrs.copy()
+
+        return AnhaDataset('', load_data=self._load_data, _xr_dataset=_xr_dataset, _attrs=_attrs)
 
     def show_var_data_map(self, var, color_range='physical', savefig=None, projection_name='LambertConformal'):
         """ Displays a map for given var in `AnhaDataset.data_vars`.
