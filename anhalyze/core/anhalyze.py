@@ -94,6 +94,7 @@ class AnhaDataset:
             if load_data:
                 self._xr_dataset = xr.open_dataset(os.path.join(self.attrs['filepath'], self.attrs['filename']))
             else:
+                raise FutureWarning("[Anhalyze] load_data=false option hasn't been fully developed.")
                 self._xr_dataset = xr.open_dataset(os.path.join(self.attrs['filepath'], self.attrs['filename']),
                                                    decode_cf=False)
 
