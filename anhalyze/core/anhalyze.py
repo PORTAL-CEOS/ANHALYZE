@@ -639,19 +639,43 @@ class AnhaDataset:
                               savefig=savefig,
                               proj_name=projection_name)
 
-    def to_netcdf(self, filename, **kwargs):
-        """ Writes netcdf file from `AnhaDataset`.
+    def to_netcdf(self, path=None, filename=None, suffix='_CutRegion.nc', **kwargs):
+        """ Writes `AnhaDataset` contents to netCDF file.
+            For additional options see: `self._xr_dataset.to_netcdf`
+
+            Note: Behaviour differs from `xarray.Dataset.to_netcdf` since here we avoid overwriting files.
 
         Parameters
         ----------
-        filename : str
-            netcdf filename
+        path : str, optional
+            Path to which to save this  `AnhaDatabase`.
+        filename : str, optional
+            Filename to which to save this `AnhaDatabase`.
+        suffix : str, default: _CutRegion.nc
+            Suffix added to filename to avoid overwriting.
 
         """
 
-        assert '.nc' in filename, ValueError('[Anhalyze] Filename should be .nc type.')
+        # set path
+        if not path:
+            path = self.attrs['filepath']
 
-        self._xr_dataset.to_netcdf(filename, **kwargs)
+        # set filename
+        if filename:
+            assert '.nc' in filename, ValueError('[Anhalyze] Filename should be .nc type.')
+        else:
+            filename = self.attrs['filename']
+
+        # Setting up new full filename
+        new_full_filename = os.path.join(path, filename.replace('.nc', suffix))
+
+        # Avoiding overwriting files by adding extra suffix continuously until available.
+        while os.path.isfile(new_full_filename):
+            print(f'[Anhalyze] Warning, file exists: {new_full_filename}')
+            new_full_filename = new_full_filename.replace('.nc', '_copy.nc')
+
+        print(f'[Anhalyze] Saving: {new_full_filename}')
+        self._xr_dataset.to_netcdf(new_full_filename, **kwargs)
 
 
 #     def set_location(self):
