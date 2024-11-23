@@ -9,4 +9,5 @@ pandas==2.2.3
 Requests==2.32.3
 seaborn==0.13.2
 tomli==2.0.2
+tornado>=6.4.2
 xarray==2024.5.0
