@@ -8,6 +8,7 @@ import os
 
 # Plotting-related libraries
 import matplotlib.pyplot as plt
+import matplotlib.colors as mcolors
 import cmocean.cm as cmo
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 from cartopy import crs as ccrs, feature as cfeature
@@ -15,11 +16,11 @@ from cartopy import crs as ccrs, feature as cfeature
 # Project custom made libraries
 
 # Setting plotting variables as global constants for now
-LEVELS = 42
+LEVELS = 21
 LINE_LEVELS = 11
 
 
-def get_plot_config(var, var_data, color_range='physical'):
+def get_plot_config(var, var_data, attrs, color_range='physical'):
     """ Return var-dependent plotting information
 
         Parameters
@@ -28,35 +29,60 @@ def get_plot_config(var, var_data, color_range='physical'):
             Variable name.
         var_data : np.array
             numpy array with var data.
+        attrs : dict
+            Attributes from `AnhaDataset`
         color_range : str
             Color range either `physical` limits, or `relative` values.
     """
 
     if var == 'votemper':  # Temperature
-        # cmap = 'coolwarm'
-        # vrange = [-20, 20]   # color map based values
         cmap = cmo.thermal  # Other possible colors: 'plasma', 'magma'
-        vrange = [-2, 35]    # Physical based values
+        vrange = [-2, 34]    # Physical based values
+
     elif var == 'vosaline':  # Salinity
         cmap = cmo.haline  # Other possible colors: 'winter'
-        vrange = [25, 39]    # Physical based values
+        vrange = [30, 40]    # Physical based values
+
     elif var == 'ileadfra':  # Sea ice concentration
         cmap = cmo.ice
         vrange = [0, 1]  # Physical based values
+
     elif var == 'chl':  # Chlorophyll
         cmap = cmo.algae
-        vrange = None  # Placeholder for physical based values
+        vrange = [0.001, 3000]  # Placeholder for physical based values
+
+    elif (attrs['grid'] in ['gridU', 'gridV']) or (var in ['iicevelu', 'iicevelv']):
+        vrange = [-1, 1] # Physical based values
+        cmap = cmo.balance
+
+    elif attrs['grid'] == 'icebergs':
+        cmap = cmo.thermal
+        vrange = [0.00000001, 0.001]
+        cnorm = mcolors.NormLog()
+
     else:
         # cmap = 'cividis'
         cmap = 'spring'
         vrange = None
+        cnorm = mcolors.Normalize()
+        
     if not vrange or color_range == 'relative':
         vrange = [np.nanmin(var_data), np.nanmax(var_data)]
         print(f'  vrange: {vrange}')
+
     else:
         vrange = vrange
-
-    return cmap, vrange
+        
+    # Color range manually input by user
+    if color_range not in ['physical', 'relative']:
+        vrange = color_range
+        
+    # Colorbar boundaries
+    if attrs['grid'] != 'icebergs':
+        bounds = np.linspace(vrange[0], vrange[1], LEVELS)
+        cnorm = mcolors.BoundaryNorm(boundaries=bounds, ncolors=256)
+        
+    return cmap, vrange, cnorm
 
 
 def get_feature_mask(feature='land', resolution='50m'):
@@ -223,12 +249,12 @@ def show_var_data_map(var_da, attrs, color_range='physical', savefig=None, proj_
     ax.add_feature(get_feature_mask(feature='ocean'), zorder=0)
 
     # Get var-dependent plotting information
-    cmap, vrange = get_plot_config(var_da.name, var_data, color_range=color_range)
+    cmap, vrange, cnorm = get_plot_config(var_da.name, var_data, attrs, color_range=color_range)
 
     # Plotting var data as filled contour regions
-    im = ax.contourf(lon, lat, var_data, levels=LEVELS, cmap=cmap, extend=bar_extend,
-                     vmin=vrange[0], vmax=vrange[1], transform=ccrs.PlateCarree(), zorder=2)
-
+    im = plt.pcolormesh(lon, lat, var_data, cmap=cmap,
+                      norm=cnorm, transform=ccrs.PlateCarree(), zorder=2)
+    
     # Plotting var data contour lines
     ax.contour(lon, lat, var_data, levels=LINE_LEVELS, cmap='Greys', linewidths=.2, transform=ccrs.PlateCarree())
 
@@ -240,8 +266,13 @@ def show_var_data_map(var_da, attrs, color_range='physical', savefig=None, proj_
     # Set Color-bar
     axins = inset_axes(ax, width="3%", height="100%", loc='right', borderpad=-1)
     label = '%s [%s]' % (var_da.attrs['long_name'].title(), var_da.attrs['units'])
-    fig.colorbar(im, cax=axins, orientation="vertical", label=label, extend='both')
-
+    cbar = fig.colorbar(im, cax=axins, orientation="vertical", label=label, extend=bar_extend, norm=cnorm)
+    
+    # Set colorbar ticks
+    step = (vrange[1] - vrange[0])/(LEVELS-1)
+    cbar.ax.set_yticks(np.arange(vrange[0], vrange[1]*1.01, step*2))
+    #cbar.ax.set_yticklabels(np.arange(vrange[0], vrange[1]*1.01, step*2))
+    
     # Display map
     if get_ipython().__class__.__name__ != 'ZMQInteractiveShell':
         plt.ion()
