@@ -37,7 +37,7 @@ def get_plot_config(var, var_data, attrs, color_range='physical'):
 
     if var == 'votemper':  # Temperature
         cmap = cmo.thermal  # Other possible colors: 'plasma', 'magma'
-        vrange = [-2, 34]    # Physical based values
+        vrange = [-2, 28]    # Physical based values
 
     elif var == 'vosaline':  # Salinity
         cmap = cmo.haline  # Other possible colors: 'winter'
@@ -49,7 +49,7 @@ def get_plot_config(var, var_data, attrs, color_range='physical'):
 
     elif var == 'chl':  # Chlorophyll
         cmap = cmo.algae
-        vrange = [0.001, 3000]  # Placeholder for physical based values
+        vrange = [10, 1000]  # Placeholder for physical based values
 
     elif (attrs['grid'] in ['gridU', 'gridV']) or (var in ['iicevelu', 'iicevelv']):
         vrange = [-1, 1] # Physical based values
@@ -58,15 +58,11 @@ def get_plot_config(var, var_data, attrs, color_range='physical'):
     elif attrs['grid'] == 'icebergs':
         cmap = cmo.thermal
         vrange = [0.00000001, 0.001]
-        cnorm = mcolors.LogNorm()
-        #bounds = np.linspace(vrange[0], vrange[1], LEVELS)
-        #cnorm = mcolors.BoundaryNorm(boundaries=bounds, ncolors=256)
 
     else:
         # cmap = 'cividis'
         cmap = 'spring'
         vrange = None
-        cnorm = mcolors.Normalize()
         
     if not vrange or color_range == 'relative':
         vrange = [np.nanmin(var_data), np.nanmax(var_data)]
@@ -79,8 +75,14 @@ def get_plot_config(var, var_data, attrs, color_range='physical'):
     if color_range not in ['physical', 'relative']:
         vrange = color_range
         
-    # Colorbar boundaries
-    if attrs['grid'] != 'icebergs':
+    # Colorbar boundaries based on the vranges and LEVELS
+    if attrs['grid'] == 'icebergs' or var == 'chl':
+        cnorm = mcolors.LogNorm(vmin=vrange[0], vmax=vrange[1])
+        
+        assert 0 not in vrange, \
+            '[Anhalyze] Local variable range are either min or max equal to 0. Try using a different color range.'
+        
+    else:
         bounds = np.linspace(vrange[0], vrange[1], LEVELS)
         cnorm = mcolors.BoundaryNorm(boundaries=bounds, ncolors=256)
         
@@ -273,9 +275,10 @@ def show_var_data_map(var_da, attrs, color_range='physical', savefig=None, proj_
     cbar = fig.colorbar(im, cax=axins, orientation="vertical", label=label, extend=bar_extend, norm=cnorm)
     
     # Set colorbar ticks
-    if attrs['grid'] != 'icebergs':
+    if attrs['grid'] != 'icebergs' and var_da.name != 'chl':
         step = (vrange[1] - vrange[0])/(LEVELS-1)
         cbar.ax.set_yticks(np.arange(vrange[0], vrange[1]+step/2, step*2))
+    
     
     # Display map
     if get_ipython().__class__.__name__ != 'ZMQInteractiveShell':
