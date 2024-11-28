@@ -58,7 +58,9 @@ def get_plot_config(var, var_data, attrs, color_range='physical'):
     elif attrs['grid'] == 'icebergs':
         cmap = cmo.thermal
         vrange = [0.00000001, 0.001]
-        cnorm = mcolors.NormLog()
+        cnorm = mcolors.LogNorm()
+        #bounds = np.linspace(vrange[0], vrange[1], LEVELS)
+        #cnorm = mcolors.BoundaryNorm(boundaries=bounds, ncolors=256)
 
     else:
         # cmap = 'cividis'
@@ -213,11 +215,6 @@ def show_var_data_map(var_da, attrs, color_range='physical', savefig=None, proj_
             Projection name from Cartopy list.
     """
 
-    # Setting color bar feature
-    if color_range == 'relative':
-        bar_extend = 'both'
-    else:
-        bar_extend = None
 
     # Calculate projection information (e.g. Standard parallels) based on the dataset lat and lon limits
     proj_info = get_projection_info(attrs)
@@ -264,14 +261,21 @@ def show_var_data_map(var_da, attrs, color_range='physical', savefig=None, proj_
     gl.right_labels = gl.top_labels = False
 
     # Set Color-bar
+    # Setting color bar feature
+    if color_range == 'relative':
+        bar_extend = 'both'
+    else:
+        bar_extend = None
+    
+    # Color-bar axis and properties
     axins = inset_axes(ax, width="3%", height="100%", loc='right', borderpad=-1)
     label = '%s [%s]' % (var_da.attrs['long_name'].title(), var_da.attrs['units'])
     cbar = fig.colorbar(im, cax=axins, orientation="vertical", label=label, extend=bar_extend, norm=cnorm)
     
     # Set colorbar ticks
-    step = (vrange[1] - vrange[0])/(LEVELS-1)
-    cbar.ax.set_yticks(np.arange(vrange[0], vrange[1]*1.01, step*2))
-    #cbar.ax.set_yticklabels(np.arange(vrange[0], vrange[1]*1.01, step*2))
+    if attrs['grid'] != 'icebergs':
+        step = (vrange[1] - vrange[0])/(LEVELS-1)
+        cbar.ax.set_yticks(np.arange(vrange[0], vrange[1]+step/2, step*2))
     
     # Display map
     if get_ipython().__class__.__name__ != 'ZMQInteractiveShell':
