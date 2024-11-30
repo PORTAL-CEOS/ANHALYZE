@@ -41,7 +41,7 @@ def get_plot_config(var, var_data, attrs, color_range='physical'):
 
     elif var == 'vosaline':  # Salinity
         cmap = cmo.haline  # Other possible colors: 'winter'
-        vrange = [30, 40]    # Physical based values
+        vrange = [20, 40]    # Physical based values
 
     elif var == 'ileadfra':  # Sea ice concentration
         cmap = cmo.ice
@@ -52,7 +52,7 @@ def get_plot_config(var, var_data, attrs, color_range='physical'):
         vrange = [10, 1000]  # Placeholder for physical based values
 
     elif (attrs['grid'] in ['gridU', 'gridV']) or (var in ['iicevelu', 'iicevelv']):
-        vrange = [-1, 1] # Physical based values
+        vrange = [-1.5, 1.5] # Physical based values
         cmap = cmo.balance
 
     elif attrs['grid'] == 'icebergs':
@@ -65,26 +65,41 @@ def get_plot_config(var, var_data, attrs, color_range='physical'):
         vrange = None
         
     if not vrange or color_range == 'relative':
-        vrange = [np.nanmin(var_data), np.nanmax(var_data)]
-        print(f'  vrange: {vrange}')
+        
+        if cmap == cmo.balance:
+            vdistmax = np.nanmax(np.abs(var_data))
+            vrange = [-vdistmax, vdistmax]
+            
+        else:    
+            vrange = [np.nanmin(var_data), np.nanmax(var_data)]
+            print(f'  vrange: {vrange}')
 
     else:
         vrange = vrange
         
     # Color range manually input by user
-    if color_range not in ['physical', 'relative']:
-        vrange = color_range
+    if isinstance(color_range, list):
+        vrange = sorted(color_range)
         
     # Colorbar boundaries based on the vranges and LEVELS
     if attrs['grid'] == 'icebergs' or var == 'chl':
-        cnorm = mcolors.LogNorm(vmin=vrange[0], vmax=vrange[1])
         
-        assert 0 not in vrange, \
-            '[Anhalyze] Local variable range are either min or max equal to 0. Try using a different color range.'
+        if 0 in vrange:
+        
+            print('[Anhalyze] Local variable range are either min or max equal to 0.\ The value was replaced by the data value closest to 0.')
+            newv = np.nanmin(np.abs(var_data[np.nonzero(var_data)]))
+            print(f'[Anhalyze] New vmin: {newv}')
+            cnorm = mcolors.LogNorm(vmin=newv, vmax=vrange[1])
+            
+        else:
+            cnorm = mcolors.LogNorm(vmin=vrange[0], vmax=vrange[1])
+        
         
     else:
+
         bounds = np.linspace(vrange[0], vrange[1], LEVELS)
         cnorm = mcolors.BoundaryNorm(boundaries=bounds, ncolors=256)
+
         
     return cmap, vrange, cnorm
 
@@ -199,6 +214,42 @@ def get_projection_info(attrs):
 
     return proj_info
 
+def set_colorbar_ticks(cbar, var_data, color_range, vrange):
+    """ Set colorbar ticks adjusted to each type of color_range in Anhalyze.
+    
+        Parameters
+        ----------
+        cbar : object
+            Colorbar object.
+        var_data : AnhaDataset
+            AnhaDataset to be plotted.
+        color_range : str
+            Color range either `physical` limits, or `relative` values.
+        vrange : list
+            Range of values returned from get_plot_config
+    """
+    
+    if color_range == 'physical':
+            
+        if np.nanmin(var_data) >= vrange[0] and np.nanmax(var_data) >= vrange[1]:
+            step = (vrange[1] - vrange[0])/(LEVELS-1)
+            cbar.ax.set_ylim(np.nanmin(var_data), vrange[1])
+            cbar.ax.set_yticks(np.arange(vrange[0], np.nanmax(var_data)+step/2, step*2))
+            
+        elif np.nanmin(var_data) <= vrange[0] and np.nanmax(var_data) <= vrange[1]:
+            step = (vrange[1] - vrange[0])/(LEVELS-1)
+            cbar.ax.set_ylim(vrange[0], np.nanmax(var_data))
+            cbar.ax.set_yticks(np.arange(vrange[0], np.nanmax(var_data)+step/2, step*2))
+            
+        elif np.nanmin(var_data) >= vrange[0] and np.nanmax(var_data) <= vrange[1]:
+            
+            cbar.ax.set_ylim(np.nanmin(var_data), np.nanmax(var_data))
+                
+    else:
+        step = (vrange[1] - vrange[0])/(LEVELS-1)
+        cbar.ax.set_yticks(np.arange(vrange[0], vrange[1]+step/2, step*2))
+            
+    return cbar
 
 def show_var_data_map(var_da, attrs, color_range='physical', savefig=None, proj_name=''):
     """ Displays map of given parameter (var) in lat-lon range and depth.
@@ -264,21 +315,21 @@ def show_var_data_map(var_da, attrs, color_range='physical', savefig=None, proj_
 
     # Set Color-bar
     # Setting color bar feature
-    if color_range == 'relative':
+    if color_range != 'physical':
         bar_extend = 'both'
     else:
         bar_extend = None
+        
     
     # Color-bar axis and properties
     axins = inset_axes(ax, width="3%", height="100%", loc='right', borderpad=-1)
     label = '%s [%s]' % (var_da.attrs['long_name'].title(), var_da.attrs['units'])
-    cbar = fig.colorbar(im, cax=axins, orientation="vertical", label=label, extend=bar_extend, norm=cnorm)
+    cbar = fig.colorbar(im, cax=axins, orientation="vertical", label=label, extend=bar_extend)
     
     # Set colorbar ticks
     if attrs['grid'] != 'icebergs' and var_da.name != 'chl':
-        step = (vrange[1] - vrange[0])/(LEVELS-1)
-        cbar.ax.set_yticks(np.arange(vrange[0], vrange[1]+step/2, step*2))
-    
+        new_cbar = set_colorbar_ticks(cbar, var_data, color_range, vrange)
+        cbar = new_cbar
     
     # Display map
     if get_ipython().__class__.__name__ != 'ZMQInteractiveShell':
