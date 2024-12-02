@@ -576,7 +576,7 @@ class AnhaDataset:
         return AnhaDataset(os.path.join(self.attrs['filepath'], self.attrs['filename']),
                            load_data=self._load_data, _xr_dataset=_xr_dataset, _attrs=self.attrs)
 
-    def show_var_data_map(self, var, color_range='physical', savefig=None, projection_name='LambertConformal'):
+    def show_var_data_map(self, var, color_range='default', savefig=None, projection_name='LambertConformal'):
         """ Displays a map for given var in `AnhaDataset.data_vars`.
 
         Parameters
@@ -584,11 +584,21 @@ class AnhaDataset:
         var : str
             Variable name.
         color_range : str
-            Color range either `physical` limits, or `relative` values.
+            Color range either `default` limits, `local` data values or a two
+             items list [vmin, vmax].
+             
+            Color range options:
+                 default: Color range limits predefined based on the more
+                 likely values the user can find in a ANHA4 outputs.
+             
+                 local: Color range based on the values within the area selected by the user.
+                 
+                 [vmin, vmax] = List of color range limits chosen by the user.
         savefig : str
             Filename to save figure including path.
         projection_name : str
-            Projection name from Cartopy list .
+            Projection name from Cartopy list. The projections available are: 'PlateCarree', 'LambertAzimuthalEqualArea',
+            'AlbersEqualArea', 'NorthPolarStereo', 'Orthographic', 'Robinson', 'LambertConformal', 'Mercator', and 'AzimuthalEquidistant'.
         """
 
         import anhalyze.core.anhalyze_plot_utils as apu

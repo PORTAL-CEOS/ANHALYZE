@@ -20,7 +20,7 @@ LEVELS = 21
 LINE_LEVELS = 11
 
 
-def get_plot_config(var, var_data, attrs, color_range='physical'):
+def get_plot_config(var, var_data, attrs, color_range='default'):
     """ Return var-dependent plotting information
 
         Parameters
@@ -32,27 +32,42 @@ def get_plot_config(var, var_data, attrs, color_range='physical'):
         attrs : dict
             Attributes from `AnhaDataset`
         color_range : str
-            Color range either `physical` limits, or `relative` values.
+            Color range either `default` limits, `local` data values or a two
+             items list [vmin, vmax].
+             
+             Color range options:
+                 default: Limits decide by Anhalyze developers. It is based on the more
+                 likely limits the user can find in a ANHA4 outputs.
+             
+                 local: Color range based on the values within the area selected by the user.
+                 
+                 [vmin, vmax] = List of color range limits chosen by the user.
+             
     """
+    color_range_options = ['default', 'local']
+    
+    assert_message = f"[anhalyze_plot_utils] Color range option '{color_range}' "
+    assert_message += f"not found. Color range should be either '{color_range_options[0]}', '{color_range_options[1]}', or a two items ([vmin, vmax]) list."
+    assert color_range in color_range_options or isinstance(color_range, list), assert_message
 
     if var == 'votemper':  # Temperature
         cmap = cmo.thermal  # Other possible colors: 'plasma', 'magma'
-        vrange = [-2, 28]    # Physical based values
+        vrange = [-2, 28]    # Default values
 
     elif var == 'vosaline':  # Salinity
         cmap = cmo.haline  # Other possible colors: 'winter'
-        vrange = [20, 40]    # Physical based values
+        vrange = [20, 40]    # Default based values
 
     elif var == 'ileadfra':  # Sea ice concentration
         cmap = cmo.ice
-        vrange = [0, 1]  # Physical based values
+        vrange = [0, 1]  # Default based values
 
     elif var == 'chl':  # Chlorophyll
         cmap = cmo.algae
-        vrange = [10, 1000]  # Placeholder for physical based values
+        vrange = [10, 1000]  # Placeholder for default based values
 
     elif (attrs['grid'] in ['gridU', 'gridV']) or (var in ['iicevelu', 'iicevelv']):
-        vrange = [-1.5, 1.5] # Physical based values
+        vrange = [-1.5, 1.5] # Default based values
         cmap = cmo.balance
 
     elif attrs['grid'] == 'icebergs':
@@ -64,7 +79,7 @@ def get_plot_config(var, var_data, attrs, color_range='physical'):
         cmap = 'spring'
         vrange = None
         
-    if not vrange or color_range == 'relative':
+    if not vrange or color_range == 'local':
         
         if cmap == cmo.balance:
             vdistmax = np.nanmax(np.abs(var_data))
@@ -132,7 +147,8 @@ def get_projection(proj_name='LambertConformal', proj_info=None):
     Parameters
     ----------
     proj_name : str
-        Projection name from Cartopy list.
+        Projection name from Cartopy list. The projections available are: 'PlateCarree', 'LambertAzimuthalEqualArea',
+        'AlbersEqualArea', 'NorthPolarStereo', 'Orthographic', 'Robinson', 'LambertConformal', 'Mercator', and 'AzimuthalEquidistant'.
     proj_info : dict
         Information for projection calculated by get_projection_info.
     """
@@ -224,12 +240,12 @@ def set_colorbar_ticks(cbar, var_data, color_range, vrange):
         var_data : AnhaDataset
             AnhaDataset to be plotted.
         color_range : str
-            Color range either `physical` limits, or `relative` values.
+            Color range either `default` limits, or `local` values.
         vrange : list
             Range of values returned from get_plot_config
     """
     
-    if color_range == 'physical':
+    if color_range == 'default':
             
         if np.nanmin(var_data) >= vrange[0] and np.nanmax(var_data) >= vrange[1]:
             step = (vrange[1] - vrange[0])/(LEVELS-1)
@@ -251,7 +267,7 @@ def set_colorbar_ticks(cbar, var_data, color_range, vrange):
             
     return cbar
 
-def show_var_data_map(var_da, attrs, color_range='physical', savefig=None, proj_name=''):
+def show_var_data_map(var_da, attrs, color_range='default', savefig=None, proj_name=''):
     """ Displays map of given parameter (var) in lat-lon range and depth.
 
         Parameters
@@ -261,12 +277,22 @@ def show_var_data_map(var_da, attrs, color_range='physical', savefig=None, proj_
         attrs : dict
             Attributes from `AnhaDataset`
         color_range : str
-            Color range either `physical` limits, or `relative` values.
+            Color range either `default` limits, `local` data values or a two
+             items list [vmin, vmax].
+             
+            Color range options:
+                 default: Color range limits predefined based on the more
+                 likely values the user can find in a ANHA4 outputs.
+             
+                 local: Color range based on the values within the area selected by the user.
+                 
+                 [vmin, vmax] = List of color range limits chosen by the user.
         savefig : str
             Filename to save figure including path.
-        proj_name : str
-            Projection name from Cartopy list.
-    """
+        projection_name : str
+            Projection name from Cartopy list. The projections available are: 'PlateCarree', 'LambertAzimuthalEqualArea',
+            'AlbersEqualArea', 'NorthPolarStereo', 'Orthographic', 'Robinson', 'LambertConformal', 'Mercator', and 'AzimuthalEquidistant'.
+        """
 
 
     # Calculate projection information (e.g. Standard parallels) based on the dataset lat and lon limits
@@ -315,7 +341,7 @@ def show_var_data_map(var_da, attrs, color_range='physical', savefig=None, proj_
 
     # Set Color-bar
     # Setting color bar feature
-    if color_range != 'physical':
+    if color_range != 'default':
         bar_extend = 'both'
     else:
         bar_extend = None
