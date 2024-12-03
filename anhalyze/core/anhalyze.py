@@ -692,7 +692,8 @@ def get_date(filename, how=''):
     """
 
     # Get full date from filename
-    date = filename.split('_')[-2]
+    date = filename.split('_')[1]
+    assert date[0] == 'y' and date[5] == 'm' and date[8] == 'd', '[Anhalyze] Filename format not supported.'
 
     # Return format specific date info
     if how == 'ymd':
