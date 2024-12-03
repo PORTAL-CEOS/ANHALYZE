@@ -685,10 +685,23 @@ class AnhaDataset:
 #         # TODO  set location with default values
 
 
-def get_date(filename, how=''):
-    """  Get date from filename.
-         Assuming filename format: */*/ANHA4-EPM111_y1998m04d05_gridB.nc
-         Multiple output formats possible.
+def get_date(filename, how=None):
+    # TODO find/apply naming convention documentation.
+    """  Get date information from filename.
+         Assuming filename format: */*/ANHA?-??????_y????m??d??_{grid}_*.nc
+
+        Parameters
+        ----------
+        filename: str
+            Filename
+        how : str
+            What to output. Multiple options and output formats possible:
+                None/other: str: 'y????m??d??'
+                ymd: tuple (y,m,d)
+                y: int: ????
+                m: int: ??
+                d: int: ??
+
     """
 
     # Get full date from filename
@@ -702,5 +715,7 @@ def get_date(filename, how=''):
         return int(date[1:5])
     elif how == 'm':
         return int(date[6:8])
+    elif how == 'd':
+        return int(date[9:11])
     else:
         return date
