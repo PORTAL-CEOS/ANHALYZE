@@ -696,7 +696,13 @@ class AnhaDataset:
             print(f'[Anhalyze] Warning, file exists: {new_full_filename}')
             new_full_filename = new_full_filename.replace('.nc', '_copy.nc')
 
-        print(f'[Anhalyze] Saving: {new_full_filename}')
+        if self._verbose:
+            print(f'[Anhalyze] Saving: {new_full_filename}')
+
+        # Updating filename
+        self._xr_dataset.attrs['filename'] = os.path.basename(new_full_filename)
+
+        # Saving new file
         self._xr_dataset.to_netcdf(new_full_filename, **kwargs)
 
 
