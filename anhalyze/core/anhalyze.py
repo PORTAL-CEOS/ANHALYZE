@@ -110,7 +110,7 @@ class AnhaDataset:
 
         # Initialize other attrs
         # TODO could replace verbose with logging levels
-        self.attrs['verbose'] = True
+        self._verbose = True
 
     def _init_coords(self):
         """ Initialize coordinates
@@ -289,7 +289,7 @@ class AnhaDataset:
                                 f'since given value {coord_range[0]} is out of bounds.'
                 coord_range[0] = full_range[0]
 
-                if self.attrs['verbose']:
+                if self._verbose:
                     print(mode_message)
 
             if coord_range[1] > full_range[1]:
@@ -298,7 +298,7 @@ class AnhaDataset:
                                 f'since given value {coord_range[1]} is out of bounds.'
                 coord_range[1] = full_range[1]
 
-                if self.attrs['verbose']:
+                if self._verbose:
                     print(mode_message)
 
         return coord_range
@@ -506,7 +506,7 @@ class AnhaDataset:
             lat_range = self._update_range('coord_lat', lat_range)
             lon_range = self._update_range('coord_lon', lon_range)
 
-            if self.attrs['verbose']:
+            if self._verbose:
                 print(f'[Anhalyze] Selecting Latitude range: {lat_range}')
                 print(f'[Anhalyze] Selecting Longitude range: {lon_range}')
 
@@ -519,7 +519,7 @@ class AnhaDataset:
             if lat_range:
                 lat_range = self._update_range('coord_lat', lat_range)
 
-                if self.attrs['verbose']:
+                if self._verbose:
                     print(f'[Anhalyze] Selecting Latitude range: {lat_range}')
 
                 # Find row ranges from lat values
@@ -528,7 +528,7 @@ class AnhaDataset:
             if lon_range:
                 lon_range = self._update_range('coord_lon', lon_range)
 
-                if self.attrs['verbose']:
+                if self._verbose:
                     print(f'[Anhalyze] Selecting Longitude range: {lon_range}')
 
                 # Find col ranges from lon values
@@ -543,7 +543,7 @@ class AnhaDataset:
         if depth_range:
             depth_range = self._update_range('coord_depth', depth_range)
 
-            if self.attrs['verbose']:
+            if self._verbose:
                 print(f'[Anhalyze] Selecting Depth range: {depth_range}')
 
             dict_range = {self.attrs['dim_z']: slice(depth_range[0], depth_range[1])}
@@ -584,17 +584,17 @@ class AnhaDataset:
         # Populating dict for selection
         if x_range:
             x_range = self._update_range('dim_x', x_range)
-            if self.attrs['verbose']:
+            if self._verbose:
                 print(f'[Anhalyze] Selecting x range: {x_range}')
             dict_range.update({self.attrs['dim_x']: slice(x_range[0], x_range[1])})
         if y_range:
             y_range = self._update_range('dim_y', y_range)
-            if self.attrs['verbose']:
+            if self._verbose:
                 print(f'[Anhalyze] Selecting y range: {y_range}')
             dict_range.update({self.attrs['dim_y']: slice(y_range[0], y_range[1])})
         if z_range:
             z_range = self._update_range('dim_z', z_range)
-            if self.attrs['verbose']:
+            if self._verbose:
                 print(f'[Anhalyze] Selecting z range: {z_range}')
             dict_range.update({self.attrs['dim_z']: slice(z_range[0], z_range[1])})
 
