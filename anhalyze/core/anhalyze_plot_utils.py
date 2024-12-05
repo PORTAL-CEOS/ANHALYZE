@@ -47,7 +47,8 @@ def get_plot_config(var, var_data, attrs, color_range='default'):
     color_range_options = ['default', 'local']
     
     assert_message = f"[anhalyze_plot_utils] Color range option '{color_range}' "
-    assert_message += f"not found. Color range should be either '{color_range_options[0]}', '{color_range_options[1]}', or a two items ([vmin, vmax]) list."
+    assert_message += f"not found. Color range should be either '{color_range_options[0]}'," \
+                      f" '{color_range_options[1]}', or a two items ([vmin, vmax]) list."
     assert color_range in color_range_options or isinstance(color_range, list), assert_message
 
     if var == 'votemper':  # Temperature
@@ -67,7 +68,7 @@ def get_plot_config(var, var_data, attrs, color_range='default'):
         vrange = [10, 1000]  # Placeholder for default based values
 
     elif (attrs['grid'] in ['gridU', 'gridV']) or (var in ['iicevelu', 'iicevelv']):
-        vrange = [-1.5, 1.5] # Default based values
+        vrange = [-1.5, 1.5]  # Default based values
         cmap = cmo.balance
 
     elif attrs['grid'] == 'icebergs':
@@ -101,21 +102,20 @@ def get_plot_config(var, var_data, attrs, color_range='default'):
         
         if 0 in vrange:
         
-            print('[Anhalyze] Local variable range are either min or max equal to 0.\ The value was replaced by the data value closest to 0.')
+            print('[Anhalyze] Local variable range are either min or max equal to 0.\n '
+                  'The value was replaced by the data value closest to 0.')
             newv = np.nanmin(np.abs(var_data[np.nonzero(var_data)]))
             print(f'[Anhalyze] New vmin: {newv}')
             cnorm = mcolors.LogNorm(vmin=newv, vmax=vrange[1])
             
         else:
             cnorm = mcolors.LogNorm(vmin=vrange[0], vmax=vrange[1])
-        
-        
+
     else:
 
         bounds = np.linspace(vrange[0], vrange[1], LEVELS)
         cnorm = mcolors.BoundaryNorm(boundaries=bounds, ncolors=256)
 
-        
     return cmap, vrange, cnorm
 
 
@@ -148,7 +148,8 @@ def get_projection(proj_name='LambertConformal', proj_info=None):
     ----------
     proj_name : str
         Projection name from Cartopy list. The projections available are: 'PlateCarree', 'LambertAzimuthalEqualArea',
-        'AlbersEqualArea', 'NorthPolarStereo', 'Orthographic', 'Robinson', 'LambertConformal', 'Mercator', and 'AzimuthalEquidistant'.
+        'AlbersEqualArea', 'NorthPolarStereo', 'Orthographic', 'Robinson', 'LambertConformal',
+        'Mercator', and 'AzimuthalEquidistant'.
     proj_info : dict
         Information for projection calculated by get_projection_info.
     """
@@ -171,8 +172,8 @@ def get_projection(proj_name='LambertConformal', proj_info=None):
                  'LambertConformal': ccrs.LambertConformal(central_longitude=proj_info['central_longitude'],
                                                            standard_parallels=proj_info['standard_parallels']),
                  'Mercator': ccrs.Mercator(central_longitude=0,
-                                            min_latitude=proj_info['lat_range'][0],
-                                            max_latitude=proj_info['lat_range'][1]),
+                                           min_latitude=proj_info['lat_range'][0],
+                                           max_latitude=proj_info['lat_range'][1]),
                  'AzimuthalEquidistant': ccrs.AzimuthalEquidistant(central_longitude=proj_info['central_longitude'],
                                                                    central_latitude=proj_info['central_latitude']),
                  }
@@ -230,6 +231,7 @@ def get_projection_info(attrs):
 
     return proj_info
 
+
 def set_colorbar_ticks(cbar, var_data, color_range, vrange):
     """ Set colorbar ticks adjusted to each type of color_range in Anhalyze.
     
@@ -267,6 +269,7 @@ def set_colorbar_ticks(cbar, var_data, color_range, vrange):
             
     return cbar
 
+
 def show_var_data_map(var_da, attrs, color_range='default', savefig=None, proj_name=''):
     """ Displays map of given parameter (var) in lat-lon range and depth.
 
@@ -290,10 +293,10 @@ def show_var_data_map(var_da, attrs, color_range='default', savefig=None, proj_n
         savefig : str
             Filename to save figure including path.
         projection_name : str
-            Projection name from Cartopy list. The projections available are: 'PlateCarree', 'LambertAzimuthalEqualArea',
-            'AlbersEqualArea', 'NorthPolarStereo', 'Orthographic', 'Robinson', 'LambertConformal', 'Mercator', and 'AzimuthalEquidistant'.
+            Projection name from Cartopy list. The projections available are: 'PlateCarree',
+            'LambertAzimuthalEqualArea', 'AlbersEqualArea', 'NorthPolarStereo', 'Orthographic', 'Robinson',
+            'LambertConformal', 'Mercator', and 'AzimuthalEquidistant'.
         """
-
 
     # Calculate projection information (e.g. Standard parallels) based on the dataset lat and lon limits
     proj_info = get_projection_info(attrs)
@@ -329,7 +332,7 @@ def show_var_data_map(var_da, attrs, color_range='default', savefig=None, proj_n
 
     # Plotting var data as filled contour regions
     im = plt.pcolormesh(lon, lat, var_data, cmap=cmap,
-                      norm=cnorm, transform=ccrs.PlateCarree(), zorder=2)
+                        norm=cnorm, transform=ccrs.PlateCarree(), zorder=2)
     
     # Plotting var data contour lines
     ax.contour(lon, lat, var_data, levels=LINE_LEVELS, cmap='Greys', linewidths=.2, transform=ccrs.PlateCarree())
@@ -346,7 +349,6 @@ def show_var_data_map(var_da, attrs, color_range='default', savefig=None, proj_n
     else:
         bar_extend = None
         
-    
     # Color-bar axis and properties
     axins = inset_axes(ax, width="3%", height="100%", loc='right', borderpad=-1)
     label = '%s [%s]' % (var_da.attrs['long_name'].title(), var_da.attrs['units'])
