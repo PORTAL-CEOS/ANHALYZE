@@ -82,6 +82,7 @@ class AnhaDataset:
             self.attrs = _attrs
         else:
             self._init_filename_attrs(filename)
+            self.attrs['file_category'] = 'original'
 
         # Loading data
         if _xr_dataset:
@@ -553,6 +554,8 @@ class AnhaDataset:
 
         # Set attrs
         _attrs = self.attrs.copy()
+        _attrs['file_category'] = 'regional'
+        # TODO could add section/transect or something specific like this.
 
         return AnhaDataset('', load_data=self._load_data, _xr_dataset=_xr_dataset, _attrs=_attrs)
 
@@ -603,6 +606,8 @@ class AnhaDataset:
 
         # Set attrs
         _attrs = self.attrs.copy()
+        _attrs['file_category'] = 'regional'
+        # TODO could add section/transect or something specific like this.
 
         return AnhaDataset('', load_data=self._load_data, _xr_dataset=_xr_dataset, _attrs=_attrs)
 
