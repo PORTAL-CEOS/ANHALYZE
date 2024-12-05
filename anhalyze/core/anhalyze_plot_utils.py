@@ -91,7 +91,7 @@ def get_plot_config(var, var_data, attrs, color_range='default'):
         if 0 in vrange:
             print('[Anhalyze] Local variable range are either min or max equal to 0.\n '
                   'The value was replaced by the data value closest to 0.')
-            newv = np.nanmin(np.abs(var_data[np.nonzero(var_data)]))
+            newv = np.nanmin(np.abs(var_data[np.nonzero(var_data)]))[0]
             print(f'[Anhalyze] New vmin: {newv}')
             cnorm = mcolors.LogNorm(vmin=newv, vmax=vrange[1])
         else:
