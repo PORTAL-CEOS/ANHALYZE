@@ -40,7 +40,7 @@ class AnhaDataset:
         """ Return string representation of object
         """
 
-        anhalyze_repr = f'[Anhalyze] Dataset. \n'
+        anhalyze_repr = f'[Anhalyze] AnhaDataset. \n'
         anhalyze_repr += f'[Anhalyze] Filename: {self.attrs["filename"]}\n'
 
         xarray_repr = str(self._xr_dataset)
@@ -55,7 +55,7 @@ class AnhaDataset:
         """ Returns html representation of object
         """
 
-        anhalyze_repr = f'[Anhalyze] Dataset. <br/>'
+        anhalyze_repr = f'[Anhalyze] AnhaDataset. <br/>'
         anhalyze_repr += f'[Anhalyze] Filename: {self.attrs["filename"]}<br/>'
 
         xarray_repr = self._xr_dataset._repr_html_()
@@ -87,7 +87,7 @@ class AnhaDataset:
         if _xr_dataset:
             # Check correct xarray.Dataset type.
             assert type(_xr_dataset) == xr.core.dataset.Dataset, \
-                TypeError('[Anhalyze] Parameter xr_dataset incorrect type.')
+                TypeError('[Anhalyze] Parameter _xr_dataset incorrect type.')
             self._xr_dataset = _xr_dataset
         else:
             # Open dataset
@@ -95,8 +95,8 @@ class AnhaDataset:
                 self._xr_dataset = xr.open_dataset(os.path.join(self.attrs['filepath'], self.attrs['filename']))
             else:
                 raise FutureWarning("[Anhalyze] load_data=false option hasn't been fully developed.")
-                self._xr_dataset = xr.open_dataset(os.path.join(self.attrs['filepath'], self.attrs['filename']),
-                                                   decode_cf=False)
+                # self._xr_dataset = xr.open_dataset(os.path.join(self.attrs['filepath'], self.attrs['filename']),
+                #                                    decode_cf=False)
 
         # Loading mask data
         if not _xr_dataset:
@@ -659,6 +659,7 @@ class AnhaDataset:
         # set path
         if not path:
             path = self.attrs['filepath']
+            # TODO could change default to current location
 
         # set filename
         if filename:
@@ -676,13 +677,6 @@ class AnhaDataset:
 
         print(f'[Anhalyze] Saving: {new_full_filename}')
         self._xr_dataset.to_netcdf(new_full_filename, **kwargs)
-
-
-#     def set_location(self):
-#         """
-#
-#         """
-#         # TODO  set location with default values
 
 
 def get_date(filename, how=None):
