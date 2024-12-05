@@ -42,6 +42,8 @@ class AnhaDataset:
 
         anhalyze_repr = f'[Anhalyze] AnhaDataset. \n'
         anhalyze_repr += f'[Anhalyze] Filename: {self.attrs["filename"]}\n'
+        anhalyze_repr += f'[Anhalyze] Description: {self.attrs["description"]}\n'
+        anhalyze_repr += f'[Anhalyze] File category: {self.attrs["file_category"]}\n'
 
         xarray_repr = str(self._xr_dataset)
 
@@ -57,6 +59,8 @@ class AnhaDataset:
 
         anhalyze_repr = f'[Anhalyze] AnhaDataset. <br/>'
         anhalyze_repr += f'[Anhalyze] Filename: {self.attrs["filename"]}<br/>'
+        anhalyze_repr += f'[Anhalyze] Description: {self.attrs["description"]}<br/>'
+        anhalyze_repr += f'[Anhalyze] File category: {self.attrs["file_category"]}<br/>'
 
         xarray_repr = self._xr_dataset._repr_html_()
 
