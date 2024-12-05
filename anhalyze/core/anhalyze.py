@@ -79,6 +79,7 @@ class AnhaDataset:
 
         # Initialize info from filename
         if _attrs:
+            assert _xr_dataset, '[Anhalyze] Parameter _xr_dataset needs to be provided with _attrs'
             self.attrs = _attrs
         else:
             self._init_filename_attrs(filename)
@@ -89,6 +90,9 @@ class AnhaDataset:
             # Check correct xarray.Dataset type.
             assert type(_xr_dataset) == xr.core.dataset.Dataset, \
                 TypeError('[Anhalyze] Parameter _xr_dataset incorrect type.')
+            # Updating attrs
+            _xr_dataset.attrs = _attrs
+            # Setting internal xarray.Dataset
             self._xr_dataset = _xr_dataset
         else:
             # Open dataset
@@ -154,7 +158,11 @@ class AnhaDataset:
     def _init_xr_attrs(self):
         """ Initialize data attributes
         """
-        self.attrs['xr_attrs'] = self._xr_dataset.attrs
+
+        self.attrs |= self._xr_dataset.attrs
+        # self.attrs['xr_attrs'] = self._xr_dataset.attrs
+        # self.attrs['xr_attrs'] = True
+
 
     def _init_dims(self):
         """ Initialize dimensions
@@ -231,7 +239,7 @@ class AnhaDataset:
         self.dims = self._init_dims()  # Note this should init before coords and data_vars
         self.data_vars = self._init_data_vars()
         self.coords = self._init_coords()
-        if 'xr_attrs' not in self.attrs.keys():
+        if 'description' not in self.attrs.keys():
             self._init_xr_attrs()
         self._init_range()
 
