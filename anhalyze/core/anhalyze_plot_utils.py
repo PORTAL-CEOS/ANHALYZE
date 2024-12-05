@@ -32,64 +32,53 @@ def get_plot_config(var, var_data, attrs, color_range='default'):
         attrs : dict
             Attributes from `AnhaDataset`
         color_range : str
-            Color range either `default` limits, `local` data values or a two
-             items list [vmin, vmax].
-             
-             Color range options:
-                 default: Limits decide by Anhalyze developers. It is based on the more
-                 likely limits the user can find in a ANHA4 outputs.
-             
-                 local: Color range based on the values within the area selected by the user.
-                 
-                 [vmin, vmax] = List of color range limits chosen by the user.
+            Color range either `default` limits, `local` data values or a two items list [vmin, vmax].
+            Color range options:
+             default: Limits decide by Anhalyze developers. It is based on the more
+                      likely limits the user can find in a ANHA4 outputs.
+             local: Color range based on the values within the area selected by the user.
+             [vmin, vmax] = List of color range limits chosen by the user.
              
     """
+
     color_range_options = ['default', 'local']
     
     assert_message = f"[anhalyze_plot_utils] Color range option '{color_range}' "
     assert_message += f"not found. Color range should be either '{color_range_options[0]}'," \
-                      f" '{color_range_options[1]}', or a two items ([vmin, vmax]) list."
+                      f" '{color_range_options[1]}', or a two-item list ([vmin, vmax])."
     assert color_range in color_range_options or isinstance(color_range, list), assert_message
 
+    # Selection of cmap and vrange given var.
     if var == 'votemper':  # Temperature
         cmap = cmo.thermal  # Other possible colors: 'plasma', 'magma'
         vrange = [-2, 28]    # Default values
-
     elif var == 'vosaline':  # Salinity
         cmap = cmo.haline  # Other possible colors: 'winter'
         vrange = [20, 40]    # Default based values
-
     elif var == 'ileadfra':  # Sea ice concentration
         cmap = cmo.ice
         vrange = [0, 1]  # Default based values
-
     elif var == 'chl':  # Chlorophyll
         cmap = cmo.algae
         vrange = [10, 1000]  # Placeholder for default based values
-
     elif (attrs['grid'] in ['gridU', 'gridV']) or (var in ['iicevelu', 'iicevelv']):
         vrange = [-1.5, 1.5]  # Default based values
         cmap = cmo.balance
-
     elif attrs['grid'] == 'icebergs':
         cmap = cmo.thermal
         vrange = [0.00000001, 0.001]
-
     else:
-        # cmap = 'cividis'
         cmap = 'spring'
         vrange = None
         
+    #
     if not vrange or color_range == 'local':
-        
         if cmap == cmo.balance:
             vdistmax = np.nanmax(np.abs(var_data))
             vrange = [-vdistmax, vdistmax]
-            
         else:    
             vrange = [np.nanmin(var_data), np.nanmax(var_data)]
             print(f'  vrange: {vrange}')
-
     else:
         vrange = vrange
         
@@ -99,20 +88,15 @@ def get_plot_config(var, var_data, attrs, color_range='default'):
         
     # Colorbar boundaries based on the vranges and LEVELS
     if attrs['grid'] == 'icebergs' or var == 'chl':
-        
         if 0 in vrange:
-        
             print('[Anhalyze] Local variable range are either min or max equal to 0.\n '
                   'The value was replaced by the data value closest to 0.')
             newv = np.nanmin(np.abs(var_data[np.nonzero(var_data)]))
             print(f'[Anhalyze] New vmin: {newv}')
             cnorm = mcolors.LogNorm(vmin=newv, vmax=vrange[1])
-            
         else:
             cnorm = mcolors.LogNorm(vmin=vrange[0], vmax=vrange[1])
-
     else:
-
         bounds = np.linspace(vrange[0], vrange[1], LEVELS)
         cnorm = mcolors.BoundaryNorm(boundaries=bounds, ncolors=256)
 
@@ -292,7 +276,7 @@ def show_var_data_map(var_da, attrs, color_range='default', savefig=None, proj_n
                  [vmin, vmax] = List of color range limits chosen by the user.
         savefig : str
             Filename to save figure including path.
-        projection_name : str
+        proj_name : str
             Projection name from Cartopy list. The projections available are: 'PlateCarree',
             'LambertAzimuthalEqualArea', 'AlbersEqualArea', 'NorthPolarStereo', 'Orthographic', 'Robinson',
             'LambertConformal', 'Mercator', and 'AzimuthalEquidistant'.
@@ -348,7 +332,7 @@ def show_var_data_map(var_da, attrs, color_range='default', savefig=None, proj_n
         bar_extend = 'both'
     else:
         bar_extend = None
-        
+
     # Color-bar axis and properties
     axins = inset_axes(ax, width="3%", height="100%", loc='right', borderpad=-1)
     label = '%s [%s]' % (var_da.attrs['long_name'].title(), var_da.attrs['units'])
