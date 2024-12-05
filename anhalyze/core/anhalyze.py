@@ -410,14 +410,14 @@ class AnhaDataset:
             
             if 'dim_z' not in self.attrs.keys():
                 self._xr_dataset = self._xr_dataset.assign({'mask': ((self.attrs['dim_y'],
-                                                                  self.attrs['dim_x']),
-                                                                 mask[0, 0, :, :])})
+                                                                      self.attrs['dim_x']),
+                                                                     mask[0, 0, :, :])})
                 
             else:
                 self._xr_dataset = self._xr_dataset.assign({'mask': ((self.attrs['dim_z'],
-                                                                  self.attrs['dim_y'],
-                                                                  self.attrs['dim_x']),
-                                                                 mask[0, :, :, :])})
+                                                                      self.attrs['dim_y'],
+                                                                      self.attrs['dim_x']),
+                                                                     mask[0, :, :, :])})
 
             # Add mask filename to attrs
             self._xr_dataset.attrs['mask_filename'] = mask_filename
@@ -597,8 +597,9 @@ class AnhaDataset:
         savefig : str
             Filename to save figure including path.
         projection_name : str
-            Projection name from Cartopy list. The projections available are: 'PlateCarree', 'LambertAzimuthalEqualArea',
-            'AlbersEqualArea', 'NorthPolarStereo', 'Orthographic', 'Robinson', 'LambertConformal', 'Mercator', and 'AzimuthalEquidistant'.
+            Projection name from Cartopy list. The projections available are: 'PlateCarree',
+            'LambertAzimuthalEqualArea', 'AlbersEqualArea', 'NorthPolarStereo', 'Orthographic', 'Robinson',
+            'LambertConformal', 'Mercator', and 'AzimuthalEquidistant'.
         """
 
         import anhalyze.core.anhalyze_plot_utils as apu
