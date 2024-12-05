@@ -639,7 +639,7 @@ class AnhaDataset:
                               savefig=savefig,
                               proj_name=projection_name)
 
-    def to_netcdf(self, path=None, filename=None, suffix='_CutRegion.nc', **kwargs):
+    def to_netcdf(self, path=None, filename=None, suffix='_CutRegion', **kwargs):
         """ Writes `AnhaDataset` contents to netCDF file.
             For additional options see: `self._xr_dataset.to_netcdf`
 
@@ -666,6 +666,10 @@ class AnhaDataset:
             assert '.nc' in filename, ValueError('[Anhalyze] Filename should be .nc type.')
         else:
             filename = self.attrs['filename']
+
+        # Making sure the filename ends in .nc
+        if '.nc' not in suffix[-3:]:
+            suffix += '.nc'
 
         # Setting up new full filename
         new_full_filename = os.path.join(path, filename.replace('.nc', suffix))
