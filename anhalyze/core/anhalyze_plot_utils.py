@@ -8,6 +8,7 @@ import os
 
 # Plotting-related libraries
 import matplotlib.pyplot as plt
+import matplotlib.colors as mcolors
 import cmocean.cm as cmo
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 from cartopy import crs as ccrs, feature as cfeature
@@ -15,11 +16,11 @@ from cartopy import crs as ccrs, feature as cfeature
 # Project custom made libraries
 
 # Setting plotting variables as global constants for now
-LEVELS = 42
+LEVELS = 21
 LINE_LEVELS = 11
 
 
-def get_plot_config(var, var_data, color_range='physical'):
+def get_plot_config(var, var_data, attrs, color_range='default'):
     """ Return var-dependent plotting information
 
         Parameters
@@ -28,35 +29,78 @@ def get_plot_config(var, var_data, color_range='physical'):
             Variable name.
         var_data : np.array
             numpy array with var data.
+        attrs : dict
+            Attributes from `AnhaDataset`
         color_range : str
-            Color range either `physical` limits, or `relative` values.
+            Color range either `default` limits, `local` data values or a two items list [vmin, vmax].
+            Color range options:
+             default: Limits decide by Anhalyze developers. It is based on the more
+                      likely limits the user can find in a ANHA4 outputs.
+             local: Color range based on the values within the area selected by the user.
+             [vmin, vmax] = List of color range limits chosen by the user.
+             
     """
 
+    color_range_options = ['default', 'local']
+    
+    assert_message = f"[anhalyze_plot_utils] Color range option '{color_range}' "
+    assert_message += f"not found. Color range should be either '{color_range_options[0]}'," \
+                      f" '{color_range_options[1]}', or a two-item list ([vmin, vmax])."
+    assert color_range in color_range_options or isinstance(color_range, list), assert_message
+
+    # Selection of cmap and vrange given var.
     if var == 'votemper':  # Temperature
-        # cmap = 'coolwarm'
-        # vrange = [-20, 20]   # color map based values
         cmap = cmo.thermal  # Other possible colors: 'plasma', 'magma'
-        vrange = [-2, 35]    # Physical based values
+        vrange = [-2, 28]    # Default values
     elif var == 'vosaline':  # Salinity
         cmap = cmo.haline  # Other possible colors: 'winter'
-        vrange = [25, 39]    # Physical based values
+        vrange = [20, 40]    # Default based values
     elif var == 'ileadfra':  # Sea ice concentration
         cmap = cmo.ice
-        vrange = [0, 1]  # Physical based values
+        vrange = [0, 1]  # Default based values
     elif var == 'chl':  # Chlorophyll
         cmap = cmo.algae
-        vrange = None  # Placeholder for physical based values
+        vrange = [10, 1000]  # Placeholder for default based values
+    elif (attrs['grid'] in ['gridU', 'gridV']) or (var in ['iicevelu', 'iicevelv']):
+        vrange = [-1.5, 1.5]  # Default based values
+        cmap = cmo.balance
+    elif attrs['grid'] == 'icebergs':
+        cmap = cmo.thermal
+        vrange = [0.00000001, 0.001]
     else:
-        # cmap = 'cividis'
         cmap = 'spring'
         vrange = None
-    if not vrange or color_range == 'relative':
-        vrange = [np.nanmin(var_data), np.nanmax(var_data)]
-        print(f'  vrange: {vrange}')
+        
+    #
+    if not vrange or color_range == 'local':
+        if cmap == cmo.balance:
+            vdistmax = np.nanmax(np.abs(var_data))
+            vrange = [-vdistmax, vdistmax]
+        else:    
+            vrange = [np.nanmin(var_data), np.nanmax(var_data)]
+            print(f'  vrange: {vrange}')
     else:
         vrange = vrange
+        
+    # Color range manually input by user
+    if isinstance(color_range, list):
+        vrange = sorted(color_range)
+        
+    # Colorbar boundaries based on the vranges and LEVELS
+    if attrs['grid'] == 'icebergs' or var == 'chl':
+        if 0 in vrange:
+            print('[Anhalyze] Local variable range are either min or max equal to 0.\n '
+                  'The value was replaced by the data value closest to 0.')
+            newv = np.nanmin(np.abs(var_data[np.nonzero(var_data)]))[0]
+            print(f'[Anhalyze] New vmin: {newv}')
+            cnorm = mcolors.LogNorm(vmin=newv, vmax=vrange[1])
+        else:
+            cnorm = mcolors.LogNorm(vmin=vrange[0], vmax=vrange[1])
+    else:
+        bounds = np.linspace(vrange[0], vrange[1], LEVELS)
+        cnorm = mcolors.BoundaryNorm(boundaries=bounds, ncolors=256)
 
-    return cmap, vrange
+    return cmap, vrange, cnorm
 
 
 def get_feature_mask(feature='land', resolution='50m'):
@@ -87,7 +131,9 @@ def get_projection(proj_name='LambertConformal', proj_info=None):
     Parameters
     ----------
     proj_name : str
-        Projection name from Cartopy list.
+        Projection name from Cartopy list. The projections available are: 'PlateCarree', 'LambertAzimuthalEqualArea',
+        'AlbersEqualArea', 'NorthPolarStereo', 'Orthographic', 'Robinson', 'LambertConformal',
+        'Mercator', and 'AzimuthalEquidistant'.
     proj_info : dict
         Information for projection calculated by get_projection_info.
     """
@@ -110,8 +156,8 @@ def get_projection(proj_name='LambertConformal', proj_info=None):
                  'LambertConformal': ccrs.LambertConformal(central_longitude=proj_info['central_longitude'],
                                                            standard_parallels=proj_info['standard_parallels']),
                  'Mercator': ccrs.Mercator(central_longitude=0,
-                                            min_latitude=proj_info['lat_range'][0],
-                                            max_latitude=proj_info['lat_range'][1]),
+                                           min_latitude=proj_info['lat_range'][0],
+                                           max_latitude=proj_info['lat_range'][1]),
                  'AzimuthalEquidistant': ccrs.AzimuthalEquidistant(central_longitude=proj_info['central_longitude'],
                                                                    central_latitude=proj_info['central_latitude']),
                  }
@@ -170,7 +216,45 @@ def get_projection_info(attrs):
     return proj_info
 
 
-def show_var_data_map(var_da, attrs, color_range='physical', savefig=None, proj_name=''):
+def set_colorbar_ticks(cbar, var_data, color_range, vrange):
+    """ Set colorbar ticks adjusted to each type of color_range in Anhalyze.
+    
+        Parameters
+        ----------
+        cbar : object
+            Colorbar object.
+        var_data : AnhaDataset
+            AnhaDataset to be plotted.
+        color_range : str
+            Color range either `default` limits, or `local` values.
+        vrange : list
+            Range of values returned from get_plot_config
+    """
+    
+    if color_range == 'default':
+            
+        if np.nanmin(var_data) >= vrange[0] and np.nanmax(var_data) >= vrange[1]:
+            step = (vrange[1] - vrange[0])/(LEVELS-1)
+            cbar.ax.set_ylim(np.nanmin(var_data), vrange[1])
+            cbar.ax.set_yticks(np.arange(vrange[0], np.nanmax(var_data)+step/2, step*2))
+            
+        elif np.nanmin(var_data) <= vrange[0] and np.nanmax(var_data) <= vrange[1]:
+            step = (vrange[1] - vrange[0])/(LEVELS-1)
+            cbar.ax.set_ylim(vrange[0], np.nanmax(var_data))
+            cbar.ax.set_yticks(np.arange(vrange[0], np.nanmax(var_data)+step/2, step*2))
+            
+        elif np.nanmin(var_data) >= vrange[0] and np.nanmax(var_data) <= vrange[1]:
+            
+            cbar.ax.set_ylim(np.nanmin(var_data), np.nanmax(var_data))
+                
+    else:
+        step = (vrange[1] - vrange[0])/(LEVELS-1)
+        cbar.ax.set_yticks(np.arange(vrange[0], vrange[1]+step/2, step*2))
+            
+    return cbar
+
+
+def show_var_data_map(var_da, attrs, color_range='default', savefig=None, proj_name=''):
     """ Displays map of given parameter (var) in lat-lon range and depth.
 
         Parameters
@@ -180,18 +264,23 @@ def show_var_data_map(var_da, attrs, color_range='physical', savefig=None, proj_
         attrs : dict
             Attributes from `AnhaDataset`
         color_range : str
-            Color range either `physical` limits, or `relative` values.
+            Color range either `default` limits, `local` data values or a two
+             items list [vmin, vmax].
+             
+            Color range options:
+                 default: Color range limits predefined based on the more
+                 likely values the user can find in a ANHA4 outputs.
+             
+                 local: Color range based on the values within the area selected by the user.
+                 
+                 [vmin, vmax] = List of color range limits chosen by the user.
         savefig : str
             Filename to save figure including path.
         proj_name : str
-            Projection name from Cartopy list.
-    """
-
-    # Setting color bar feature
-    if color_range == 'relative':
-        bar_extend = 'both'
-    else:
-        bar_extend = None
+            Projection name from Cartopy list. The projections available are: 'PlateCarree',
+            'LambertAzimuthalEqualArea', 'AlbersEqualArea', 'NorthPolarStereo', 'Orthographic', 'Robinson',
+            'LambertConformal', 'Mercator', and 'AzimuthalEquidistant'.
+        """
 
     # Calculate projection information (e.g. Standard parallels) based on the dataset lat and lon limits
     proj_info = get_projection_info(attrs)
@@ -223,12 +312,12 @@ def show_var_data_map(var_da, attrs, color_range='physical', savefig=None, proj_
     ax.add_feature(get_feature_mask(feature='ocean'), zorder=0)
 
     # Get var-dependent plotting information
-    cmap, vrange = get_plot_config(var_da.name, var_data, color_range=color_range)
+    cmap, vrange, cnorm = get_plot_config(var_da.name, var_data, attrs, color_range=color_range)
 
     # Plotting var data as filled contour regions
-    im = ax.contourf(lon, lat, var_data, levels=LEVELS, cmap=cmap, extend=bar_extend,
-                     vmin=vrange[0], vmax=vrange[1], transform=ccrs.PlateCarree(), zorder=2)
-
+    im = plt.pcolormesh(lon, lat, var_data, cmap=cmap,
+                        norm=cnorm, transform=ccrs.PlateCarree(), zorder=2)
+    
     # Plotting var data contour lines
     ax.contour(lon, lat, var_data, levels=LINE_LEVELS, cmap='Greys', linewidths=.2, transform=ccrs.PlateCarree())
 
@@ -238,10 +327,22 @@ def show_var_data_map(var_da, attrs, color_range='physical', savefig=None, proj_
     gl.right_labels = gl.top_labels = False
 
     # Set Color-bar
+    # Setting color bar feature
+    if color_range != 'default':
+        bar_extend = 'both'
+    else:
+        bar_extend = None
+
+    # Color-bar axis and properties
     axins = inset_axes(ax, width="3%", height="100%", loc='right', borderpad=-1)
     label = '%s [%s]' % (var_da.attrs['long_name'].title(), var_da.attrs['units'])
-    fig.colorbar(im, cax=axins, orientation="vertical", label=label, extend='both')
-
+    cbar = fig.colorbar(im, cax=axins, orientation="vertical", label=label, extend=bar_extend)
+    
+    # Set colorbar ticks
+    if attrs['grid'] != 'icebergs' and var_da.name != 'chl':
+        new_cbar = set_colorbar_ticks(cbar, var_data, color_range, vrange)
+        cbar = new_cbar
+    
     # Display map
     if get_ipython().__class__.__name__ != 'ZMQInteractiveShell':
         plt.ion()
