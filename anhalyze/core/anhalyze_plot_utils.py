@@ -59,9 +59,19 @@ def get_plot_config(var, var_data, grid, color_range='physical'):
     else:
         cmap = 'spring'
         vrange = None
+
     if not vrange or color_range == 'relative':
-        vrange = [np.nanmin(var_data), np.nanmax(var_data)]
-        print(f'  vrange: {vrange}')
+
+        # Set always zero as center for divergent color scheme
+        if cmap == cmo.balance:
+            # Base vrange in the maximum distance from zero in the dataset.
+            vdistmax = np.nanmax(np.abs(var_data))
+            vrange = [-vdistmax, vdistmax]
+            print('vrange based on the maximum distance from zero within the dataset values.')
+            print(f'  vrange: {vrange}')
+        else:
+            vrange = [np.nanmin(var_data), np.nanmax(var_data)]
+            print(f'  vrange: {vrange}')
     else:
         vrange = vrange
 
