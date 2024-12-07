@@ -301,7 +301,13 @@ def show_var_data_map(var_da, attrs, color_range='physical', savefig=None, proj_
     # Set Color-bar
     axins = inset_axes(ax, width="3%", height="100%", loc='right', borderpad=-1)
     label = '%s [%s]' % (var_da.attrs['long_name'].title(), var_da.attrs['units'])
-    fig.colorbar(im, cax=axins, orientation="vertical", label=label, extend='both')
+    cbar = fig.colorbar(im, cax=axins, orientation="vertical", label=label, extend=bar_extend)
+    ## In case the user set the color range using a list,
+    ## we need to apply those limits in the colorbar. Except for log plots.
+    if isinstance(color_range, list) and (attrs['grid'] != 'icebergs' and var_da.name != 'chl'):
+        step = (vrange[1] - vrange[0]) / (LEVELS - 1) # Interval between levels
+        cbar.ax.set_yticks(np.arange(vrange[0], vrange[1] * 1.01, step * 2))
+        cbar.ax.set_ylim(vrange[0], vrange[1])
 
     # Display map when using ipython/terminal
     if get_ipython().__class__.__name__ != 'ZMQInteractiveShell':
