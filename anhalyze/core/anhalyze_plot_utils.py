@@ -21,15 +21,17 @@ LEVELS = 21
 LINE_LEVELS = 11
 
 
-def get_plot_config(var, var_data, color_range='physical'):
+def get_plot_config(var, var_data, grid, color_range='physical'):
     """ Return var-dependent plotting information
 
         Parameters
         ----------
         var : str
             Variable name.
-        var_data : np.array
-            numpy array with var data.
+        var_data : array
+            Numpy array with var data.
+        grid : str
+            Grid name stored in AnhaDataset.attrs['grid']
         color_range : str
             Color range either `physical` limits, or `relative` values.
     """
@@ -48,10 +50,10 @@ def get_plot_config(var, var_data, color_range='physical'):
     elif var == 'chl':  # Chlorophyll
         cmap = cmo.algae
         vrange = [10, 1000]  # Placeholder for physical based values
-    elif (attrs['grid'] in ['gridU', 'gridV']) or (var in ['iicevelu', 'iicevelv']):
+    elif (grid in ['gridU', 'gridV']) or (var in ['iicevelu', 'iicevelv']):
         cmap = cmo.balance
         vrange = [-1.5, 1.5]
-    elif attrs['grid'] == 'icebergs':
+    elif grid == 'icebergs':
         cmap = cmo.thermal
         vrange = [0.00000001, 0.001]
     else:
@@ -70,7 +72,7 @@ def get_plot_config(var, var_data, color_range='physical'):
     # Colorbar boundaries normalization based on the vranges and LEVELS. Applicable only in pcolormesh plots.
     # Does not clip out values beyond the limits.
     cnorm = mcolors.Normalize(vrange[0], vrange[1]) # placeholder for the normalization features
-    if attrs['grid'] == 'icebergs' or var == 'chl':
+    if grid == 'icebergs' or var == 'chl':
 
         # Logarithmic scale doesn't work when a vrange lim is set as 0.
         # We replace that by using the closest to 0 value in the dataset.
@@ -263,7 +265,7 @@ def show_var_data_map(var_da, attrs, color_range='physical', savefig=None, proj_
     ax.add_feature(get_feature_mask(feature='ocean'), zorder=0)
 
     # Get var-dependent plotting information
-    cmap, vrange, cnorm = get_plot_config(var_da.name, var_data, attrs, color_range=color_range)
+    cmap, vrange, cnorm = get_plot_config(var_da.name, var_data, grid=attrs['grid'], color_range=color_range)
 
     # Plotting var data as filled contour regions
     im = ax.contourf(lon, lat, var_data, levels=LEVELS, cmap=cmap, extend=bar_extend,
