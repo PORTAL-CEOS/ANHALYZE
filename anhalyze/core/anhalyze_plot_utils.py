@@ -277,12 +277,21 @@ def show_var_data_map(var_da, attrs, color_range='physical', savefig=None, proj_
     # Get var-dependent plotting information
     cmap, vrange, cnorm = get_plot_config(var_da.name, var_data, grid=attrs['grid'], color_range=color_range)
 
-    # Plotting var data as filled contour regions
-    im = ax.contourf(lon, lat, var_data, levels=LEVELS, cmap=cmap, extend=bar_extend,
-                     vmin=vrange[0], vmax=vrange[1], transform=ccrs.PlateCarree(), zorder=2)
-
-    # Plotting var data contour lines
-    ax.contour(lon, lat, var_data, levels=LINE_LEVELS, cmap='Greys', linewidths=.2, transform=ccrs.PlateCarree())
+    # When plotting using projections with the North Pole as either as center or included in the plot, or is a Log normalized dataset,
+    # contourf creates weird and unrealistic shapes. Probably related with ANHA4 grid. Use pcolormesh instead.
+    # Also, in case of manually selected color range, to rightly show the colorbar in the selected range,
+    # its necessary to plot the data using pcolormesh. Shading option smooths the edges.
+    # TODO The "> 89" could be replaced by something like attrs['file_category'] == northpole_included/polar
+    if attrs['coord_lat_range'][1] > 89 or isinstance(color_range, list) or 'Log' in str(type(cnorm)):
+        im = ax.pcolormesh(lon, lat, var_data, cmap=cmap, shading='gouraud',
+                           norm=cnorm, transform=ccrs.PlateCarree(), zorder=2)
+    else:
+    # In case of plotting smaller regions, contourf smoothly gets the job done.
+        ## Plotting var data as filled contour regions
+        im = ax.contourf(lon, lat, var_data, levels=LEVELS,  vmin=vrange[0], vmax=vrange[1],
+                         cmap=cmap, transform=ccrs.PlateCarree(), zorder=2)
+        ## Plotting var data contour lines
+        ax.contour(lon, lat, var_data, levels=LINE_LEVELS, cmap='Greys', linewidths=.2, transform=ccrs.PlateCarree())
 
     # Create grid-line labels
     gl = ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=True, x_inline=False,
