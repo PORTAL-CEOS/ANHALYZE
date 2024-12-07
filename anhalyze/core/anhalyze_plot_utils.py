@@ -8,6 +8,7 @@ import os
 
 # Plotting-related libraries
 import matplotlib.pyplot as plt
+import matplotlib.path as mpath
 import cmocean.cm as cmo
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 from cartopy import crs as ccrs, feature as cfeature
@@ -219,12 +220,21 @@ def show_var_data_map(var_da, attrs, color_range='physical', savefig=None, proj_
                          projection=proj_config)
 
     #
-    ax.set_extent([attrs['coord_lon_range'][0],
-                   attrs['coord_lon_range'][1],
-                   attrs['coord_lat_range'][0],
-                   attrs['coord_lat_range'][1]],
-                  crs=ccrs.PlateCarree(),
-                  )
+    if attrs['file_category'] == 'regional' or proj_name == 'NorthPolarStereo':
+        ax.set_extent([attrs['coord_lon_range'][0],
+                       attrs['coord_lon_range'][1],
+                       attrs['coord_lat_range'][0],
+                       attrs['coord_lat_range'][1]],
+                    crs=ccrs.PlateCarree(),
+                     )
+        # Draw a circular boundary for polar plots so Cartopy "...can use  as a boundary for the map...".
+        ## We apply this to NH stereographic plots.
+        if proj_name in ['NorthPolarStereo'] and attrs['coord_lat_range'][1] > 89:
+            theta = np.linspace(0, 2 * np.pi, 100)
+            center, radius = [0.5, 0.5], 0.4
+            verts = np.vstack([np.sin(theta), np.cos(theta)]).T
+            circle = mpath.Path(verts * radius + center)
+            ax.set_boundary(circle, transform=ax.transAxes)
 
     # Adding ocean and land features
     ax.add_feature(get_feature_mask(), zorder=1)
