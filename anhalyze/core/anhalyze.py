@@ -614,11 +614,18 @@ class AnhaDataset:
         var : str
             Variable name.
         color_range : str
-            Color range based on either `physical` limits, or `relative` values.
+            Color range either `default` limits, `local` data values or a two items list [vmin, vmax].
+            Color range options:
+             default: Limits decide by Anhalyze developers. It is based on the more
+                      likely limits the user can find in a ANHA4 outputs.
+             local: Color range based on the values within the area selected by the user.
+             [vmin, vmax] = List of color range limits chosen by the user.
         savefig : str
             Filename to save figure including path.
         projection_name : str
-            Projection name from Cartopy list .
+            Projection name from Cartopy list. The projections available are: 'PlateCarree', 'LambertAzimuthalEqualArea',
+        'AlbersEqualArea', 'NorthPolarStereo', 'Orthographic', 'Robinson', 'LambertConformal',
+         'Mercator', and 'AzimuthalEquidistant'.
         """
 
         import anhalyze.core.anhalyze_plot_utils as apu
