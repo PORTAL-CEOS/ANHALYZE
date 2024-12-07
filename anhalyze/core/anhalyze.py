@@ -606,7 +606,7 @@ class AnhaDataset:
 
         return AnhaDataset('', load_data=self._load_data, _xr_dataset=_xr_dataset, _attrs=_attrs)
 
-    def show_var_data_map(self, var, color_range='physical', savefig=None, projection_name='LambertConformal'):
+    def show_var_data_map(self, var, color_range='default', savefig=None, projection_name='LambertConformal'):
         """ Displays a map for given var in `AnhaDataset.data_vars`.
 
         Parameters
