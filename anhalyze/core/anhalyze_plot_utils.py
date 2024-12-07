@@ -45,9 +45,14 @@ def get_plot_config(var, var_data, color_range='physical'):
         vrange = [0, 1]  # Physical based values
     elif var == 'chl':  # Chlorophyll
         cmap = cmo.algae
-        vrange = None  # Placeholder for physical based values
+        vrange = [10, 1000]  # Placeholder for physical based values
+    elif (attrs['grid'] in ['gridU', 'gridV']) or (var in ['iicevelu', 'iicevelv']):
+        cmap = cmo.balance
+        vrange = [-1.5, 1.5]
+    elif attrs['grid'] == 'icebergs':
+        cmap = cmo.thermal
+        vrange = [0.00000001, 0.001]
     else:
-        # cmap = 'cividis'
         cmap = 'spring'
         vrange = None
     if not vrange or color_range == 'relative':
