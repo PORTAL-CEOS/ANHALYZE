@@ -61,8 +61,11 @@ def get_plot_config(var, var_data, color_range='physical'):
     else:
         vrange = vrange
 
-    return cmap, vrange
+    # Color range manually input by user
+    if isinstance(color_range, list):
+        vrange = sorted(color_range)
 
+    return cmap, vrange
 
 def get_feature_mask(feature='land', resolution='50m'):
     """   """
