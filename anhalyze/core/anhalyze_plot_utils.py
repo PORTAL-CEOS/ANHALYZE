@@ -36,6 +36,13 @@ def get_plot_config(var, var_data, grid, color_range='physical'):
             Color range either `physical` limits, or `relative` values.
     """
 
+    color_range_options = ['default', 'local']
+
+    assert_message = f"[anhalyze_plot_utils] Color range option '{color_range}' "
+    assert_message += f"not found. Color range should be either '{color_range_options[0]}',"\
+                      f" '{color_range_options[1]}', or a two-item list ([vmin, vmax])."
+    assert color_range in color_range_options or isinstance(color_range, list), assert_message
+
     if var == 'votemper':  # Temperature
         # cmap = 'coolwarm'
         # vrange = [-20, 20]   # color map based values
@@ -60,8 +67,9 @@ def get_plot_config(var, var_data, grid, color_range='physical'):
         cmap = 'spring'
         vrange = None
 
-    if not vrange or color_range == 'relative':
+    # When the user decides by the local color range option,
 
+    if not vrange or color_range == 'local':
         # Set always zero as center for divergent color scheme
         if cmap == cmo.balance:
             # Base vrange in the maximum distance from zero in the dataset.
@@ -213,7 +221,7 @@ def get_projection_info(attrs):
     return proj_info
 
 
-def show_var_data_map(var_da, attrs, color_range='physical', savefig=None, proj_name=''):
+def show_var_data_map(var_da, attrs, color_range='default', savefig=None, proj_name=''):
     """ Displays map of given parameter (var) in lat-lon range and depth.
 
         Parameters
@@ -231,7 +239,7 @@ def show_var_data_map(var_da, attrs, color_range='physical', savefig=None, proj_
     """
 
     # Setting color bar feature
-    if color_range == 'physical':
+    if color_range == 'default':
         bar_extend = 'neither'
     else:
         bar_extend = 'both'
