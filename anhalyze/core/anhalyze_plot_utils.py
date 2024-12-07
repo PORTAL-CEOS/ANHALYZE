@@ -231,10 +231,10 @@ def show_var_data_map(var_da, attrs, color_range='physical', savefig=None, proj_
     """
 
     # Setting color bar feature
-    if color_range == 'relative':
-        bar_extend = 'both'
+    if color_range == 'physical':
+        bar_extend = 'neither'
     else:
-        bar_extend = None
+        bar_extend = 'both'
 
     # Calculate projection information (e.g. Standard parallels) based on the dataset lat and lon limits
     proj_info = get_projection_info(attrs)
@@ -295,11 +295,11 @@ def show_var_data_map(var_da, attrs, color_range='physical', savefig=None, proj_
 
     # Create grid-line labels
     gl = ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=True, x_inline=False,
-                      y_inline=False, color='k', alpha=.3)
+                      y_inline=True, color='k', alpha=.3)
     gl.right_labels = gl.top_labels = False
 
     # Set Color-bar
-    axins = inset_axes(ax, width="3%", height="100%", loc='right', borderpad=-1)
+    axins = inset_axes(ax, width="3%", height="100%", loc='right', borderpad=-3)
     label = '%s [%s]' % (var_da.attrs['long_name'].title(), var_da.attrs['units'])
     cbar = fig.colorbar(im, cax=axins, orientation="vertical", label=label, extend=bar_extend)
     ## In case the user set the color range using a list,
