@@ -9,6 +9,7 @@ import os
 # Plotting-related libraries
 import matplotlib.pyplot as plt
 import matplotlib.path as mpath
+import matplotlib.colors as mcolors
 import cmocean.cm as cmo
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 from cartopy import crs as ccrs, feature as cfeature
@@ -16,7 +17,7 @@ from cartopy import crs as ccrs, feature as cfeature
 # Project custom made libraries
 
 # Setting plotting variables as global constants for now
-LEVELS = 42
+LEVELS = 21
 LINE_LEVELS = 11
 
 
@@ -37,10 +38,10 @@ def get_plot_config(var, var_data, color_range='physical'):
         # cmap = 'coolwarm'
         # vrange = [-20, 20]   # color map based values
         cmap = cmo.thermal  # Other possible colors: 'plasma', 'magma'
-        vrange = [-2, 35]    # Physical based values
+        vrange = [-2, 30]    # Physical based values
     elif var == 'vosaline':  # Salinity
         cmap = cmo.haline  # Other possible colors: 'winter'
-        vrange = [25, 39]    # Physical based values
+        vrange = [25, 38]    # Physical based values
     elif var == 'ileadfra':  # Sea ice concentration
         cmap = cmo.ice
         vrange = [0, 1]  # Physical based values
@@ -66,7 +67,28 @@ def get_plot_config(var, var_data, color_range='physical'):
     if isinstance(color_range, list):
         vrange = sorted(color_range)
 
-    return cmap, vrange
+    # Colorbar boundaries normalization based on the vranges and LEVELS. Applicable only in pcolormesh plots.
+    # Does not clip out values beyond the limits.
+    cnorm = mcolors.Normalize(vrange[0], vrange[1]) # placeholder for the normalization features
+    if attrs['grid'] == 'icebergs' or var == 'chl':
+
+        # Logarithmic scale doesn't work when a vrange lim is set as 0.
+        # We replace that by using the closest to 0 value in the dataset.
+        if 0 in vrange:
+            print('[Anhalyze] Local variable range are either min or max equal to 0.\ The value was replaced by the data value closest to 0.')
+            newv = np.nanmin(np.abs(var_data[np.nonzero(var_data)])) # get the closes to 0 value from the dataset.
+            print(f'[Anhalyze] New vmin: {newv}')
+            cnorm = mcolors.LogNorm(vmin=newv, vmax=vrange[1])
+        else:
+            cnorm = mcolors.LogNorm(vmin=vrange[0], vmax=vrange[1])
+
+    else:
+        # Set pcolormesh values boundaries based on the vranges and LEVELS.
+        bounds = np.linspace(vrange[0], vrange[1], LEVELS)
+        cnorm = mcolors.BoundaryNorm(boundaries=bounds, ncolors=256)
+
+    return cmap, vrange, cnorm
+
 
 def get_feature_mask(feature='land', resolution='50m'):
     """   """
@@ -241,7 +263,7 @@ def show_var_data_map(var_da, attrs, color_range='physical', savefig=None, proj_
     ax.add_feature(get_feature_mask(feature='ocean'), zorder=0)
 
     # Get var-dependent plotting information
-    cmap, vrange = get_plot_config(var_da.name, var_data, color_range=color_range)
+    cmap, vrange, cnorm = get_plot_config(var_da.name, var_data, attrs, color_range=color_range)
 
     # Plotting var data as filled contour regions
     im = ax.contourf(lon, lat, var_data, levels=LEVELS, cmap=cmap, extend=bar_extend,
