@@ -21,7 +21,7 @@ LEVELS = 21
 LINE_LEVELS = 11
 
 
-def get_plot_config(var, var_data, grid, color_range='physical'):
+def get_plot_config(var, var_data, grid, color_range='default'):
     """ Return var-dependent plotting information
 
         Parameters
