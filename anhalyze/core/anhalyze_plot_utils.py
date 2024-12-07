@@ -33,7 +33,11 @@ def get_plot_config(var, var_data, grid, color_range='default'):
         grid : str
             Grid name stored in AnhaDataset.attrs['grid']
         color_range : str
-            Color range either `physical` limits, or `relative` values.
+            Color range either `default` limits, `local` data values or a two items list [vmin, vmax].
+            Color range options:
+             default: Limits decide by Anhalyze developers. It is based on the more
+                      likely limits the user can find in a ANHA4 outputs.
+             local: Color range based on the values within the area selected by the user.
     """
 
     color_range_options = ['default', 'local']
@@ -43,6 +47,7 @@ def get_plot_config(var, var_data, grid, color_range='default'):
                       f" '{color_range_options[1]}', or a two-item list ([vmin, vmax])."
     assert color_range in color_range_options or isinstance(color_range, list), assert_message
 
+    # Selection of cmap and vrange given var.
     if var == 'votemper':  # Temperature
         # cmap = 'coolwarm'
         # vrange = [-20, 20]   # color map based values
@@ -68,7 +73,7 @@ def get_plot_config(var, var_data, grid, color_range='default'):
         vrange = None
 
     # When the user decides by the local color range option,
-
+    # the range is selected from the dataset values.
     if not vrange or color_range == 'local':
         # Set always zero as center for divergent color scheme
         if cmap == cmo.balance:
@@ -91,17 +96,15 @@ def get_plot_config(var, var_data, grid, color_range='default'):
     # Does not clip out values beyond the limits.
     cnorm = mcolors.Normalize(vrange[0], vrange[1]) # placeholder for the normalization features
     if grid == 'icebergs' or var == 'chl':
-
         # Logarithmic scale doesn't work when a vrange lim is set as 0.
         # We replace that by using the closest to 0 value in the dataset.
         if 0 in vrange:
             print('[Anhalyze] Local variable range are either min or max equal to 0.\ The value was replaced by the data value closest to 0.')
-            newv = np.nanmin(np.abs(var_data[np.nonzero(var_data)])) # get the closes to 0 value from the dataset.
+            newv = np.nanmin(np.abs(var_data[np.nonzero(var_data)]))[0] # get the closes to 0 value from the dataset.
             print(f'[Anhalyze] New vmin: {newv}')
             cnorm = mcolors.LogNorm(vmin=newv, vmax=vrange[1])
         else:
             cnorm = mcolors.LogNorm(vmin=vrange[0], vmax=vrange[1])
-
     else:
         # Set pcolormesh values boundaries based on the vranges and LEVELS.
         bounds = np.linspace(vrange[0], vrange[1], LEVELS)
@@ -138,7 +141,9 @@ def get_projection(proj_name='LambertConformal', proj_info=None):
     Parameters
     ----------
     proj_name : str
-        Projection name from Cartopy list.
+        Projection name from Cartopy list. The projections available are: 'PlateCarree', 'LambertAzimuthalEqualArea',
+        'AlbersEqualArea', 'NorthPolarStereo', 'Orthographic', 'Robinson', 'LambertConformal',
+         'Mercator', and 'AzimuthalEquidistant'.
     proj_info : dict
         Information for projection calculated by get_projection_info.
     """
@@ -231,11 +236,19 @@ def show_var_data_map(var_da, attrs, color_range='default', savefig=None, proj_n
         attrs : dict
             Attributes from `AnhaDataset`
         color_range : str
-            Color range either `physical` limits (default), or `relative` values.
+            Color range either `default` limits, `local` data values or a two
+             items list [vmin, vmax].
+
+            Color range options:
+                 default: Color range limits predefined based on the more
+                 likely values the user can find in a ANHA4 outputs.
+                 local: Color range based on the values within the area selected by the user.
+                 [vmin, vmax] = List of color range limits chosen by the user.
         savefig : str
             Filename to save figure including path. If path is not given then using path from original file.
         proj_name : str
-            Projection name from Cartopy list.
+            Projection name from Cartopy list. The projections available are: 'PlateCarree', 'LambertAzimuthalEqualArea',
+            'AlbersEqualArea', 'NorthPolarStereo', 'Orthographic', 'Robinson', 'LambertConformal', 'Mercator', and 'AzimuthalEquidistant'.
     """
 
     # Setting color bar feature
