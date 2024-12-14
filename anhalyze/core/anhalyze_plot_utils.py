@@ -33,12 +33,13 @@ def get_plot_config(var, var_data, grid, color_range='default'):
             Numpy array with var data.
         grid : str
             Grid name stored in AnhaDataset.attrs['grid']
-        color_range : str
+        color_range : str | list , optional
             Color range either `default` limits, `local` data values or a two items list [vmin, vmax].
             Color range options:
              default: Limits decide by Anhalyze developers. It is based on the more
                       likely limits the user can find in a ANHA4 outputs.
-             local: Color range based on the values within the area selected by the user.
+             local: Color range based on the values within selected area.
+             [vmin, vmax]: List of color range limits chosen by the user.
     """
 
     color_range_options = ['default', 'local']
@@ -50,8 +51,6 @@ def get_plot_config(var, var_data, grid, color_range='default'):
 
     # Selection of cmap and vrange given var.
     if var == 'votemper':  # Temperature
-        # cmap = 'coolwarm'
-        # vrange = [-20, 20]   # color map based values
         cmap = cmo.thermal  # Other possible colors: 'plasma', 'magma'
         vrange = [-2, 30]    # Physical based values
     elif var == 'vosaline':  # Salinity
@@ -81,11 +80,11 @@ def get_plot_config(var, var_data, grid, color_range='default'):
             # Base vrange in the maximum distance from zero in the dataset.
             vdistmax = np.nanmax(np.abs(var_data))
             vrange = [-vdistmax, vdistmax]
-            print('vrange based on the maximum distance from zero within the dataset values.')
+            print('[anhalyze_plot_utils] vrange based on the maximum distance from zero within the dataset values.')
             print(f'  vrange: {vrange}')
         else:
             vrange = [np.nanmin(var_data), np.nanmax(var_data)]
-            print(f'  vrange: {vrange}')
+            print(f'[anhalyze_plot_utils]  vrange: {vrange}')
     else:
         vrange = vrange
 
@@ -93,7 +92,7 @@ def get_plot_config(var, var_data, grid, color_range='default'):
     if isinstance(color_range, list):
         vrange = sorted(color_range)
 
-    # Colorbar boundaries normalization based on the vranges and LEVELS. Applicable only in pcolormesh plots.
+    # Colorbar boundaries normalization based on vrange and LEVELS. Applicable only in pcolormesh plots.
     # Does not clip out values beyond the limits.
     cnorm = mcolors.Normalize(vrange[0], vrange[1])  # placeholder for the normalization features
     if grid == 'icebergs' or var == 'chl':
@@ -108,7 +107,7 @@ def get_plot_config(var, var_data, grid, color_range='default'):
         else:
             cnorm = mcolors.LogNorm(vmin=vrange[0], vmax=vrange[1])
     else:
-        # Set pcolormesh values boundaries based on the vranges and LEVELS.
+        # Set pcolormesh values boundaries based on vrange and LEVELS.
         bounds = np.linspace(vrange[0], vrange[1], LEVELS)
         cnorm = mcolors.BoundaryNorm(boundaries=bounds, ncolors=256)
 
@@ -116,7 +115,16 @@ def get_plot_config(var, var_data, grid, color_range='default'):
 
 
 def get_feature_mask(feature='land', resolution='50m'):
-    """   """
+    """
+        Wrapper to set `cfeature.NaturalEarthFeature` up, to plot as background in `show_var_data_map`.
+
+        Parameters
+        ----------
+        feature : str,  optional
+            Sets natural earth features for 'land/ocean' in cartopy.
+        resolution : str, optional
+            Available resolutions ‘10m’, ‘50m’, or ‘110m’.
+    """
 
     # Select face color
     if 'land' in feature:
@@ -137,22 +145,24 @@ def get_feature_mask(feature='land', resolution='50m'):
 
 def get_projection(proj_name='LambertConformal', proj_info=None):
     """
-    Select Cartopy projections option and configurations based on users choice
-    of projection and coordinates info from `AnhaDataset`.
-    
-    Parameters
-    ----------
-    proj_name : str
-        Projection name from Cartopy list. The projections available are: 'PlateCarree', 'LambertAzimuthalEqualArea',
-        'AlbersEqualArea', 'NorthPolarStereo', 'Orthographic', 'Robinson', 'LambertConformal',
-         'Mercator', and 'AzimuthalEquidistant'.
-    proj_info : dict
-        Information for projection calculated by get_projection_info.
+        Select Cartopy projections option and configurations based on users choice
+        of projection and coordinates info from `AnhaDataset`.
+
+        Parameters
+        ----------
+        proj_name : str, optional
+            Projection name from Cartopy list [default: 'LambertConformal'].
+            The projections available are: 'PlateCarree', 'LambertAzimuthalEqualArea','AlbersEqualArea',
+            'NorthPolarStereo', 'Orthographic', 'Robinson',
+            'LambertConformal', 'Mercator', and 'AzimuthalEquidistant'.
+        proj_info : dict, optional
+            Information for projection calculated by get_projection_info.
     """
 
     if proj_info is None:
         raise "Argument proj_info is None. Use get_projection_info do obtain projection information from `AnhaDataset`."
 
+    # Creating list of available projections
     proj_list = {'PlateCarree': ccrs.PlateCarree(central_longitude=proj_info['central_longitude']),
                  'LambertAzimuthalEqualArea': ccrs.LambertAzimuthalEqualArea(
                      central_longitude=proj_info['central_longitude'],
@@ -174,6 +184,7 @@ def get_projection(proj_name='LambertConformal', proj_info=None):
                                                                    central_latitude=proj_info['central_latitude']),
                  }
 
+    # Setting y_inline dependent on projection
     if proj_name in ['Orthographic', 'NorthPolarStereo']:
         y_inline = True
     else:
@@ -189,7 +200,7 @@ def get_projection(proj_name='LambertConformal', proj_info=None):
 
 
 def get_projection_info(attrs):
-    """ Calculate information used to set figure projection.
+    """ Calculate information used to set map projection in `show_var_data_map`.
     
         Parameters
         ----------
@@ -203,10 +214,9 @@ def get_projection_info(attrs):
     north = attrs['coord_lat_range'][1]
     south = attrs['coord_lat_range'][0]
 
-    # 1/6th law to calculate the standard parallels. We calculate 1/6 of the
-    # distance in degrees from south to north, then add it to the southern
-    # figure limit and subtract from the northern limit.
-    #
+    # The 1/6th law to calculate the standard parallels.
+    # We calculate 1/6 of the distance in degrees from south to north,
+    # then add it to the southern figure limit and subtract from the northern limit.
     law16 = (north - south) / 6
     standard_parallels = (south + law16, north - law16)
 
@@ -242,7 +252,7 @@ def show_var_data_map(var_da, attrs, color_range='default', savefig=None, proj_n
             xarray.DataArray for given var(var_da.name).
         attrs : dict
             Attributes from `AnhaDataset`
-        color_range : str
+        color_range : str | list, optional
             Color range either `default` limits, `local` data values or a two
              items list [vmin, vmax].
 
@@ -251,12 +261,13 @@ def show_var_data_map(var_da, attrs, color_range='default', savefig=None, proj_n
                  likely values the user can find in a ANHA4 outputs.
                  local: Color range based on the values within the area selected by the user.
                  [vmin, vmax] = List of color range limits chosen by the user.
-        savefig : str
+        savefig : str, optional
             Filename to save figure including path. If path is not given then using path from original file.
-        proj_name : str
-            Projection name from Cartopy list. The projections available are: 'PlateCarree',
-            'LambertAzimuthalEqualArea', 'AlbersEqualArea', 'NorthPolarStereo', 'Orthographic', 'Robinson',
-             'LambertConformal', 'Mercator', and 'AzimuthalEquidistant'.
+        proj_name : str, optional
+            Projection name from Cartopy list [default: 'LambertConformal'].
+            The projections available are: 'PlateCarree', 'LambertAzimuthalEqualArea','AlbersEqualArea',
+            'NorthPolarStereo', 'Orthographic', 'Robinson',
+            'LambertConformal', 'Mercator', and 'AzimuthalEquidistant'.
     """
 
     # Setting color bar feature
