@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 import matplotlib.path as mpath
 import matplotlib.colors as mcolors
 import cmocean.cm as cmo
+from IPython.core.getipython import get_ipython
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 from cartopy import crs as ccrs, feature as cfeature
 
