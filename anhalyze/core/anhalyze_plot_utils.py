@@ -99,10 +99,10 @@ def get_plot_config(var, var_data, grid, color_range='default'):
         # Logarithmic scale doesn't work when a vrange lim is set as 0.
         # We replace that by using the closest to 0 value in the dataset.
         if 0 in vrange:
-            print('[Anhalyze] Local variable range are either min or max equal to 0.\ The value was replaced by the data value closest to 0.')
-            newv = np.nanmin(np.abs(var_data[np.nonzero(var_data)]))[0] # get the closes to 0 value from the dataset.
+            print('[Anhalyze] Local variable range are either min or max equal to 0. The value was replaced by the data value closest to 0.')
+            newv = np.nanmin(np.abs(var_data[np.nonzero(var_data)])) # get the closes to 0 value from the dataset.
             print(f'[Anhalyze] New vmin: {newv}')
-            cnorm = mcolors.LogNorm(vmin=newv, vmax=vrange[1])
+            cnorm = mcolors.LogNorm(vmin=float(newv), vmax=vrange[1])
         else:
             cnorm = mcolors.LogNorm(vmin=vrange[0], vmax=vrange[1])
     else:
