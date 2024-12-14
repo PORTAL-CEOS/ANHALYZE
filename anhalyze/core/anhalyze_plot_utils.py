@@ -29,7 +29,7 @@ def get_plot_config(var, var_data, grid, color_range='default'):
         ----------
         var : str
             Variable name.
-        var_data : array
+        var_data : ndarray
             Numpy array with var data.
         grid : str
             Grid name stored in AnhaDataset.attrs['grid']
@@ -293,7 +293,7 @@ def show_var_data_map(var_da, attrs, color_range='default', savefig=None, proj_n
         # We apply this to NH stereographic plots.
         if proj_name in ['NorthPolarStereo'] and attrs['coord_lat_range'][1] > 89:
             theta = np.linspace(0, 2 * np.pi, 100)
-            center, radius = [0.5, 0.5], 0.4
+            center, radius = np.array([0.5, 0.5]), 0.4
             verts = np.vstack([np.sin(theta), np.cos(theta)]).T
             circle = mpath.Path(verts * radius + center)
             ax.set_boundary(circle, transform=ax.transAxes)
@@ -303,7 +303,7 @@ def show_var_data_map(var_da, attrs, color_range='default', savefig=None, proj_n
     ax.add_feature(get_feature_mask(feature='ocean'), zorder=0)
 
     # Get var-dependent plotting information
-    cmap, vrange, cnorm = get_plot_config(var_da.name, var_data, grid=attrs['grid'], color_range=color_range)
+    cmap, vrange, cnorm = get_plot_config(str(var_da.name), var_data, grid=attrs['grid'], color_range=color_range)
 
     # When plotting using projections with the North Pole as either as center or included in the plot,
     # or is a Log normalized dataset, contourf creates weird and unrealistic shapes.
