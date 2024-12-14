@@ -99,10 +99,10 @@ def get_plot_config(var, var_data, grid, color_range='default'):
         # Logarithmic scale doesn't work when a vrange lim is set as 0.
         # We replace that by using the closest to 0 value in the dataset.
         if 0 in vrange:
-            print('[Anhalyze] Local variable range are either min or max equal to 0.\ The value was replaced by the data value closest to 0.')
-            newv = np.nanmin(np.abs(var_data[np.nonzero(var_data)]))[0] # get the closes to 0 value from the dataset.
+            print('[Anhalyze] Local variable range are either min or max equal to 0. The value was replaced by the data value closest to 0.')
+            newv = np.nanmin(np.abs(var_data[np.nonzero(var_data)])) # get the closes to 0 value from the dataset.
             print(f'[Anhalyze] New vmin: {newv}')
-            cnorm = mcolors.LogNorm(vmin=newv, vmax=vrange[1])
+            cnorm = mcolors.LogNorm(vmin=float(newv), vmax=vrange[1])
         else:
             cnorm = mcolors.LogNorm(vmin=vrange[0], vmax=vrange[1])
     else:
@@ -172,13 +172,18 @@ def get_projection(proj_name='LambertConformal', proj_info=None):
                                                                    central_latitude=proj_info['central_latitude']),
                  }
 
+    if proj_name in ['Orthographic', 'NorthPolarStereo']:
+        y_inline = True
+    else:
+        y_inline = False
+
     assert_message = f'[anhalyze_plot_utils] Projection {proj_name} '
     assert_message += f'not found in list of projections available: {list(proj_list.keys())}'
     assert proj_name in list(proj_list.keys()), assert_message
 
     proj_config = proj_list[proj_name]
 
-    return proj_config
+    return proj_config, y_inline
 
 
 def get_projection_info(attrs):
@@ -261,7 +266,7 @@ def show_var_data_map(var_da, attrs, color_range='default', savefig=None, proj_n
     proj_info = get_projection_info(attrs)
 
     # Select figure projection
-    proj_config = get_projection(proj_name, proj_info)
+    proj_config, y_inline = get_projection(proj_name, proj_info)
 
     # getting lat and lon
     lat, lon = np.squeeze(var_da.coords[attrs['coord_lat']].data), np.squeeze(var_da.coords[attrs['coord_lon']].data)
@@ -316,7 +321,7 @@ def show_var_data_map(var_da, attrs, color_range='default', savefig=None, proj_n
 
     # Create grid-line labels
     gl = ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=True, x_inline=False,
-                      y_inline=True, color='k', alpha=.3)
+                      y_inline=y_inline, color='k', alpha=.3)
     gl.right_labels = gl.top_labels = False
 
     # Set Color-bar
