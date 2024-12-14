@@ -94,13 +94,14 @@ def get_plot_config(var, var_data, grid, color_range='default'):
 
     # Colorbar boundaries normalization based on the vranges and LEVELS. Applicable only in pcolormesh plots.
     # Does not clip out values beyond the limits.
-    cnorm = mcolors.Normalize(vrange[0], vrange[1]) # placeholder for the normalization features
+    cnorm = mcolors.Normalize(vrange[0], vrange[1])  # placeholder for the normalization features
     if grid == 'icebergs' or var == 'chl':
         # Logarithmic scale doesn't work when a vrange lim is set as 0.
         # We replace that by using the closest to 0 value in the dataset.
         if 0 in vrange:
-            print('[Anhalyze] Local variable range are either min or max equal to 0. The value was replaced by the data value closest to 0.')
-            newv = np.nanmin(np.abs(var_data[np.nonzero(var_data)])) # get the closes to 0 value from the dataset.
+            print('[Anhalyze] Local variable range are either min or max equal to 0. '
+                  'The value was replaced by the data value closest to 0.')
+            newv = np.nanmin(np.abs(var_data[np.nonzero(var_data)]))  # get the closes to 0 value from the dataset.
             print(f'[Anhalyze] New vmin: {newv}')
             cnorm = mcolors.LogNorm(vmin=float(newv), vmax=vrange[1])
         else:
@@ -166,8 +167,8 @@ def get_projection(proj_name='LambertConformal', proj_info=None):
                  'LambertConformal': ccrs.LambertConformal(central_longitude=proj_info['central_longitude'],
                                                            standard_parallels=proj_info['standard_parallels']),
                  'Mercator': ccrs.Mercator(central_longitude=0,
-                                            min_latitude=proj_info['lat_range'][0],
-                                            max_latitude=proj_info['lat_range'][1]),
+                                           min_latitude=proj_info['lat_range'][0],
+                                           max_latitude=proj_info['lat_range'][1]),
                  'AzimuthalEquidistant': ccrs.AzimuthalEquidistant(central_longitude=proj_info['central_longitude'],
                                                                    central_latitude=proj_info['central_latitude']),
                  }
@@ -252,8 +253,9 @@ def show_var_data_map(var_da, attrs, color_range='default', savefig=None, proj_n
         savefig : str
             Filename to save figure including path. If path is not given then using path from original file.
         proj_name : str
-            Projection name from Cartopy list. The projections available are: 'PlateCarree', 'LambertAzimuthalEqualArea',
-            'AlbersEqualArea', 'NorthPolarStereo', 'Orthographic', 'Robinson', 'LambertConformal', 'Mercator', and 'AzimuthalEquidistant'.
+            Projection name from Cartopy list. The projections available are: 'PlateCarree',
+            'LambertAzimuthalEqualArea', 'AlbersEqualArea', 'NorthPolarStereo', 'Orthographic', 'Robinson',
+             'LambertConformal', 'Mercator', and 'AzimuthalEquidistant'.
     """
 
     # Setting color bar feature
@@ -285,10 +287,9 @@ def show_var_data_map(var_da, attrs, color_range='default', savefig=None, proj_n
                        attrs['coord_lon_range'][1],
                        attrs['coord_lat_range'][0],
                        attrs['coord_lat_range'][1]],
-                    crs=ccrs.PlateCarree(),
-                     )
+                      crs=ccrs.PlateCarree())
         # Draw a circular boundary for polar plots so Cartopy "...can use  as a boundary for the map...".
-        ## We apply this to NH stereographic plots.
+        # We apply this to NH stereographic plots.
         if proj_name in ['NorthPolarStereo'] and attrs['coord_lat_range'][1] > 89:
             theta = np.linspace(0, 2 * np.pi, 100)
             center, radius = [0.5, 0.5], 0.4
@@ -303,8 +304,9 @@ def show_var_data_map(var_da, attrs, color_range='default', savefig=None, proj_n
     # Get var-dependent plotting information
     cmap, vrange, cnorm = get_plot_config(var_da.name, var_data, grid=attrs['grid'], color_range=color_range)
 
-    # When plotting using projections with the North Pole as either as center or included in the plot, or is a Log normalized dataset,
-    # contourf creates weird and unrealistic shapes. Probably related with ANHA4 grid. Use pcolormesh instead.
+    # When plotting using projections with the North Pole as either as center or included in the plot,
+    # or is a Log normalized dataset, contourf creates weird and unrealistic shapes.
+    # Probably related with ANHA4 grid. Use pcolormesh instead.
     # Also, in case of manually selected color range, to rightly show the colorbar in the selected range,
     # its necessary to plot the data using pcolormesh. Shading option smooths the edges.
     # TODO The "> 89" could be replaced by something like attrs['file_category'] == northpole_included/polar
@@ -312,11 +314,12 @@ def show_var_data_map(var_da, attrs, color_range='default', savefig=None, proj_n
         im = ax.pcolormesh(lon, lat, var_data, cmap=cmap, shading='gouraud',
                            norm=cnorm, transform=ccrs.PlateCarree(), zorder=2)
     else:
-    # In case of plotting smaller regions, contourf smoothly gets the job done.
-        ## Plotting var data as filled contour regions
+        # In case of plotting smaller regions, contourf smoothly gets the job done.
+
+        # Plotting var data as filled contour regions
         im = ax.contourf(lon, lat, var_data, levels=LEVELS,  vmin=vrange[0], vmax=vrange[1],
                          cmap=cmap, transform=ccrs.PlateCarree(), zorder=2)
-        ## Plotting var data contour lines
+        # Plotting var data contour lines
         ax.contour(lon, lat, var_data, levels=LINE_LEVELS, cmap='Greys', linewidths=.2, transform=ccrs.PlateCarree())
 
     # Create grid-line labels
@@ -328,10 +331,10 @@ def show_var_data_map(var_da, attrs, color_range='default', savefig=None, proj_n
     axins = inset_axes(ax, width="3%", height="100%", loc='right', borderpad=-3)
     label = '%s [%s]' % (var_da.attrs['long_name'].title(), var_da.attrs['units'])
     cbar = fig.colorbar(im, cax=axins, orientation="vertical", label=label, extend=bar_extend)
-    ## In case the user set the color range using a list,
-    ## we need to apply those limits in the colorbar. Except for log plots.
+    # In case the user set the color range using a list,
+    # we need to apply those limits in the colorbar. Except for log plots.
     if isinstance(color_range, list) and (attrs['grid'] != 'icebergs' and var_da.name != 'chl'):
-        step = (vrange[1] - vrange[0]) / (LEVELS - 1) # Interval between levels
+        step = (vrange[1] - vrange[0]) / (LEVELS - 1)  # Interval between levels
         cbar.ax.set_yticks(np.arange(vrange[0], vrange[1] * 1.01, step * 2))
         cbar.ax.set_ylim(vrange[0], vrange[1])
 
