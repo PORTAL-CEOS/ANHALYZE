@@ -164,9 +164,6 @@ class AnhaDataset:
         """
 
         self.attrs |= self._xr_dataset.attrs
-        # self.attrs['xr_attrs'] = self._xr_dataset.attrs
-        # self.attrs['xr_attrs'] = True
-
 
     def _init_dims(self):
         """ Initialize dimensions
@@ -640,9 +637,9 @@ class AnhaDataset:
         savefig : str
             Filename to save figure including path.
         projection_name : str
-            Projection name from Cartopy list. The projections available are: 'PlateCarree', 'LambertAzimuthalEqualArea',
-        'AlbersEqualArea', 'NorthPolarStereo', 'Orthographic', 'Robinson', 'LambertConformal',
-         'Mercator', and 'AzimuthalEquidistant'.
+            Projection name from Cartopy list. The projections available are: 'PlateCarree',
+            'LambertAzimuthalEqualArea', 'AlbersEqualArea', 'NorthPolarStereo', 'Orthographic', 'Robinson',
+            'LambertConformal', 'Mercator', and 'AzimuthalEquidistant'.
         """
 
         import anhalyze.core.anhalyze_plot_utils as apu
