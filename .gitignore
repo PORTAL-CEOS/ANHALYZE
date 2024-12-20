@@ -1,5 +1,5 @@
 
-# My gitignore
+# Anhalyze specific gitignore
 
 .idea/
 output_data/*
@@ -8,6 +8,7 @@ anhalyze/tests/bkp_projects/
 figs/*
 *html
 *nc
+*png
 
 #---- Standard files below
 
