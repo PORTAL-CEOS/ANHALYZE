@@ -323,7 +323,14 @@ def show_var_data_map(var_da, attrs, color_range='default', savefig=None, proj_n
     # its necessary to plot the data using pcolormesh. Shading option smooths the edges.
     # TODO The "> 89" could be replaced by something like attrs['file_category'] == northpole_included/polar
     if attrs['coord_lat_range'][1] > 89 or isinstance(color_range, list) or 'Log' in str(type(cnorm)):
-        im = ax.pcolormesh(lon, lat, var_data, cmap=cmap, shading='gouraud',
+
+        # Avoiding incompatible proj_name/shading combination
+        if proj_name == 'LambertAzimuthalEqualArea':
+            shading = 'auto'
+        else:
+            shading = 'gouraud'
+
+        im = ax.pcolormesh(lon, lat, var_data, cmap=cmap, shading=shading,
                            norm=cnorm, transform=ccrs.PlateCarree(), zorder=2)
     else:
         # In case of plotting smaller regions, contourf smoothly gets the job done.
