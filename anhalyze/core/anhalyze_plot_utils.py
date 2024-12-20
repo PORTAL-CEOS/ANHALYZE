@@ -102,10 +102,13 @@ def get_plot_config(var, var_data, grid, color_range='default'):
             print('[anhalyze_plot_utils] A value in vrange is equal to 0, it cant be used in log plot.')
             newv = np.nanmin(np.abs(var_data[np.nonzero(var_data)]))  # get the value closest to 0 from the dataset.
             print(f'[anhalyze_plot_utils] Replacing by the data value closest to 0: {newv}')
-            print(f'[Anhalyze] New vmin: {newv}')
-            cnorm = mcolors.LogNorm(vmin=float(newv), vmax=vrange[1])
-        else:
-            cnorm = mcolors.LogNorm(vmin=vrange[0], vmax=vrange[1])
+
+            # Replace 0 value with new value
+            i = vrange.index(0)
+            vrange[i] = newv
+            vrange = sorted(vrange)
+
+        cnorm = mcolors.LogNorm(vmin=vrange[0], vmax=vrange[1])
     else:
         # Set pcolormesh values boundaries based on vrange and LEVELS.
         bounds = np.linspace(vrange[0], vrange[1], LEVELS)
