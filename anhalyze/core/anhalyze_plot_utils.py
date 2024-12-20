@@ -97,11 +97,11 @@ def get_plot_config(var, var_data, grid, color_range='default'):
     cnorm = mcolors.Normalize(vrange[0], vrange[1])  # placeholder for the normalization features
     if grid == 'icebergs' or var == 'chl':
         # Logarithmic scale doesn't work when a vrange lim is set as 0.
-        # We replace that by using the closest to 0 value in the dataset.
+        # We replace that by using the value closest to 0 in the dataset.
         if 0 in vrange:
-            print('[Anhalyze] Local variable range are either min or max equal to 0. '
-                  'The value was replaced by the data value closest to 0.')
-            newv = np.nanmin(np.abs(var_data[np.nonzero(var_data)]))  # get the closes to 0 value from the dataset.
+            print('[anhalyze_plot_utils] A value in vrange is equal to 0, it cant be used in log plot.')
+            newv = np.nanmin(np.abs(var_data[np.nonzero(var_data)]))  # get the value closest to 0 from the dataset.
+            print(f'[anhalyze_plot_utils] Replacing by the data value closest to 0: {newv}')
             print(f'[Anhalyze] New vmin: {newv}')
             cnorm = mcolors.LogNorm(vmin=float(newv), vmax=vrange[1])
         else:
