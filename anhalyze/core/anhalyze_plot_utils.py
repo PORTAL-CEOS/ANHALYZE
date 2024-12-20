@@ -94,7 +94,7 @@ def get_plot_config(var, var_data, grid, color_range='default'):
 
     # Colorbar boundaries normalization based on vrange and LEVELS. Applicable only in pcolormesh plots.
     # Does not clip out values beyond the limits.
-    cnorm = mcolors.Normalize(vrange[0], vrange[1])  # placeholder for the normalization features
+    # cnorm = mcolors.Normalize(vrange[0], vrange[1])  # placeholder for the normalization features
     if grid == 'icebergs' or var == 'chl':
         # Logarithmic scale doesn't work when a vrange lim is set as 0.
         # We replace that by using the value closest to 0 in the dataset.
