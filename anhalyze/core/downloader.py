@@ -77,6 +77,20 @@ def download_example(file_type='gridT'):
     download_nc_file(file_url, file_destination)
 
 
+def download_tutorial():
+    """ Downloads tutorial in html.
+    """
+
+    # Download tutorial to standard location
+    tutorial_destination = os.path.join(anhalyze.PACKAGE_DATA_DIR.replace('package_data', 'tutorials'),
+                                        'anhalyze_tutorial.html')
+
+    # Downloading mask
+    print(f"[Anhalyze.Downloader] Downloading tutorial version: {config.package_data['tutorial']['version']}, "
+          f"here:{tutorial_destination}.")
+    download_nc_file(config.package_data['tutorial']['url'], tutorial_destination)
+
+
 if __name__ == '__main__':
 
     download_mask()
