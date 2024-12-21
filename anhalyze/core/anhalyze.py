@@ -273,6 +273,7 @@ class AnhaDataset:
         """ Setup data selection range. Assert values are in order, within range and valid.
         """
 
+        # TODO could take some of this code out, and put in utils, so that can be used elsewhere.
         # Make sure range has correct format ( a list with two values).
         assert isinstance(coord_range, list), f"[Anhalyze] The variable {coord_name} is not a list."
         assert len(coord_range) == 2, '[Anhalyze] Coordinate range size need to be equal to two.'
