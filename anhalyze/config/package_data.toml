@@ -12,3 +12,7 @@ filename = 'ANHA4-WLS001_y1980m07d14_gridT.nc'
 [icebergs]
 url = "http://bit.ly/3Z5vqKl"
 filename = 'ANHA4-WLS001_y1980m01d05_icebergs.nc'
+
+[tutorial]
+url = "https://bit.ly/41TrxKh"
+version = '1.0'
