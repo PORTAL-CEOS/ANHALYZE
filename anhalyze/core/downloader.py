@@ -10,7 +10,7 @@ import anhalyze.config as config
 import anhalyze
 
 
-def download_nc_file(download_url, download_destination):
+def download_sharepoint_file(download_url, download_destination):
     """ Download a large file given url into destination
 
         Parameters
@@ -51,7 +51,7 @@ def download_mask():
 
     # Downloading mask.
     print("[Anhalyze.Downloader] Downloading mask file.")
-    download_nc_file(mask_url, mask_destination)
+    download_sharepoint_file(mask_url, mask_destination)
 
 
 def download_example(file_type='gridT'):
@@ -74,7 +74,7 @@ def download_example(file_type='gridT'):
 
     # Downloading mask.
     print(f"[Anhalyze.Downloader] Downloading {file_type} file.")
-    download_nc_file(file_url, file_destination)
+    download_sharepoint_file(file_url, file_destination)
 
 
 def download_tutorial():
@@ -85,10 +85,10 @@ def download_tutorial():
     tutorial_destination = os.path.join(anhalyze.PACKAGE_DATA_DIR.replace('package_data', 'tutorials'),
                                         'anhalyze_tutorial.html')
 
-    # Downloading mask
+    # Downloading tutorial
     print(f"[Anhalyze.Downloader] Downloading tutorial version: {config.package_data['tutorial']['version']}, "
           f"here:{tutorial_destination}.")
-    download_nc_file(config.package_data['tutorial']['url'], tutorial_destination)
+    download_sharepoint_file(config.package_data['tutorial']['url'], tutorial_destination)
 
 
 if __name__ == '__main__':
