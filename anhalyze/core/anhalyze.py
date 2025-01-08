@@ -730,6 +730,9 @@ def get_date(filename, how=None):
 
     """
 
+    # Remove path from filename if given
+    filename = os.path.basename(filename)
+
     # Get full date from filename
     date = filename.split('_')[1]
     assert date[0] == 'y' and date[5] == 'm' and date[8] == 'd', '[Anhalyze] Filename format not supported.'
