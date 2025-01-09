@@ -451,9 +451,8 @@ class AnhaDataset:
             elif 'gridV' in self.attrs['grid']:
                 mask = xr.open_dataset(mask_filename).vmask.data
             elif 'gridW' in self.attrs['grid']:
-                # TODO use tmask and add a warning
-                raise NotImplementedError('TODO: Need to figure this out')
-                # mask = xr.open_dataset(mask_filename).tmask.data
+                mask = xr.open_dataset(mask_filename).tmask.data
+                print('[Anhalyze] Warning, using tmask. Check with the data creator to see if this is appropriate.')
             else:
                 mask = xr.open_dataset(mask_filename).tmask.data
 
