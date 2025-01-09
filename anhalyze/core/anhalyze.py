@@ -121,7 +121,7 @@ class AnhaDataset:
         self._init_metadata()
 
         # Initialize other attrs
-        # TODO could replace verbose with logging levels
+        # TODO replace verbose with logging levels
         self._verbose = True
 
     def _test_filename(self, filename):
@@ -378,9 +378,6 @@ class AnhaDataset:
         # Apply masks to data
         mask = coord
         mask[~coord_mask] = np.nan
-        # TODO there maybe a bug at the equator or the meridian.
-        #  could try using nans instead of zeros, probably not here but at the end?
-        #  I guess not since i'm not using copy() Need to plot to see...
 
         if 'lat' in coord_name:
             axis = 1
@@ -459,11 +456,7 @@ class AnhaDataset:
             # TODO: for icemod,  there are u and v data variables that need to have their exceptions
             #       (with in the same file)
             #       rest gridT.  For  icebergs is all gridT.
-            # TODO: need to get an icemod, and an iceberg file for testing.
 
-            # TODO: add assertion of dimensions. mask dimensions need to match
-
-            # TODO may want to update this to save mask dataArray instead of numpy array (.data)
             # Assert mask xy dimensions
             assert self.dims.mapping[self.attrs['dim_x']] == mask.shape[-1], \
                 f"[Anhalyze] Mask dimension {self.attrs['dim_x']} doesn't match."
@@ -471,12 +464,10 @@ class AnhaDataset:
                 f"[Anhalyze] Mask dimension {self.attrs['dim_y']} doesn't match."
 
             # Adding mask data to data_vars
-            
             if 'dim_z' not in self.attrs.keys():
                 self._xr_dataset = self._xr_dataset.assign({'mask': ((self.attrs['dim_y'],
                                                                       self.attrs['dim_x']),
                                                                      mask[0, 0, :, :])})
-                
             else:
                 # Assert mask z dimension
                 assert self.dims.mapping[self.attrs['dim_z']] == mask.shape[-3], \
@@ -742,7 +733,6 @@ class AnhaDataset:
 
 
 def get_date(filename, how=None):
-    # TODO find/apply naming convention documentation.
     """  Get date information from filename.
          Assuming filename format: */*/ANHA?-??????_y????m??d??_{grid}_*.nc
 
