@@ -464,6 +464,12 @@ class AnhaDataset:
             # TODO: add assertion of dimensions. mask dimensions need to match
 
             # TODO may want to update this to save mask dataArray instead of numpy array (.data)
+            # Assert mask xy dimensions
+            assert self.dims.mapping[self.attrs['dim_x']] == mask.shape[-1], \
+                f"[Anhalyze] Mask dimension {self.attrs['dim_x']} doesn't match."
+            assert self.dims.mapping[self.attrs['dim_y']] == mask.shape[-2], \
+                f"[Anhalyze] Mask dimension {self.attrs['dim_y']} doesn't match."
+
             # Adding mask data to data_vars
             
             if 'dim_z' not in self.attrs.keys():
@@ -472,6 +478,10 @@ class AnhaDataset:
                                                                      mask[0, 0, :, :])})
                 
             else:
+                # Assert mask z dimension
+                assert self.dims.mapping[self.attrs['dim_z']] == mask.shape[-3], \
+                    f"[Anhalyze] Mask dimension {self.attrs['dim_z']} doesn't match."
+
                 self._xr_dataset = self._xr_dataset.assign({'mask': ((self.attrs['dim_z'],
                                                                       self.attrs['dim_y'],
                                                                       self.attrs['dim_x']),
