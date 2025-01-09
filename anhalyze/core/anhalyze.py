@@ -13,7 +13,7 @@ import anhalyze
 import anhalyze.config as config
 
 
-# Possible other names AnhaModelData, Dataset, AnhaData, AnhaDataframe, AnhaReader, AnhaGrid
+#
 class AnhaDataset:
     """ Wrapper :py:class: for `xarray.Dataset` with specific implementation
     for netCDF files created with ANHA/NEMO ocean models. Similarly to a
@@ -39,9 +39,36 @@ class AnhaDataset:
     def __repr__(self):
         """ Return string representation of object
         """
-        # TODO return own dims/coords/data_vars, instead of the ones from _xr_dataset
-        # return xr.core.formatting.dataset_repr(self._anha_dataset)  # placeholder, may help create own version.
-        return f'[Anhalyze] Filename: {self.attrs["filename"]} \n' + str(self._xr_dataset)
+
+        anhalyze_repr = f'[Anhalyze] AnhaDataset. \n'
+        anhalyze_repr += f'[Anhalyze] Filename: {self.attrs["filename"]}\n'
+        anhalyze_repr += f'[Anhalyze] Description: {self.attrs["description"]}\n'
+        anhalyze_repr += f'[Anhalyze] File category: {self.attrs["file_category"]}\n'
+
+        xarray_repr = str(self._xr_dataset)
+
+        anhalyze_warning = '\n[Anhalyze] Note: Above we show the xarray repr of this file, ' \
+                           'it should be mostly complete, ' \
+                           'but use `self.attrs` for the full set of Attributes.'
+
+        return "{0}{1}{2}".format(anhalyze_repr, xarray_repr, anhalyze_warning)
+
+    def _repr_html_(self):
+        """ Returns html representation of object
+        """
+
+        anhalyze_repr = f'[Anhalyze] AnhaDataset. <br/>'
+        anhalyze_repr += f'[Anhalyze] Filename: {self.attrs["filename"]}<br/>'
+        anhalyze_repr += f'[Anhalyze] Description: {self.attrs["description"]}<br/>'
+        anhalyze_repr += f'[Anhalyze] File category: {self.attrs["file_category"]}<br/>'
+
+        xarray_repr = self._xr_dataset._repr_html_()
+
+        anhalyze_warning = '[Anhalyze] Note: Above we show the xarray repr of this file, ' \
+                           'it should be mostly complete, ' \
+                           'but use `self.attrs` for the full set of Attributes.'
+
+        return "{0}{1}{2}".format(anhalyze_repr, xarray_repr, anhalyze_warning)
 
     def __init__(self, filename, load_data=True, mask_filename=None, _xr_dataset=None, _attrs=None):
         """ Initializing object.
@@ -56,22 +83,29 @@ class AnhaDataset:
 
         # Initialize info from filename
         if _attrs:
+            assert _xr_dataset, '[Anhalyze] Parameter _xr_dataset needs to be provided with _attrs'
             self.attrs = _attrs
         else:
             self._init_filename_attrs(filename)
+            self.attrs['file_category'] = 'original'
 
         # Loading data
         if _xr_dataset:
+            # Check correct xarray.Dataset type.
             assert type(_xr_dataset) == xr.core.dataset.Dataset, \
-                TypeError('[Anhalyze] Parameter xr_dataset incorrect type.')
+                TypeError('[Anhalyze] Parameter _xr_dataset incorrect type.')
+            # Updating attrs
+            _xr_dataset.attrs = _attrs
+            # Setting internal xarray.Dataset
             self._xr_dataset = _xr_dataset
         else:
             # Open dataset
             if load_data:
                 self._xr_dataset = xr.open_dataset(os.path.join(self.attrs['filepath'], self.attrs['filename']))
             else:
-                self._xr_dataset = xr.open_dataset(os.path.join(self.attrs['filepath'], self.attrs['filename']),
-                                                   decode_cf=False)
+                raise FutureWarning("[Anhalyze] load_data=false option hasn't been fully developed.")
+                # self._xr_dataset = xr.open_dataset(os.path.join(self.attrs['filepath'], self.attrs['filename']),
+                #                                    decode_cf=False)
 
         # Loading mask data
         if not _xr_dataset:
@@ -83,9 +117,9 @@ class AnhaDataset:
         self._load_data = load_data
         self._init_metadata()
 
-        # TODO replace verbose with logging levels
         # Initialize other attrs
-        self.attrs['verbose'] = True
+        # TODO replace verbose with logging levels
+        self._verbose = True
 
     def _init_coords(self):
         """ Initialize coordinates
@@ -128,7 +162,8 @@ class AnhaDataset:
     def _init_xr_attrs(self):
         """ Initialize data attributes
         """
-        self.attrs['xr_attrs'] = self._xr_dataset.attrs
+
+        self.attrs |= self._xr_dataset.attrs
 
     def _init_dims(self):
         """ Initialize dimensions
@@ -205,7 +240,7 @@ class AnhaDataset:
         self.dims = self._init_dims()  # Note this should init before coords and data_vars
         self.data_vars = self._init_data_vars()
         self.coords = self._init_coords()
-        if 'xr_attrs' not in self.attrs.keys():
+        if 'description' not in self.attrs.keys():
             self._init_xr_attrs()
         self._init_range()
 
@@ -238,6 +273,7 @@ class AnhaDataset:
         """ Setup data selection range. Assert values are in order, within range and valid.
         """
 
+        # TODO could take some of this code out, and put in utils, so that can be used elsewhere.
         # Make sure range has correct format ( a list with two values).
         assert isinstance(coord_range, list), f"[Anhalyze] The variable {coord_name} is not a list."
         assert len(coord_range) == 2, '[Anhalyze] Coordinate range size need to be equal to two.'
@@ -260,18 +296,20 @@ class AnhaDataset:
             # Use edges if values outside range
             if coord_range[0] < full_range[0]:
                 mode_message = f'[Anhalyze] Warning: {coord_name} '
-                mode_message += f'using edge value {full_range[0]} since given value {coord_range[0]} is out of bounds.'
+                mode_message += f'using edge value {full_range[0]:.2f} ' \
+                                f'since given value {coord_range[0]} is out of bounds.'
                 coord_range[0] = full_range[0]
 
-                if self.attrs['verbose']:
+                if self._verbose:
                     print(mode_message)
 
             if coord_range[1] > full_range[1]:
                 mode_message = f'[Anhalyze] Warning: {coord_name} '
-                mode_message += f'using edge value {full_range[1]} since given value {coord_range[1]} is out of bounds.'
+                mode_message += f'using edge value {full_range[1]:.2f} ' \
+                                f'since given value {coord_range[1]} is out of bounds.'
                 coord_range[1] = full_range[1]
 
-                if self.attrs['verbose']:
+                if self._verbose:
                     print(mode_message)
 
         return coord_range
@@ -319,9 +357,6 @@ class AnhaDataset:
         # Apply masks to data
         mask = coord
         mask[~coord_mask] = np.nan
-        # TODO there maybe a bug at the equator or the meridian.
-        #  could try using nans instead of zeros, probably not here but at the end?
-        #  I guess not since i'm not using copy() Need to plot to see...
 
         if 'lat' in coord_name:
             axis = 1
@@ -392,32 +427,35 @@ class AnhaDataset:
             elif 'gridV' in self.attrs['grid']:
                 mask = xr.open_dataset(mask_filename).vmask.data
             elif 'gridW' in self.attrs['grid']:
-                # TODO use tmask and add a warning
-                raise NotImplementedError('TODO: Need to figure this out')
-                # mask = xr.open_dataset(mask_filename).tmask.data
+                mask = xr.open_dataset(mask_filename).tmask.data
+                print('[Anhalyze] Warning, using tmask. Check with the data creator to see if this is appropriate.')
             else:
                 mask = xr.open_dataset(mask_filename).tmask.data
 
             # TODO: for icemod,  there are u and v data variables that need to have their exceptions
             #       (with in the same file)
             #       rest gridT.  For  icebergs is all gridT.
-            # TODO: need to get an icemod, and an iceberg file for testing.
 
-            # TODO: add assertion of dimensions. mask dimensions need to match
+            # Assert mask xy dimensions
+            assert self.dims.mapping[self.attrs['dim_x']] == mask.shape[-1], \
+                f"[Anhalyze] Mask dimension {self.attrs['dim_x']} doesn't match."
+            assert self.dims.mapping[self.attrs['dim_y']] == mask.shape[-2], \
+                f"[Anhalyze] Mask dimension {self.attrs['dim_y']} doesn't match."
 
-            # TODO may want to update this to save mask dataArray instead of numpy array (.data)
             # Adding mask data to data_vars
-            
             if 'dim_z' not in self.attrs.keys():
                 self._xr_dataset = self._xr_dataset.assign({'mask': ((self.attrs['dim_y'],
-                                                                  self.attrs['dim_x']),
-                                                                 mask[0, 0, :, :])})
-                
+                                                                      self.attrs['dim_x']),
+                                                                     mask[0, 0, :, :])})
             else:
+                # Assert mask z dimension
+                assert self.dims.mapping[self.attrs['dim_z']] == mask.shape[-3], \
+                    f"[Anhalyze] Mask dimension {self.attrs['dim_z']} doesn't match."
+
                 self._xr_dataset = self._xr_dataset.assign({'mask': ((self.attrs['dim_z'],
-                                                                  self.attrs['dim_y'],
-                                                                  self.attrs['dim_x']),
-                                                                 mask[0, :, :, :])})
+                                                                      self.attrs['dim_y'],
+                                                                      self.attrs['dim_x']),
+                                                                     mask[0, :, :, :])})
 
             # Add mask filename to attrs
             self._xr_dataset.attrs['mask_filename'] = mask_filename
@@ -479,7 +517,7 @@ class AnhaDataset:
             lat_range = self._update_range('coord_lat', lat_range)
             lon_range = self._update_range('coord_lon', lon_range)
 
-            if self.attrs['verbose']:
+            if self._verbose:
                 print(f'[Anhalyze] Selecting Latitude range: {lat_range}')
                 print(f'[Anhalyze] Selecting Longitude range: {lon_range}')
 
@@ -492,7 +530,7 @@ class AnhaDataset:
             if lat_range:
                 lat_range = self._update_range('coord_lat', lat_range)
 
-                if self.attrs['verbose']:
+                if self._verbose:
                     print(f'[Anhalyze] Selecting Latitude range: {lat_range}')
 
                 # Find row ranges from lat values
@@ -501,7 +539,7 @@ class AnhaDataset:
             if lon_range:
                 lon_range = self._update_range('coord_lon', lon_range)
 
-                if self.attrs['verbose']:
+                if self._verbose:
                     print(f'[Anhalyze] Selecting Longitude range: {lon_range}')
 
                 # Find col ranges from lon values
@@ -512,11 +550,11 @@ class AnhaDataset:
         if dict_range:
             _xr_dataset = _xr_dataset.isel(dict_range)
 
-        # Populating dict for lat, lon selection
+        # Populating dict for depth selection
         if depth_range:
             depth_range = self._update_range('coord_depth', depth_range)
 
-            if self.attrs['verbose']:
+            if self._verbose:
                 print(f'[Anhalyze] Selecting Depth range: {depth_range}')
 
             dict_range = {self.attrs['dim_z']: slice(depth_range[0], depth_range[1])}
@@ -524,9 +562,12 @@ class AnhaDataset:
             # Depth selection
             _xr_dataset = _xr_dataset.sel(dict_range)
 
-        # TODO should add something in the filename just to mark is not the original file.
-        return AnhaDataset(os.path.join(self.attrs['filepath'], self.attrs['filename']),
-                           load_data=self._load_data, _xr_dataset=_xr_dataset, _attrs=self.attrs)
+        # Set attrs
+        _attrs = self.attrs.copy()
+        _attrs['file_category'] = 'regional'
+        # TODO could add section/transect or something specific like this.
+
+        return AnhaDataset('', load_data=self._load_data, _xr_dataset=_xr_dataset, _attrs=_attrs)
 
     def isel(self, x_range=None, y_range=None, z_range=None):
         """
@@ -556,27 +597,31 @@ class AnhaDataset:
         # Populating dict for selection
         if x_range:
             x_range = self._update_range('dim_x', x_range)
-            if self.attrs['verbose']:
+            if self._verbose:
                 print(f'[Anhalyze] Selecting x range: {x_range}')
             dict_range.update({self.attrs['dim_x']: slice(x_range[0], x_range[1])})
         if y_range:
             y_range = self._update_range('dim_y', y_range)
-            if self.attrs['verbose']:
+            if self._verbose:
                 print(f'[Anhalyze] Selecting y range: {y_range}')
             dict_range.update({self.attrs['dim_y']: slice(y_range[0], y_range[1])})
         if z_range:
             z_range = self._update_range('dim_z', z_range)
-            if self.attrs['verbose']:
+            if self._verbose:
                 print(f'[Anhalyze] Selecting z range: {z_range}')
             dict_range.update({self.attrs['dim_z']: slice(z_range[0], z_range[1])})
 
         # Selection of xarray instance
         _xr_dataset = self._xr_dataset.isel(dict_range)
 
-        return AnhaDataset(os.path.join(self.attrs['filepath'], self.attrs['filename']),
-                           load_data=self._load_data, _xr_dataset=_xr_dataset, _attrs=self.attrs)
+        # Set attrs
+        _attrs = self.attrs.copy()
+        _attrs['file_category'] = 'regional'
+        # TODO could add section/transect or something specific like this.
 
-    def show_var_data_map(self, var, color_range='physical', savefig=None, projection_name='LambertConformal'):
+        return AnhaDataset('', load_data=self._load_data, _xr_dataset=_xr_dataset, _attrs=_attrs)
+
+    def show_var_data_map(self, var, color_range='default', savefig=None, projection_name='LambertConformal'):
         """ Displays a map for given var in `AnhaDataset.data_vars`.
 
         Parameters
@@ -584,11 +629,18 @@ class AnhaDataset:
         var : str
             Variable name.
         color_range : str
-            Color range either `physical` limits, or `relative` values.
+            Color range either `default` limits, `local` data values or a two items list [vmin, vmax].
+            Color range options:
+             default: Limits decide by Anhalyze developers. It is based on the more
+                      likely limits the user can find in a ANHA4 outputs.
+             local: Color range based on the values within the area selected by the user.
+             [vmin, vmax] = List of color range limits chosen by the user.
         savefig : str
             Filename to save figure including path.
         projection_name : str
-            Projection name from Cartopy list .
+            Projection name from Cartopy list. The projections available are: 'PlateCarree',
+            'LambertAzimuthalEqualArea', 'AlbersEqualArea', 'NorthPolarStereo', 'Orthographic', 'Robinson',
+            'LambertConformal', 'Mercator', and 'AzimuthalEquidistant'.
         """
 
         import anhalyze.core.anhalyze_plot_utils as apu
@@ -609,36 +661,80 @@ class AnhaDataset:
                               savefig=savefig,
                               proj_name=projection_name)
 
-    def to_netcdf(self, filename, **kwargs):
-        """ Writes netcdf file from `AnhaDataset`.
+    def to_netcdf(self, path=None, filename=None, suffix='_CutRegion', **kwargs):
+        """ Writes `AnhaDataset` contents to netCDF file.
+            For additional options see: `self._xr_dataset.to_netcdf`
+
+            Note: Behaviour differs from `xarray.Dataset.to_netcdf` since here we avoid overwriting files.
 
         Parameters
         ----------
-        filename : str
-            netcdf filename
+        path : str, optional
+            Path to which to save this  `AnhaDatabase`.
+        filename : str, optional
+            Filename to which to save this `AnhaDatabase`.
+        suffix : str, default: _CutRegion.nc
+            Suffix added to filename to avoid overwriting.
 
         """
 
-        assert '.nc' in filename, ValueError('[Anhalyze] Filename should be .nc type.')
+        # set path
+        if not path:
+            path = self.attrs['filepath']
+            # TODO could change default to current location
 
-        self._xr_dataset.to_netcdf(filename, **kwargs)
+        # set filename
+        if filename:
+            assert '.nc' in filename, ValueError('[Anhalyze] Filename should be .nc type.')
+        else:
+            filename = self.attrs['filename']
+
+        # Making sure the filename ends in .nc
+        if '.nc' not in suffix[-3:]:
+            suffix += '.nc'
+
+        # Setting up new full filename
+        new_full_filename = os.path.join(path, filename.replace('.nc', suffix))
+
+        # Avoiding overwriting files by adding extra suffix continuously until available.
+        while os.path.isfile(new_full_filename):
+            print(f'[Anhalyze] Warning, file exists: {new_full_filename}')
+            new_full_filename = new_full_filename.replace('.nc', '_copy.nc')
+
+        if self._verbose:
+            print(f'[Anhalyze] Saving: {new_full_filename}')
+
+        # Updating filename
+        self._xr_dataset.attrs['filename'] = os.path.basename(new_full_filename)
+
+        # Saving new file
+        self._xr_dataset.to_netcdf(new_full_filename, **kwargs)
 
 
-#     def set_location(self):
-#         """
-#
-#         """
-#         # TODO  set location with default values
+def get_date(filename, how=None):
+    """  Get date information from filename.
+         Assuming filename format: */*/ANHA?-??????_y????m??d??_{grid}_*.nc
 
+        Parameters
+        ----------
+        filename: str
+            Filename
+        how : str
+            What to output. Multiple options and output formats possible:
+                None/other: str: 'y????m??d??'
+                ymd: tuple (y,m,d)
+                y: int: ????
+                m: int: ??
+                d: int: ??
 
-def get_date(filename, how=''):
-    """  Get date from filename.
-         Assuming filename format: */*/ANHA4-EPM111_y1998m04d05_gridB.nc
-         Multiple output formats possible.
     """
 
+    # Remove path from filename if given
+    filename = os.path.basename(filename)
+
     # Get full date from filename
-    date = filename.split('_')[-2]
+    date = filename.split('_')[1]
+    assert date[0] == 'y' and date[5] == 'm' and date[8] == 'd', '[Anhalyze] Filename format not supported.'
 
     # Return format specific date info
     if how == 'ymd':
@@ -647,5 +743,7 @@ def get_date(filename, how=''):
         return int(date[1:5])
     elif how == 'm':
         return int(date[6:8])
+    elif how == 'd':
+        return int(date[9:11])
     else:
         return date

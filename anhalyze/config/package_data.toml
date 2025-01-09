@@ -4,10 +4,15 @@ url = "https://bit.ly/3TkYlGL"
 autodownload_file = true
 
 [gridT]
-#url = "http://bit.ly/40ASWzZ"
-url = "http://bit.ly/3AtarYg"
-filename = 'ANHA4-WLS001_y1980m01d05_gridT.nc'
+url_winter = "http://bit.ly/40ASWzZ"   # winter file
+filename_winter = 'ANHA4-WLS001_y1980m01d05_gridT.nc'
+url = "http://bit.ly/4frVeGa"  # summer file
+filename = 'ANHA4-WLS001_y1980m07d14_gridT.nc'
 
 [icebergs]
 url = "http://bit.ly/3Z5vqKl"
 filename = 'ANHA4-WLS001_y1980m01d05_icebergs.nc'
+
+[tutorial]
+url = "https://bit.ly/41TrxKh"
+version = '1.0'
