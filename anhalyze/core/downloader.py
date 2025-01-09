@@ -7,7 +7,7 @@ import os
 
 # Project-related libraries
 import anhalyze.config as config
-import anhalyze
+import anhalyze as ah
 
 
 def download_sharepoint_file(download_url, download_destination):
@@ -47,7 +47,7 @@ def download_mask():
     mask_url = config.package_data['mask']['url']
 
     # Download mask to standard location.
-    mask_destination = os.path.join(anhalyze.PACKAGE_DATA_DIR, 'ANHA4_mask.nc')
+    mask_destination = os.path.join(ah.PACKAGE_DATA_DIR, 'ANHA4_mask.nc')
 
     # Downloading mask.
     print("[Anhalyze.Downloader] Downloading mask file.")
@@ -70,7 +70,7 @@ def download_example(file_type='gridT'):
     file_url = config.package_data[file_type]['url']
 
     # Download mask to standard location.
-    file_destination = os.path.join(anhalyze.PACKAGE_DATA_DIR, config.package_data[file_type]['filename'])
+    file_destination = os.path.join(ah.PACKAGE_DATA_DIR, config.package_data[file_type]['filename'])
 
     # Downloading mask.
     print(f"[Anhalyze.Downloader] Downloading {file_type} file.")
@@ -82,7 +82,7 @@ def download_tutorial():
     """
 
     # Download tutorial to standard location
-    tutorial_destination = os.path.join(anhalyze.PACKAGE_DATA_DIR.replace('package_data', 'tutorials'),
+    tutorial_destination = os.path.join(ah.PACKAGE_DATA_DIR.replace('package_data', 'tutorials'),
                                         'anhalyze_tutorial.html')
 
     # Downloading tutorial
