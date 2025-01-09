@@ -8,6 +8,7 @@ import os
 # Project-related libraries
 import anhalyze.config as config
 import anhalyze as ah
+from anhalyze.core.anhalyze import get_date
 
 
 def download_sharepoint_file(download_url, download_destination):
@@ -75,6 +76,33 @@ def download_example(file_type='gridT'):
     # Downloading mask.
     print(f"[Anhalyze.Downloader] Downloading {file_type} file.")
     download_sharepoint_file(file_url, file_destination)
+
+    # Check filename reflects correct ymd
+    test_filename(file_destination)
+
+
+def test_filename(file_destination):
+    """ Checks filename contains correct ymd values.
+    """
+
+    # Extract filename
+    filename = os.path.basename(file_destination)
+    # Open file
+    file_example = ah.AnhaDataset(file_destination)
+
+    # Get ymd values from file
+    year = file_example._xr_dataset.coords['time_counter'].data[0].year
+    month = file_example._xr_dataset.coords['time_counter'].data[0].month
+    # Filename shows day at end of timestep, file shows at middle of timestep
+    day = file_example._xr_dataset.coords['time_counter'].data[0].day + 2
+
+    # Assert values in filename correspond to values in file
+    assert get_date(file_example.attrs['filename'], how='y') == year, \
+        f'[Anhalyze.Downloader] Filename {filename} does not contain year value found in file: {year}.'
+    assert get_date(file_example.attrs['filename'], how='m') == month, \
+        f'[Anhalyze.Downloader] Filename {filename} does not contain month value found in file: {month}.'
+    assert get_date(file_example.attrs['filename'], how='d') == day, \
+        f'[Anhalyze.Downloader] Filename {filename} does not contain day value found in file: {day}.'
 
 
 def download_tutorial():

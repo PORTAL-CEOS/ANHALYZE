@@ -107,9 +107,6 @@ class AnhaDataset:
                 # self._xr_dataset = xr.open_dataset(os.path.join(self.attrs['filepath'], self.attrs['filename']),
                 #                                    decode_cf=False)
 
-            # Check filename reflects correct ymd
-            self._test_filename(filename)
-
         # Loading mask data
         if not _xr_dataset:
             # Get mask from filename
@@ -123,24 +120,6 @@ class AnhaDataset:
         # Initialize other attrs
         # TODO replace verbose with logging levels
         self._verbose = True
-
-    def _test_filename(self, filename):
-        """ Checks filename contains correct ymd values.
-        """
-
-        # Get ymd values from file
-        year = self._xr_dataset.coords['time_counter'].data[0].year
-        month = self._xr_dataset.coords['time_counter'].data[0].month
-        # Filename shows day at end of timestep, file shows at middle of timestep
-        day = self._xr_dataset.coords['time_counter'].data[0].day + 2
-
-        # Assert values in filename correspond to values in file
-        assert get_date(self.attrs['filename'], how='y') == year, \
-            f'[Anhalyze] Filename {filename} does not contain year in file: {year}.'
-        assert get_date(self.attrs['filename'], how='m') == month, \
-            f'[Anhalyze] Filename {filename} does not contain month in file: {month}.'
-        assert get_date(self.attrs['filename'], how='d') == day, \
-            f'[Anhalyze] Filename {filename} does not contain day in file: {day}.'
 
     def _init_coords(self):
         """ Initialize coordinates
