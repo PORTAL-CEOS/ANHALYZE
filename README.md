@@ -187,4 +187,4 @@ If that is the case, you will need to delete it manually.
 
 ## License
 
-MIT license, see `LICENSE`.
+GNU-GPL license, see `LICENSE`.
