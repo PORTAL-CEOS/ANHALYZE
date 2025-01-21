@@ -186,19 +186,3 @@ If that is the case, you will need to delete it manually.
 ## License
 
 MIT license, see `LICENSE`.
-
-
-
--------------------- Deprecated below this line. --------------------
-
-
-Need to add the following environmental variables to your .bash_profile (or .bashrc, etc..), 
-and edith paths to your needs:
-``` 
-#------------------------------------------------------------- 
-#ANHALIZE setup
-#-------------------------------------------------------------
-export DATA_PATH='/root_path/user/NEMO/ANHA4/ANHA4-Wxx000-S/'
-#-------------------------------------------------------------
-```
-
