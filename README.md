@@ -1,4 +1,4 @@
-# ANHALIZE  (beta)
+# ANHALIZE
 
 `ANHALIZE` is an analysis tool for the ANHA configuration of the NEMO model.
 
@@ -167,23 +167,12 @@ This assumes the default mask has not been downloaded already.
 If that is the case, you will need to delete it manually. 
 
 -----
-## Version History
+## Future Work
+    
+* To release `AnhalyzeProject` class.
+* To release `AnhalyzeLocation` class.
+* PyPi packaging, for `pip install` functionality
 
-* 0.7 (planned)
-    * To release `AnhalyzeLocation` class.
-    * pip install functionality
-* 0.6 (planned)
-    * To release `AnhalyzeProject` class.
-* 0.5 (upcoming)
-    * First main release, includes:
-      * `AnhaDataset` class
-      * Basic functionality of single ANHA `nc` files. 
-        * data reading/writing
-        * region selection 
-        * map plotting
-    * See [commit change]() or See [release history]()
-* 0.0.1 (current)
-    * Beta version, initial development.  
 
 ## License
 
