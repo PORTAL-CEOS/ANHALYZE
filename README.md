@@ -102,7 +102,9 @@ import anhalyze as ah
 
 ### Example 
 
-This example requires an `ANHA*_gridT.nc` file.
+For first users, we recomend you have a look at the [`anhalyze_tutorial`](https://github.com/PORTAL-CEOS/ANHALYZE/blob/plotting_dev/anhalyze/tutorials/anhalyze_tutorial.ipynb).
+
+This is a short example and requires an `ANHA*_gridT.nc` file:
 
 ```
 import anhalyze as ah
