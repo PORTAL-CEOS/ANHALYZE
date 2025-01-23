@@ -1,10 +1,10 @@
-# ANHALIZE
+# ANHALYZE
 
-`ANHALIZE` is an analysis tool for the ANHA configuration of the NEMO model.
+`ANHALYZE` is an analysis tool for the ANHA configuration of the NEMO model.
 
 ## Description
 
-`ANHALIZE` is an analysis tool for the 
+`ANHALYZE` is an analysis tool for the 
 [Arctic and Northern Hemisphere Atlantic (ANHA)](https://canadian-nemo-ocean-modelling-forum-commuity-of-practice.readthedocs.io/en/latest/Institutions/UofA/Configurations/ANHA4/index.html) 
 configuration of the [NEMO](https://www.nemo-ocean.eu/) model. The focus is on data manipulation, analysis, and visualization. 
 
@@ -25,7 +25,7 @@ NOTE: This code is stable, but new features are currently under development.
 
 ### Installation
 
-1. Clone this [repository](https://github.com/PORTAL-CEOS/ANHALIZE) with: 
+1. Clone this [repository](https://github.com/PORTAL-CEOS/ANHALYZE) with: 
 
     ```
     git clone git@github.com:PORTAL-CEOS/ANHALYZE.git
@@ -137,7 +137,7 @@ You can add the following environmental variable(s) to your `.bash_profile` (or 
 and edith paths to your needs:
 ``` 
 #------------------------------------------------------------- 
-#ANHALIZE setup
+#ANHALYZE setup
 #-------------------------------------------------------------
 export MASK_FILENAME='/root_path/user/../your_mask_location/mask_name.nc'
 #-------------------------------------------------------------
@@ -157,7 +157,7 @@ aa = ah.AnhaDataset(filename, mask_filename='mask_full_filename')
 
 #### No-autodownload option:
 
-`Anhalize` will first try to find your own mask, if none is provided, 
+`ANHALYZE` will first try to find your own mask. If none is provided, 
 it will attempt to download the default mask and use that.
 If you don't want this behaviour then edit the configuration file  `package_data.toml`,
 located in `<package root path>/anhalyze/config/`. In the `[mask]` section, change
