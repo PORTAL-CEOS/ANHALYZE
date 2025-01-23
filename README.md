@@ -8,12 +8,13 @@
 [Arctic and Northern Hemisphere Atlantic (ANHA)](https://canadian-nemo-ocean-modelling-forum-commuity-of-practice.readthedocs.io/en/latest/Institutions/UofA/Configurations/ANHA4/index.html) 
 configuration of the [NEMO](https://www.nemo-ocean.eu/) model. The focus is on data manipulation, analysis, and visualization. 
 
-This tool has been originally developed to support ocean modeling research at the 
+This tool has been originally developed to support ocean modelling research at the 
 Centre for Earth Observation Science (CEOS), at the University of Manitoba. 
+Current efforts are ongoing to support the wider range of users of ANHA data.  
 
-NOTE: This code is stable, but new features are currently under development.
+If you want to request a new feature, or let us know of a bug, please do so in the [issues](https://github.com/PORTAL-CEOS/ANHALYZE/issues).
 
-
+The latest progress can be found in [`CHANGELOG`](https://github.com/PORTAL-CEOS/ANHALYZE/blob/main/CHANGELOG.md).
 
 -----
 ## Getting Started
@@ -104,12 +105,12 @@ import anhalyze as ah
 
 For first users, we recomend you have a look at the [`anhalyze_tutorial`](https://github.com/PORTAL-CEOS/ANHALYZE/blob/plotting_dev/anhalyze/tutorials/anhalyze_tutorial.ipynb).
 
-This is a short example and requires an `ANHA*_gridT.nc` file:
+This is a short example and requires an `ANHA?-??????_y????m??d??_gridT.nc` file:
 
 ```
 import anhalyze as ah
 
-filename = 'ANHA*gridT.nc'
+filename = 'ANHA?-??????_y????m??d??_gridT.nc'
 
 # Open file
 aa = ah.AnhaDataset(filename)
@@ -134,7 +135,7 @@ There are two alternate options for providing your own mask file:
 #### Environment variable option:
 
 You can add the following environmental variable(s) to your `.bash_profile` (or `.bashrc`, etc..), 
-and edith paths to your needs:
+and edit paths to your needs:
 ``` 
 #------------------------------------------------------------- 
 #ANHALYZE setup
@@ -161,12 +162,14 @@ aa = ah.AnhaDataset(filename, mask_filename='mask_full_filename')
 it will attempt to download the default mask and use that.
 If you don't want this behaviour then edit the configuration file  `package_data.toml`,
 located in `<package root path>/anhalyze/config/`. In the `[mask]` section, change
-variable `autodownload_file` from 'true' to 'false'. This will prevent the file to be downloaded.
-If you don't provide a valid mask alternative, the code will return an error message.
+variable `autodownload_file` from 'true' to 'false'. This will prevent the file from being downloaded.
+Then, if you don't provide a valid mask alternative, the code will return an error message.
 This assumes the default mask has not been downloaded already. 
 If that is the case, you will need to delete it manually. 
 
 -----
+
+
 ## Future Work
     
 * To release `AnhalyzeProject` class.
@@ -176,4 +179,4 @@ If that is the case, you will need to delete it manually.
 
 ## License
 
-GNU-GPL license, see `LICENSE`.
+GNU-GPL license, see [`LICENSE`](https://github.com/PORTAL-CEOS/ANHALYZE/blob/main/LICENSE).
