@@ -26,20 +26,43 @@ The latest progress can be found in [`CHANGELOG`](https://github.com/PORTAL-CEOS
 
 ### Installation
 
-1. Clone this [repository](https://github.com/PORTAL-CEOS/ANHALYZE) with: 
+0. New to git/python world? Some notes for beginners.
 
-    ```
-    git clone git@github.com:PORTAL-CEOS/ANHALYZE.git
-    ```
+    **About using git:**
 
-    **Additional Notes**
-
-    To learn about what this means, and how to use Git, see 
+    - For some tutorials on how to use Git, see 
     this [w3 tutorial](https://www.w3schools.com/git/default.asp?remote=github),    
     this [datacamp tutorial](https://www.datacamp.com/blog/how-to-learn-git),
     this [NHS Git guide](https://nhsdigital.github.io/rap-community-of-practice/training_resources/git/using-git-collaboratively/),
     or this [git tutorial](https://git-scm.com/docs/gittutorial).
 
+    **About setting up your virtual environment before installing this package:**
+
+    - Set up your environment using [pip](https://pypi.org/project/pip/).
+    
+    - For more information on how to use virtual environments and why they are important, 
+    see this [Real Python tutorial](https://realpython.com/python-virtual-environments-a-primer/), or 
+    see the [NHS virtual environments guide](https://nhsdigital.github.io/rap-community-of-practice/training_resources/python/virtual-environments/why-use-virtual-environments/).
+
+    - If you are using Linux/MacOS you can use this simple example, 
+    or for more information about setting your venv look [here](https://nhsdigital.github.io/rap-community-of-practice/training_resources/python/virtual-environments/venv/).
+
+       ```
+       python3 -m venv <venv-directory>
+       source <venv-directory>/bin/activate
+       python3 -m pip install -r requirements.txt 
+       ```
+   
+    - If you are managing multiple venvs, you could use 
+    [virtualenvwrapper](https://virtualenvwrapper.readthedocs.io/en/latest/) as an organizing tool.
+
+
+
+1. Clone this [repository](https://github.com/PORTAL-CEOS/ANHALYZE) with: 
+
+    ```
+    git clone git@github.com:PORTAL-CEOS/ANHALYZE.git
+    ```
 
 2. Install the dependencies in your [python environment](https://docs.python.org/3/library/venv.html) with:
     ```
@@ -59,9 +82,7 @@ The latest progress can be found in [`CHANGELOG`](https://github.com/PORTAL-CEOS
 
     **Additional Notes**
 
-    - Note1: If you are managing multiple venvs, you could use 
-    [virtualenvwrapper](https://virtualenvwrapper.readthedocs.io/en/latest/) as an organizing tool.
-    - Note2: The minimum libraries required for this project are listed in `requirements.in` which was created
+    - The minimum libraries required for this project are listed in `requirements.in` which was created
     automatically with
        ```
        pip install pipreqs
@@ -76,23 +97,7 @@ The latest progress can be found in [`CHANGELOG`](https://github.com/PORTAL-CEOS
        pip-compile    
        ```
 
-    **Additional Help**
-
-    Set up your environment using [pip](https://pypi.org/project/pip/).
-    For more information on how to use virtual environments and why they are important, 
-    see this [Real Python tutorial](https://realpython.com/python-virtual-environments-a-primer/), or 
-    see the [NHS virtual environments guide](https://nhsdigital.github.io/rap-community-of-practice/training_resources/python/virtual-environments/why-use-virtual-environments/).
-
-    If you are using Linux/MacOS you can use this simple example, 
-    or for more information about setting your venv look [here](https://nhsdigital.github.io/rap-community-of-practice/training_resources/python/virtual-environments/venv/).
-
-       ```
-       python3 -m venv <venv-directory>
-       source <venv-directory>/bin/activate
-       python3 -m pip install -r requirements.txt 
-       ```
-
-
+    
 ## Usage
 
 Once installed you can import the library like this:
