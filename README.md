@@ -98,9 +98,12 @@ The latest progress can be found in [`CHANGELOG`](https://github.com/PORTAL-CEOS
        ```
 
     - If after following the instructions above you are unable to import the anhalyze module 
-      from your jupyter notebook, it maybe that you need to add the kernel of your python virtual environment. 
+      from your jupyter notebook. It maybe that you need to add the kernel of your python virtual environment. 
       You can follow [this](https://medium.com/@WamiqRaza/how-to-create-virtual-environment-jupyter-kernel-python-6836b50f4bf4), 
-      [this](https://janakiev.com/blog/jupyter-virtual-envs/), or [this](https://cloudbytes.dev/snippets/run-jupyter-notebooks-with-python-virtual-environments) instructions.
+      [this](https://janakiev.com/blog/jupyter-virtual-envs/), 
+      [this](https://www.hophr.com/tutorial-page/getting-import-error-jupyter-notebook-but-not-python-step-by-step-guide),
+      or [this](https://cloudbytes.dev/snippets/run-jupyter-notebooks-with-python-virtual-environments) instructions.
+      This may happen particularly if you are using multiple virtual environments. 
       
 ## Usage
 
