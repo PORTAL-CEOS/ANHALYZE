@@ -3,8 +3,13 @@
 name = "anhalyze"
 description = "`ANHALIZE` is an analysis tool for the ANHA configuration of the NEMO model."
 readme = "README.md"
-version = "0.0.1"
+version = "0.5.0"
 dependencies = []
+requires-python = ">=3.10"
+
+[project.urls]
+Homepage = "https://github.com/PORTAL-CEOS/ANHALYZE"
+Issues = "https://github.com/PORTAL-CEOS/ANHALYZE/issues"
 
 [tool.setuptools.packages.find]
 include = ["anhalyze*","downloader"]  # package names should match these glob patterns (["*"] by default)
