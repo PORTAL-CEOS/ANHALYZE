@@ -186,7 +186,7 @@ def create_mask(mask_source=None, grid='tmask', path=None, suffix='_CutMask.nc',
         new_mask_name += '.nc'
 
     # Avoiding overwriting files by adding an extra suffix continuously until available.
-    while os.path.isfile(new_mask_name):
+    while os.path.isfile(path+new_mask_name):
         print(f'[Anhalyze Warning, file exists: {new_mask_name}]')
         new_mask_name = new_mask_name.replace('.nc', '_copy.nc')
 
