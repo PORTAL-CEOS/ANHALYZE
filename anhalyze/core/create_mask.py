@@ -24,8 +24,6 @@ from matplotlib.widgets import PolygonSelector
 import anhalyze.config as config
 import anhalyze
 
-matplotlib.use('TkAgg')
-
 # %%
 
 
@@ -51,6 +49,12 @@ def create_mask(mask_source=None, grid='tmask', path=None, suffix='_CutMask.nc',
     verbose : bool
         Activate the verbose mode.
     """
+    # Extract users default backend (be) option
+    be = matplotlib.get_backend()
+
+    # Change matplotlib backend option to an interactive one
+    matplotlib.use('TkAgg')
+
     # Get mask file source. If the user doesn't insert mask source file name,
     # the code will check if there are any mask file already in the config folder.
     # If it doesn't find anything, will use anhalyze 'downloader' to download a default mask file.
@@ -195,3 +199,7 @@ def create_mask(mask_source=None, grid='tmask', path=None, suffix='_CutMask.nc',
 
     # Saving new mask file
     mask_ds.to_netcdf(path+new_mask_name)
+
+    # Return matplotlib backend option to default
+    matplotlib.use(f'{be}')
+
