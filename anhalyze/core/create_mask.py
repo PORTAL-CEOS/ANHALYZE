@@ -79,17 +79,18 @@ def create_mask(mask_source=None, grid='tmask', path=None, suffix='_CutMask.nc',
     assert os.path.isfile(mask_source), assert_message
 
     # Get mask
+    mask = []
     if mask_source:
 
         # Getting mask data depending on the grid
         if grid == 'tmask':
-            mask = xr.open_dataset(mask_source).tmask.data[0, 0, :, :]
+            mask = xr.open_dataset(mask_source).tmask.data[0, :, :, :]
             mask_var = 'tmask'
         elif grid == 'umask':
-            mask = xr.open_dataset(mask_source).umask.data[0, 0, :, :]
+            mask = xr.open_dataset(mask_source).umask.data[0, :, :, :]
             mask_var = 'umask'
         elif grid == 'vmask':
-            mask = xr.open_dataset(mask_source).vmask.data[0, 0, :, :]
+            mask = xr.open_dataset(mask_source).vmask.data[0, :, :, :]
             mask_var = 'vmask'
         elif grid == 'wmask':
             # TODO use tmask and add a warning
@@ -101,12 +102,13 @@ def create_mask(mask_source=None, grid='tmask', path=None, suffix='_CutMask.nc',
     # Extract latitude and longitude information
     lat = xr.open_dataset(mask_source).nav_lat.data
     lon = xr.open_dataset(mask_source).nav_lon.data
+    depth = xr.open_dataset(mask_source).gdepw_0.data
 
     # %%
     # Create polygon
     fig = plt.figure()
     ax = fig.add_subplot(1, 1, 1)
-    ax.pcolormesh(mask)
+    ax.pcolormesh(mask[0, :, :])
 
     def onselect(verts):
         pass
@@ -130,8 +132,8 @@ def create_mask(mask_source=None, grid='tmask', path=None, suffix='_CutMask.nc',
     mask_sel = np.zeros(mask.shape)
 
     # Mask dimensions
-    x = mask_sel.shape[1]
-    y = mask_sel.shape[0]
+    x = mask_sel.shape[2]
+    y = mask_sel.shape[1]
 
     # Image and ImageDraw.Draw().Polygon to fill up the area within the Polygon with ones
     img = Image.new('L', (x, y), 0)
@@ -139,6 +141,11 @@ def create_mask(mask_source=None, grid='tmask', path=None, suffix='_CutMask.nc',
 
     # Convert the image object to a numpy object
     mask_sel = np.array(img)
+    print(f'before {mask_sel.shape}')
+
+    # Expand the 2D mask into 3D
+    mask_sel = np.tile(mask_sel, [1, mask.shape[0], 1, 1])
+    print(f'after {mask_sel.shape}')
 
     # Multiply the selected area by ANHA4 mask so we get back the land within the polygon.
     mask_new = mask_sel*mask
@@ -147,10 +154,11 @@ def create_mask(mask_source=None, grid='tmask', path=None, suffix='_CutMask.nc',
     # Create a xarray dataset from the new mask.
     mask_ds = xr.Dataset(
                 data_vars={
-                    mask_var: (['lat', 'lon'], mask_new,
+                    mask_var: (['time', 'depth', 'lat', 'lon'], mask_new,
                                {'long_name': f'ANHA4_{mask_var}'})
                 },
                 coords={
+                    "depth": (['depth'], depth, {"long_name": "Depth_t", "units": "10⁻³ meters"}),
                     "latitude": (["lat", "lon"], lat, {"long_name": "Latitude", "units": "degrees_north"}),
                     "longitude": (["lat", "lon"], lon, {"long_name": "Longitude", "units": "degrees_east"})
                 },
