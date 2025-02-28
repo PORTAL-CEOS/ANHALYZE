@@ -47,11 +47,7 @@ class AnhaDataset:
 
         xarray_repr = str(self._xr_dataset)
 
-        anhalyze_warning = '\n[Anhalyze] Note: Above we show the xarray repr of this file, ' \
-                           'it should be mostly complete, ' \
-                           'but use `self.attrs` for the full set of Attributes.'
-
-        return "{0}{1}{2}".format(anhalyze_repr, xarray_repr, anhalyze_warning)
+        return "{0}{1}".format(anhalyze_repr, xarray_repr)
 
     def _repr_html_(self):
         """ Returns html representation of object
@@ -64,11 +60,7 @@ class AnhaDataset:
 
         xarray_repr = self._xr_dataset._repr_html_()
 
-        anhalyze_warning = '[Anhalyze] Note: Above we show the xarray repr of this file, ' \
-                           'it should be mostly complete, ' \
-                           'but use `self.attrs` for the full set of Attributes.'
-
-        return "{0}{1}{2}".format(anhalyze_repr, xarray_repr, anhalyze_warning)
+        return "{0}{1}".format(anhalyze_repr, xarray_repr)
 
     def __init__(self, filename, load_data=True, mask_filename=None, _xr_dataset=None, _attrs=None):
         """ Initializing object.
@@ -116,6 +108,9 @@ class AnhaDataset:
         # Initialize file metadata
         self._load_data = load_data
         self._init_metadata()
+
+        # Updating for repr
+        self._xr_dataset.attrs = self.attrs
 
         # Initialize other attrs
         # TODO replace verbose with logging levels
