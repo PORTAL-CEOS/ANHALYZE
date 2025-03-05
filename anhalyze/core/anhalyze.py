@@ -507,6 +507,11 @@ class AnhaDataset:
         # Make copy of xarray
         _xr_dataset = self._xr_dataset.copy()
 
+        # Set attrs
+        _attrs = self.attrs.copy()
+        _attrs['file_category'] = 'regional'
+        # TODO could add section/transect or something specific like this.
+
         # Populating dict for lat, lon selection
         if lat_range and lon_range:
             lat_range = self._update_range('coord_lat', lat_range)
@@ -531,6 +536,7 @@ class AnhaDataset:
                 # Find row ranges from lat values
                 row_range = self._get_row_or_col_range(lat_range, self.attrs['coord_lat'])
                 dict_range.update({self.attrs['dim_y']: slice(row_range[0], row_range[1])})
+
             if lon_range:
                 lon_range = self._update_range('coord_lon', lon_range)
 
@@ -557,11 +563,7 @@ class AnhaDataset:
             # Depth selection
             _xr_dataset = _xr_dataset.sel(dict_range)
 
-        # Set attrs
-        _attrs = self.attrs.copy()
-        _attrs['file_category'] = 'regional'
-        # TODO could add section/transect or something specific like this.
-
+        #
         return AnhaDataset('', load_data=self._load_data, _xr_dataset=_xr_dataset, _attrs=_attrs)
 
     def isel(self, x_range=None, y_range=None, z_range=None):
@@ -589,17 +591,24 @@ class AnhaDataset:
         # Setting up dict
         dict_range = {}
 
+        # Set attrs
+        _attrs = self.attrs.copy()
+        _attrs['file_category'] = 'regional'
+        # TODO could add section/transect or something specific like this.
+
         # Populating dict for selection
         if x_range:
             x_range = self._update_range('dim_x', x_range)
             if self._verbose:
                 print(f'[Anhalyze] Selecting x range: {x_range}')
             dict_range.update({self.attrs['dim_x']: slice(x_range[0], x_range[1])})
+
         if y_range:
             y_range = self._update_range('dim_y', y_range)
             if self._verbose:
                 print(f'[Anhalyze] Selecting y range: {y_range}')
             dict_range.update({self.attrs['dim_y']: slice(y_range[0], y_range[1])})
+
         if z_range:
             z_range = self._update_range('dim_z', z_range)
             if self._verbose:
@@ -608,11 +617,6 @@ class AnhaDataset:
 
         # Selection of xarray instance
         _xr_dataset = self._xr_dataset.isel(dict_range)
-
-        # Set attrs
-        _attrs = self.attrs.copy()
-        _attrs['file_category'] = 'regional'
-        # TODO could add section/transect or something specific like this.
 
         return AnhaDataset('', load_data=self._load_data, _xr_dataset=_xr_dataset, _attrs=_attrs)
 
