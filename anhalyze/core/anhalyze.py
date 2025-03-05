@@ -453,7 +453,7 @@ class AnhaDataset:
                                                                      mask[0, :, :, :])})
 
             # Add mask filename to attrs
-            self._xr_dataset.attrs['mask_filename'] = mask_filename
+            self._xr_dataset.attrs['mask_filename'] = os.path.basename(mask_filename)
 
         else:
             raise OSError('[Anhalyze] No mask/mesh file found.')
