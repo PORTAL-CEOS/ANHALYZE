@@ -180,6 +180,7 @@ class AnhaDataset:
         # Need to exclude 'axis_nbounds'
         self.attrs['dim_x'] = [var for var in dims_list if 'x' in var and 'axis' not in var][0]
         self.attrs['dim_y'] = [var for var in dims_list if 'y' in var][0]
+        self.attrs['dim_t'] = [var for var in dims_list if 'time' in var][0]
         if any('depth' in dim for dim in dims_list):
             self.attrs['dim_z'] = [var for var in dims_list if 'depth' in var][0]
 
