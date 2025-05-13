@@ -2,9 +2,9 @@
 # coding: utf-8
 
 import numpy as np
-import xarray as xr
-import anhalyze
-import os
+#import xarray as xr
+#import anhalyze
+#import os
 
 
 def get_ohc(temp_da, e3t_da, tref=0, rho_ref=1030, cp=4218):
@@ -18,6 +18,9 @@ def get_ohc(temp_da, e3t_da, tref=0, rho_ref=1030, cp=4218):
 
 
 def get_thermheig(temp_da, e3t_da, tref=0, sref=34.8, rho_ref=None, cp=4218):
+    """
+    Calculates thermosteric height relative to a reference temperature
+    """
     import gsw as gsw
 
     if not rho_ref:
