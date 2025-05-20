@@ -222,7 +222,7 @@ class AnhaDataset:
                               'gridU', 'gridV', 'gridW',
                               'icemod', 'icebergs']
         self.attrs['grid'] = [grid for grid in grid_value_options if grid in self.attrs['filename']][0]
-        assert self.attrs['grid'] in grid_value_options,\
+        assert self.attrs['grid'] in grid_value_options, \
             f'[Anhalyze] Grid type not recognized: {self.attrs["grid"]}'
 
         # Initialize time
@@ -259,11 +259,11 @@ class AnhaDataset:
         # Init grid geocoordinates range
         self.attrs['coord_lat_range'] = [np.nanmin(lat), np.nanmax(lat)]
         self.attrs['coord_lon_range'] = [np.nanmin(lon), np.nanmax(lon)]
-        
+
         # Init grid dims range
         self.attrs['dim_x_range'] = [0, self._xr_dataset.sizes[self.attrs['dim_x']]]
         self.attrs['dim_y_range'] = [0, self._xr_dataset.sizes[self.attrs['dim_y']]]
-        
+
         # Only for 3 dimension variable
         if 'coord_depth' in self.attrs.keys():
             self.attrs['coord_depth_range'] = [self.coords[self.attrs['coord_depth']].data.min(),
@@ -564,8 +564,13 @@ class AnhaDataset:
             _xr_dataset = _xr_dataset.sel(dict_range)
 
         # Set attrs
-        _attrs = self.attrs.copy()
-        _attrs['file_category'] = 'regional'
+        if not hasattr(self, '_attrs'):
+            _attrs = self.attrs.copy()
+            _attrs['file_category'] = 'regional'
+        else:
+            _attrs = self._attrs.copy()
+            _attrs['file_category'] = 'regional'
+
         # TODO could add section/transect or something specific like this.
 
         return AnhaDataset('', load_data=self._load_data, _xr_dataset=_xr_dataset, _attrs=_attrs)
@@ -616,8 +621,12 @@ class AnhaDataset:
         _xr_dataset = self._xr_dataset.isel(dict_range)
 
         # Set attrs
-        _attrs = self.attrs.copy()
-        _attrs['file_category'] = 'regional'
+        if not hasattr(self, '_attrs'):
+            _attrs = self.attrs.copy()
+            _attrs['file_category'] = 'regional'
+        else:
+            _attrs = self._attrs.copy()
+            _attrs['file_category'] = 'regional'
         # TODO could add section/transect or something specific like this.
 
         return AnhaDataset('', load_data=self._load_data, _xr_dataset=_xr_dataset, _attrs=_attrs)
@@ -710,6 +719,81 @@ class AnhaDataset:
 
         # Saving new file
         self._xr_dataset.to_netcdf(new_full_filename, **kwargs)
+
+    def gridu2gridt(self, var):
+        """
+        Convert variables from grid U to grid T
+        """
+
+        # Get copies of AnhaDataset information
+        _xr_dataset = self._xr_dataset.copy()
+
+        # Check if any other method has not created a '_attrs' attribute.
+        if not hasattr(self, '_attrs'):
+            _attrs = self.attrs.copy()
+        else:
+            _attrs = self._attrs.copy()
+
+        # Get variable data
+        var_da_gridu = self.data_vars[var].data.copy()
+
+        # Assure to get rid of NaNs to perfom the average properly
+        var_da_gridu = np.where(~np.isnan(var_da_gridu), var_da_gridu, 0)
+
+        # Execute the average of each grid U cell pair to fall into the grid T.
+        # Grid T output
+        var_da_gridt = np.zeros(var_da_gridu.shape)
+
+        for j in np.arange(0, var_da_gridu.shape[2]):
+            for i in np.arange(1, var_da_gridu.shape[3]):
+                var_da_gridt[:, :, j, i] = 0.5 * (var_da_gridu[:, :, j, i - 1] + var_da_gridu[:, :, j, i])
+
+        # Store the grid T variable within the dataset in a proper variable marked with a "_t"
+        _xr_dataset[f'{var}_t'] = (_xr_dataset[var].dims, var_da_gridt)
+
+        # Add information to the attrs list indicating that the dataset went through
+        # a change in the grid for some variable.
+        _xr_dataset[f'{var}_t'].attrs = _xr_dataset[var].attrs
+        _xr_dataset[f'{var}_t'].attrs['gridu2gridt'] = True
+
+        return AnhaDataset('', load_data=self._load_data, _xr_dataset=_xr_dataset, _attrs=_attrs)
+
+    def gridv2gridt(self, var):
+        """
+        Convert variables from grid V to grid T
+        """
+        # Get copies of AnhaDataset information
+        _xr_dataset = self._xr_dataset.copy()
+
+        # Check if any other method has not created a '_attrs' attribute.
+        if not hasattr(self, '_attrs'):
+            _attrs = self.attrs.copy()
+        else:
+            _attrs = self._attrs.copy()
+
+        # Get variable data
+        var_da_gridv = self.data_vars[var].data.copy()
+
+        # Assure to get rid of NaNs to perfom the average properly
+        var_da_gridv = np.where(~np.isnan(var_da_gridv), var_da_gridv, 0)
+
+        # Execute the average of each grid U cell pair to fall into the grid T.
+        # Grid T output
+        var_da_gridt = np.zeros(var_da_gridv.shape)
+
+        for j in np.arange(0, var_da_gridv.shape[2]):
+            for i in np.arange(1, var_da_gridv.shape[3]):
+                var_da_gridt[:, :, j, i] = 0.5 * (var_da_gridv[:, :, j, i] + var_da_gridv[:, :, j - 1, i])
+
+                # Store the grid T variable within the dataset in a proper variable marked with a "_t"
+        _xr_dataset[f'{var}_t'] = (_xr_dataset[var].dims, var_da_gridt)
+
+        # Add information to the attrs list indicating that the dataset went through
+        # a change in the grid for some variable.
+        _xr_dataset[f'{var}_t'].attrs = _xr_dataset[var].attrs
+        _xr_dataset[f'{var}_t'].attrs['gridv2gridt'] = True
+
+        return AnhaDataset('', load_data=self._load_data, _xr_dataset=_xr_dataset, _attrs=_attrs)
 
 
 def get_date(filename, how=None):
