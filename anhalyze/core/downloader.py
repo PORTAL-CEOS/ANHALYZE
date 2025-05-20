@@ -55,6 +55,21 @@ def download_mask():
     download_sharepoint_file(mask_url, mask_destination)
 
 
+def download_rotatedangle():
+    """ Downloads standard Rotated Angle to rotate velocities in ANHA4.
+        """
+
+    # URL location for mask.
+    rangle_url = config.package_data['angles']['url']
+
+    # Download Rotated Angle file to standard location.
+    rangle_destination = os.path.join(ah.PACKAGE_DATA_DIR, 'RotatedAngle_ANHA4.nc')
+
+    # Downloading angle files.
+    print("[Anhalyze.Downloader] Downloading Rotated Angle file.")
+    download_sharepoint_file(rangle_url, rangle_destination)
+
+
 def download_example(file_type='gridT'):
     """ Downloads Anha file example.
 
@@ -120,5 +135,4 @@ def download_tutorial():
 
 
 if __name__ == '__main__':
-
     download_mask()

@@ -16,3 +16,7 @@ filename = 'ANHA4-WLS001_y1980m01d05_icebergs.nc'
 [tutorial]
 url = "https://bit.ly/41TrxKh"
 version = '1.0'
+
+[angles]
+url = ""
+autodownload_file = true
